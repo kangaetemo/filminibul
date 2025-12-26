@@ -1,0 +1,314 @@
+// TMDB API Types and Service
+
+export interface TMDBMovie {
+    id: number;
+    title: string;
+    poster_path: string | null;
+    backdrop_path: string | null;
+    overview: string;
+    vote_average: number;
+    release_date: string;
+    genre_ids: number[];
+}
+
+export interface TMDBMoviesResponse {
+    page: number;
+    results: TMDBMovie[];
+    total_pages: number;
+    total_results: number;
+}
+
+export interface WatchProvider {
+    logo_path: string;
+    provider_id: number;
+    provider_name: string;
+    display_priority: number;
+}
+
+export interface WatchProvidersCountry {
+    link?: string;
+    flatrate?: WatchProvider[];
+    rent?: WatchProvider[];
+    buy?: WatchProvider[];
+}
+
+export interface WatchProvidersResponse {
+    id: number;
+    results: {
+        [countryCode: string]: WatchProvidersCountry;
+    };
+}
+
+// Genre mapping for TMDB genre_ids
+export const GENRE_MAP: Record<number, string> = {
+    28: "Action",
+    12: "Adventure",
+    16: "Animation",
+    35: "Comedy",
+    80: "Crime",
+    99: "Documentary",
+    18: "Drama",
+    10751: "Family",
+    14: "Fantasy",
+    36: "History",
+    27: "Horror",
+    10402: "Music",
+    9648: "Mystery",
+    10749: "Romance",
+    878: "Sci-Fi",
+    10770: "TV Movie",
+    53: "Thriller",
+    10752: "War",
+    37: "Western",
+};
+
+// TMDB Image base URLs
+export const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p";
+export const POSTER_SIZE = "w500";
+export const LOGO_SIZE = "w92";
+
+const API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+const BASE_URL = "https://api.themoviedb.org/3";
+
+// Detect if the key is a Bearer token (long JWT) or API key (short hex)
+const isBearer = API_KEY && API_KEY.length > 40;
+
+/**
+ * Get fetch options with proper authentication
+ */
+function getAuthOptions(): RequestInit {
+    if (isBearer) {
+        return {
+            headers: {
+                Authorization: `Bearer ${API_KEY}`,
+                "Content-Type": "application/json",
+            },
+        };
+    }
+    return {};
+}
+
+/**
+ * Build URL with API key if not using Bearer token
+ */
+function buildUrl(endpoint: string, params: Record<string, string> = {}): string {
+    const url = new URL(`${BASE_URL}${endpoint}`);
+
+    if (!isBearer && API_KEY) {
+        url.searchParams.set("api_key", API_KEY);
+    }
+
+    Object.entries(params).forEach(([key, value]) => {
+        url.searchParams.set(key, value);
+    });
+
+    return url.toString();
+}
+
+/**
+ * Fetch popular or now playing movies from TMDB
+ */
+export async function fetchMovies(
+    type: "popular" | "now_playing" = "popular",
+    page: number = 1
+): Promise<TMDBMovie[]> {
+    if (!API_KEY) {
+        console.error("TMDB API key not found. Please set NEXT_PUBLIC_TMDB_API_KEY in .env.local");
+        return [];
+    }
+
+    try {
+        const url = buildUrl(`/movie/${type}`, {
+            language: "en-US",
+            page: page.toString(),
+        });
+
+        const response = await fetch(url, getAuthOptions());
+
+        if (!response.ok) {
+            throw new Error(`TMDB API error: ${response.status}`);
+        }
+
+        const data: TMDBMoviesResponse = await response.json();
+
+        // Filter out movies without posters
+        return data.results.filter((movie) => movie.poster_path !== null);
+    } catch (error) {
+        console.error("Error fetching movies:", error);
+        return [];
+    }
+}
+
+/**
+ * Fetch watch providers for a specific movie in Turkey (TR)
+ */
+export async function fetchWatchProviders(
+    movieId: number
+): Promise<WatchProvidersCountry | null> {
+    if (!API_KEY) {
+        console.error("TMDB API key not found");
+        return null;
+    }
+
+    try {
+        const url = buildUrl(`/movie/${movieId}/watch/providers`);
+        const response = await fetch(url, getAuthOptions());
+
+        if (!response.ok) {
+            throw new Error(`TMDB API error: ${response.status}`);
+        }
+
+        const data: WatchProvidersResponse = await response.json();
+
+        // Get Turkey (TR) providers, prioritizing flatrate (streaming)
+        const trProviders = data.results?.TR;
+
+        if (!trProviders) {
+            return null;
+        }
+
+        return trProviders;
+    } catch (error) {
+        console.error("Error fetching watch providers:", error);
+        return null;
+    }
+}
+
+/**
+ * Convert TMDB movie to our app's Movie format
+ */
+export function convertTMDBMovie(tmdbMovie: TMDBMovie) {
+    return {
+        id: tmdbMovie.id,
+        title: tmdbMovie.title,
+        posterUrl: tmdbMovie.poster_path
+            ? `${TMDB_IMAGE_BASE}/${POSTER_SIZE}${tmdbMovie.poster_path}`
+            : "/placeholder-poster.jpg",
+        overview: tmdbMovie.overview || "No overview available.",
+        rating: Math.round(tmdbMovie.vote_average * 10) / 10,
+        releaseYear: tmdbMovie.release_date
+            ? new Date(tmdbMovie.release_date).getFullYear()
+            : 0,
+        genres: tmdbMovie.genre_ids
+            .slice(0, 3)
+            .map((id) => GENRE_MAP[id] || "Unknown"),
+    };
+}
+
+/**
+ * Get provider logo URL
+ */
+export function getProviderLogoUrl(logoPath: string): string {
+    return `${TMDB_IMAGE_BASE}/${LOGO_SIZE}${logoPath}`;
+}
+
+/**
+ * Search for movies by query
+ */
+export async function searchMovie(query: string): Promise<TMDBMovie[]> {
+    if (!API_KEY) {
+        console.error("TMDB API key not found");
+        return [];
+    }
+
+    if (!query.trim()) {
+        return [];
+    }
+
+    try {
+        const url = buildUrl("/search/movie", {
+            query: query.trim(),
+            language: "en-US",
+            page: "1",
+            include_adult: "false",
+        });
+
+        const response = await fetch(url, getAuthOptions());
+
+        if (!response.ok) {
+            throw new Error(`TMDB API error: ${response.status}`);
+        }
+
+        const data: TMDBMoviesResponse = await response.json();
+
+        // Filter out movies without posters and sort by popularity
+        return data.results
+            .filter((movie) => movie.poster_path !== null)
+            .slice(0, 10);
+    } catch (error) {
+        console.error("Error searching movies:", error);
+        return [];
+    }
+}
+
+/**
+ * Get movie recommendations based on a seed movie ID
+ */
+export async function getRecommendations(movieId: number): Promise<TMDBMovie[]> {
+    if (!API_KEY) {
+        console.error("TMDB API key not found");
+        return [];
+    }
+
+    try {
+        const url = buildUrl(`/movie/${movieId}/recommendations`, {
+            language: "en-US",
+            page: "1",
+        });
+
+        const response = await fetch(url, getAuthOptions());
+
+        if (!response.ok) {
+            throw new Error(`TMDB API error: ${response.status}`);
+        }
+
+        const data: TMDBMoviesResponse = await response.json();
+
+        // Filter out movies without posters
+        return data.results.filter((movie) => movie.poster_path !== null).slice(0, 20);
+    } catch (error) {
+        console.error("Error fetching recommendations:", error);
+        return [];
+    }
+}
+
+/**
+ * Discover hidden gems - random high-rated movies (7+)
+ */
+export async function discoverHiddenGems(): Promise<TMDBMovie[]> {
+    if (!API_KEY) {
+        console.error("TMDB API key not found");
+        return [];
+    }
+
+    try {
+        // Random page between 1 and 500
+        const randomPage = Math.floor(Math.random() * 500) + 1;
+
+        const url = buildUrl("/discover/movie", {
+            language: "en-US",
+            page: randomPage.toString(),
+            "vote_average.gte": "7",
+            "vote_count.gte": "100", // Ensure enough votes for reliability
+            sort_by: "vote_average.desc",
+            include_adult: "false",
+        });
+
+        const response = await fetch(url, getAuthOptions());
+
+        if (!response.ok) {
+            throw new Error(`TMDB API error: ${response.status}`);
+        }
+
+        const data: TMDBMoviesResponse = await response.json();
+
+        // Filter out movies without posters and shuffle for variety
+        const movies = data.results.filter((movie) => movie.poster_path !== null);
+
+        // Shuffle the results for more randomness
+        return movies.sort(() => Math.random() - 0.5).slice(0, 20);
+    } catch (error) {
+        console.error("Error discovering hidden gems:", error);
+        return [];
+    }
+}
