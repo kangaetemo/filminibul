@@ -7,6 +7,7 @@ export interface TMDBMovie {
     backdrop_path: string | null;
     overview: string;
     vote_average: number;
+    vote_count?: number;
     release_date: string;
     genre_ids: number[];
 }
@@ -106,11 +107,19 @@ function buildUrl(endpoint: string, params: Record<string, string> = {}): string
 }
 
 /**
+ * Get language code for TMDB API
+ */
+export function getTMDBLanguage(lang: "tr" | "en"): string {
+    return lang === "tr" ? "tr-TR" : "en-US";
+}
+
+/**
  * Fetch popular or now playing movies from TMDB
  */
 export async function fetchMovies(
     type: "popular" | "now_playing" = "popular",
-    page: number = 1
+    page: number = 1,
+    language: "tr" | "en" = "tr"
 ): Promise<TMDBMovie[]> {
     if (!API_KEY) {
         console.error("TMDB API key not found. Please set NEXT_PUBLIC_TMDB_API_KEY in .env.local");
@@ -119,7 +128,7 @@ export async function fetchMovies(
 
     try {
         const url = buildUrl(`/movie/${type}`, {
-            language: "en-US",
+            language: getTMDBLanguage(language),
             page: page.toString(),
         });
 
@@ -205,7 +214,7 @@ export function getProviderLogoUrl(logoPath: string): string {
 /**
  * Search for movies by query
  */
-export async function searchMovie(query: string): Promise<TMDBMovie[]> {
+export async function searchMovie(query: string, language: "tr" | "en" = "tr"): Promise<TMDBMovie[]> {
     if (!API_KEY) {
         console.error("TMDB API key not found");
         return [];
@@ -218,7 +227,7 @@ export async function searchMovie(query: string): Promise<TMDBMovie[]> {
     try {
         const url = buildUrl("/search/movie", {
             query: query.trim(),
-            language: "en-US",
+            language: getTMDBLanguage(language),
             page: "1",
             include_adult: "false",
         });
@@ -244,7 +253,7 @@ export async function searchMovie(query: string): Promise<TMDBMovie[]> {
 /**
  * Get movie recommendations based on a seed movie ID
  */
-export async function getRecommendations(movieId: number): Promise<TMDBMovie[]> {
+export async function getRecommendations(movieId: number, language: "tr" | "en" = "tr"): Promise<TMDBMovie[]> {
     if (!API_KEY) {
         console.error("TMDB API key not found");
         return [];
@@ -252,7 +261,7 @@ export async function getRecommendations(movieId: number): Promise<TMDBMovie[]> 
 
     try {
         const url = buildUrl(`/movie/${movieId}/recommendations`, {
-            language: "en-US",
+            language: getTMDBLanguage(language),
             page: "1",
         });
 
@@ -275,7 +284,7 @@ export async function getRecommendations(movieId: number): Promise<TMDBMovie[]> 
 /**
  * Discover hidden gems - random high-rated movies (7+)
  */
-export async function discoverHiddenGems(): Promise<TMDBMovie[]> {
+export async function discoverHiddenGems(language: "tr" | "en" = "tr"): Promise<TMDBMovie[]> {
     if (!API_KEY) {
         console.error("TMDB API key not found");
         return [];
@@ -286,7 +295,7 @@ export async function discoverHiddenGems(): Promise<TMDBMovie[]> {
         const randomPage = Math.floor(Math.random() * 500) + 1;
 
         const url = buildUrl("/discover/movie", {
-            language: "en-US",
+            language: getTMDBLanguage(language),
             page: randomPage.toString(),
             "vote_average.gte": "7",
             "vote_count.gte": "100", // Ensure enough votes for reliability

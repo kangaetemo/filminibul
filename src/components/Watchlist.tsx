@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Trash2, Star, Calendar, Sparkles } from "lucide-react";
 import { Movie } from "@/data/mockData";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 interface WatchlistProps {
     movies: Movie[];
@@ -21,6 +22,8 @@ export default function Watchlist({
     onClear,
     onFindSimilar,
 }: WatchlistProps) {
+    const { t } = useTranslation();
+
     const handleFindSimilar = (movie: Movie) => {
         onFindSimilar(movie);
         onClose();
@@ -50,8 +53,10 @@ export default function Watchlist({
                         {/* Header */}
                         <div className="flex items-center justify-between p-6 border-b border-white/10">
                             <div>
-                                <h2 className="text-xl font-bold text-white">My Watchlist</h2>
-                                <p className="text-white/50 text-sm">{movies.length} movies saved</p>
+                                <h2 className="text-xl font-bold text-white">{t("watchlist.title")}</h2>
+                                <p className="text-white/50 text-sm">
+                                    {movies.length} {t("watchlist.count")}
+                                </p>
                             </div>
                             <button
                                 onClick={onClose}
@@ -68,10 +73,8 @@ export default function Watchlist({
                                     <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-4">
                                         <Star className="w-10 h-10 text-white/20" />
                                     </div>
-                                    <h3 className="text-lg font-semibold text-white/70 mb-2">No movies yet</h3>
-                                    <p className="text-white/40 text-sm">
-                                        Swipe right on movies you like to add them to your watchlist
-                                    </p>
+                                    <h3 className="text-lg font-semibold text-white/70 mb-2">{t("watchlist.empty")}</h3>
+                                    <p className="text-white/40 text-sm">{t("watchlist.emptyHint")}</p>
                                 </div>
                             ) : (
                                 <div className="space-y-3">
@@ -120,7 +123,7 @@ export default function Watchlist({
                                                 <button
                                                     onClick={() => handleFindSimilar(movie)}
                                                     className="w-8 h-8 rounded-full bg-accent/20 hover:bg-accent/30 flex items-center justify-center transition-all group/btn"
-                                                    title="More Like This"
+                                                    title={t("watchlist.findSimilar")}
                                                 >
                                                     <Sparkles className="w-4 h-4 text-accent group-hover/btn:scale-110 transition-transform" />
                                                 </button>
@@ -129,7 +132,7 @@ export default function Watchlist({
                                                 <button
                                                     onClick={() => onRemove(movie.id)}
                                                     className="w-8 h-8 rounded-full bg-pass/10 hover:bg-pass/20 flex items-center justify-center transition-all"
-                                                    title="Remove from Watchlist"
+                                                    title="Remove"
                                                 >
                                                     <X className="w-4 h-4 text-pass" />
                                                 </button>
@@ -145,7 +148,7 @@ export default function Watchlist({
                             <div className="px-4 py-3 bg-accent/5 border-t border-accent/10">
                                 <p className="text-center text-white/50 text-xs flex items-center justify-center gap-2">
                                     <Sparkles className="w-3 h-3 text-accent" />
-                                    Hover a movie and click <span className="text-accent font-medium">✨</span> to find similar
+                                    {t("watchlist.hoverHint")}
                                 </p>
                             </div>
                         )}
@@ -158,7 +161,7 @@ export default function Watchlist({
                                     className="w-full py-3 flex items-center justify-center gap-2 rounded-xl bg-pass/10 hover:bg-pass/20 text-pass font-medium transition-colors"
                                 >
                                     <Trash2 className="w-4 h-4" />
-                                    Clear Watchlist
+                                    {t("watchlist.clear")}
                                 </button>
                             </div>
                         )}

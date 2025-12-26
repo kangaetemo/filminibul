@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "Filminibul - Discover Movies You'll Love",
-    description: "Swipe through movies Tinder-style. Find your next favorite film with our intuitive movie discovery app.",
-    keywords: ["movies", "film", "discover", "swipe", "watchlist", "recommendations"],
+    title: "Filminibul - Bir Sonraki Favorini Keşfet",
+    description: "Tinder tarzı film keşif uygulaması. Kaydırarak bir sonraki favori filmini bul.",
+    keywords: ["film", "sinema", "keşfet", "kaydır", "izleme listesi", "öneriler"],
 };
 
 export default function RootLayout({
@@ -17,9 +18,11 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
+        <html lang="tr">
             <body className={inter.className}>
-                <AuthProvider>{children}</AuthProvider>
+                <LanguageProvider>
+                    <AuthProvider>{children}</AuthProvider>
+                </LanguageProvider>
             </body>
         </html>
     );
