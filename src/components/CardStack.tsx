@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo, memo } from "react";
 import { AnimatePresence, motion, useMotionValue, useTransform, PanInfo, useAnimation } from "framer-motion";
-import { Heart, X, RotateCcw, Search, Loader2 } from "lucide-react";
+import { Heart, X, Search, Loader2 } from "lucide-react";
 import SwipeCard from "./SwipeCard";
 import { Movie } from "@/data/mockData";
 import { useTranslation, useLanguage } from "@/contexts/LanguageContext";
@@ -114,7 +114,7 @@ export default function CardStack({
     onPreFetchNeeded
 }: CardStackProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [swipedItems, setSwipedItems] = useState<string[]>([]);
+
     const [isAnimating, setIsAnimating] = useState(false);
     const [preFetchTriggered, setPreFetchTriggered] = useState(false);
     const { t } = useTranslation();
@@ -177,7 +177,6 @@ export default function CardStack({
     // Reset when movies change
     useEffect(() => {
         setCurrentIndex(0);
-        setSwipedItems([]);
         setPreFetchTriggered(false);
     }, [movies]);
 
@@ -186,7 +185,6 @@ export default function CardStack({
             if (isAnimating) return;
 
             setIsAnimating(true);
-            setSwipedItems((prev) => [...prev, itemId]);
 
             // Only record stats for movies, not ads
             if (!isAd) {
@@ -209,12 +207,7 @@ export default function CardStack({
         [currentIndex, deck, onLike, onPass, isAnimating]
     );
 
-    const handleUndo = useCallback(() => {
-        if (swipedItems.length === 0 || currentIndex === 0 || isAnimating) return;
 
-        setSwipedItems((prev) => prev.slice(0, -1));
-        setCurrentIndex((prev) => prev - 1);
-    }, [swipedItems.length, currentIndex, isAnimating]);
 
     const handleButtonSwipe = useCallback((direction: "left" | "right") => {
         const currentItem = deck[currentIndex];
@@ -309,13 +302,6 @@ export default function CardStack({
                         <X className="w-8 h-8 text-pass group-hover:scale-110 transition-transform" />
                     </button>
 
-                    <button
-                        onClick={handleUndo}
-                        disabled={swipedItems.length === 0 || isAnimating}
-                        className="w-12 h-12 rounded-full bg-card border border-white/10 flex items-center justify-center hover:border-white/30 transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed hover:scale-105"
-                    >
-                        <RotateCcw className="w-5 h-5 text-white/70" />
-                    </button>
 
                     <button
                         onClick={() => handleButtonSwipe("right")}
