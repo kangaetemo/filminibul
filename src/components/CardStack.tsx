@@ -241,13 +241,8 @@ export default function CardStack({
 
             {/* Card Stack Area */}
             <div className="relative w-[320px] h-[480px] flex items-center justify-center">
-                {/* Loading state - wait for data to be ready */}
-                {movies.length === 0 || !deck[currentIndex] ? (
-                    <div className="flex flex-col items-center justify-center">
-                        <Loader2 className="w-12 h-12 text-accent animate-spin mb-4" />
-                        <p className="text-white/60">{t("general.loading")}</p>
-                    </div>
-                ) : isFinished ? (
+                {/* Finished state - shown when all cards are done */}
+                {isFinished ? (
                     <div className="text-center">
                         <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-card flex items-center justify-center">
                             <Heart className="w-10 h-10 text-accent" />
@@ -261,6 +256,12 @@ export default function CardStack({
                             <Search className="w-4 h-4" />
                             {t("cards.findMore")}
                         </button>
+                    </div>
+                ) : movies.length === 0 ? (
+                    /* Loading state - shown while waiting for initial data */
+                    <div className="flex flex-col items-center justify-center">
+                        <Loader2 className="w-12 h-12 text-accent animate-spin mb-4" />
+                        <p className="text-white/60">{t("general.loading")}</p>
                     </div>
                 ) : (
                     <AnimatePresence mode="popLayout">
