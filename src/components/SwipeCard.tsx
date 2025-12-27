@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { motion, useMotionValue, useTransform, PanInfo, useAnimation } from "framer-motion";
 import { Star, Calendar, Film, Tv, Loader2 } from "lucide-react";
 import { Movie } from "@/data/mockData";
@@ -19,7 +19,7 @@ interface SwipeCardProps {
     isAnimating?: boolean;
 }
 
-export default function SwipeCard({ movie, onSwipe, isTop, index, isAnimating = false }: SwipeCardProps) {
+function SwipeCardComponent({ movie, onSwipe, isTop, index, isAnimating = false }: SwipeCardProps) {
     const [isFlipped, setIsFlipped] = useState(false);
     const [providers, setProviders] = useState<WatchProvidersCountry | null>(null);
     const [isLoadingProviders, setIsLoadingProviders] = useState(false);
@@ -57,13 +57,15 @@ export default function SwipeCard({ movie, onSwipe, isTop, index, isAnimating = 
         }
     }, [isFlipped, hasLoadedProviders, movie.id, isTop]);
 
-    // Reset when movie changes
+    // Reset when movie changes (including undo)
     useEffect(() => {
         hasSwipedRef.current = false;
         setIsSwiping(false);
-    }, [movie.id]);
+        // Reset animation controls to bring card back to center
+        controls.set({ x: 0, y: 0, rotate: 0, scale: 1, opacity: 1 });
+    }, [movie.id, controls]);
 
-    const handleDragEnd = async (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const handleDragEnd = useCallback(async (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
         // Prevent multiple swipes
         if (hasSwipedRef.current || isSwiping || isAnimating) return;
 
@@ -92,13 +94,13 @@ export default function SwipeCard({ movie, onSwipe, isTop, index, isAnimating = 
                 transition: { type: "spring", stiffness: 500, damping: 25 }
             });
         }
-    };
+    }, [controls, onSwipe, isSwiping, isAnimating]);
 
-    const handleCardClick = () => {
+    const handleCardClick = useCallback(() => {
         if (isTop && !isSwiping && !isAnimating) {
-            setIsFlipped(!isFlipped);
+            setIsFlipped(prev => !prev);
         }
-    };
+    }, [isTop, isSwiping, isAnimating]);
 
     const stackOffset = index * 10;
     const stackScale = 1 - index * 0.05;
@@ -122,6 +124,9 @@ export default function SwipeCard({ movie, onSwipe, isTop, index, isAnimating = 
                 top: isTop ? 0 : stackOffset,
                 transformPerspective: 1200,
                 pointerEvents: isSwiping ? "none" : "auto",
+                // GPU acceleration
+                willChange: isTop ? "transform" : "auto",
+                transform: "translate3d(0,0,0)",
             }}
             animate={controls}
             drag={canDrag ? "x" : false}
@@ -129,10 +134,7 @@ export default function SwipeCard({ movie, onSwipe, isTop, index, isAnimating = 
             dragElastic={0.9}
             onDragEnd={handleDragEnd}
             whileDrag={{ cursor: "grabbing" }}
-            whileHover={canDrag ? { scale: 1.02 } : {}}
-            whileTap={canDrag ? { scale: 0.98 } : {}}
             onClick={handleCardClick}
-            initial={index === 0 ? { scale: 0.9, opacity: 0 } : {}}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
         >
             {/* Like Indicator */}
@@ -169,33 +171,40 @@ export default function SwipeCard({ movie, onSwipe, isTop, index, isAnimating = 
                 >
                     {/* Front Face */}
                     <div className="absolute w-full h-full rounded-3xl overflow-hidden shadow-glow-card" style={{ backfaceVisibility: "hidden" }}>
-                        <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${movie.posterUrl})` }}>
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                        {/* Poster Image with proper loading hints */}
+                        <img
+                            src={movie.posterUrl}
+                            alt={movie.title}
+                            loading={isTop ? "eager" : "lazy"}
+                            decoding="async"
+                            className="absolute inset-0 w-full h-full object-cover"
+                            style={{ transform: "translate3d(0,0,0)" }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
-                            {/* Tap for Info Visual Cue */}
-                            {isTop && !isFlipped && (
-                                <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 animate-pulse">
-                                    <span className="text-white/80 text-xs">ℹ️ Detay için dokun</span>
-                                </div>
-                            )}
+                        {/* Tap for Info Visual Cue */}
+                        {isTop && !isFlipped && (
+                            <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/50 border border-white/20 animate-pulse">
+                                <span className="text-white/80 text-xs">ℹ️ Detay için dokun</span>
+                            </div>
+                        )}
 
-                            <div className="absolute bottom-0 left-0 right-0 p-6">
-                                <h2 className="text-2xl font-bold text-white mb-2">{movie.title}</h2>
-                                <div className="flex items-center gap-4 text-white/80 text-sm">
-                                    <div className="flex items-center gap-1">
-                                        <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                                        <span>{movie.rating}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                        <Calendar className="w-4 h-4" />
-                                        <span>{movie.releaseYear}</span>
-                                    </div>
+                        <div className="absolute bottom-0 left-0 right-0 p-6">
+                            <h2 className="text-2xl font-bold text-white mb-2">{movie.title}</h2>
+                            <div className="flex items-center gap-4 text-white/80 text-sm">
+                                <div className="flex items-center gap-1">
+                                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                                    <span>{movie.rating}</span>
                                 </div>
-                                <div className="flex flex-wrap gap-2 mt-3">
-                                    {movie.genres.slice(0, 3).map((genre) => (
-                                        <span key={genre} className="px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full text-xs text-white/90">{genre}</span>
-                                    ))}
+                                <div className="flex items-center gap-1">
+                                    <Calendar className="w-4 h-4" />
+                                    <span>{movie.releaseYear}</span>
                                 </div>
+                            </div>
+                            <div className="flex flex-wrap gap-2 mt-3">
+                                {movie.genres.slice(0, 3).map((genre) => (
+                                    <span key={genre} className="px-3 py-1 bg-white/10 rounded-full text-xs text-white/90">{genre}</span>
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -259,3 +268,16 @@ export default function SwipeCard({ movie, onSwipe, isTop, index, isAnimating = 
         </motion.div>
     );
 }
+
+// Memoize to prevent re-renders when parent updates
+const SwipeCard = memo(SwipeCardComponent, (prevProps, nextProps) => {
+    // Only re-render if these props change
+    return (
+        prevProps.movie.id === nextProps.movie.id &&
+        prevProps.isTop === nextProps.isTop &&
+        prevProps.index === nextProps.index &&
+        prevProps.isAnimating === nextProps.isAnimating
+    );
+});
+
+export default SwipeCard;

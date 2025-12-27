@@ -162,8 +162,8 @@ export default function MovieOfTheDay({ onBack, onAddToWatchlist }: MovieOfTheDa
         // Just for stats, no action needed
     };
 
-    // Loading state
-    if (isLoading || !state) {
+    // Loading state - wait for BOTH state AND movie data to be ready
+    if (isLoading || !state || (state.status === "pending" && !movie)) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh]">
                 <motion.div

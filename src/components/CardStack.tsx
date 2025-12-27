@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect, useMemo } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo, memo } from "react";
 import { AnimatePresence, motion, useMotionValue, useTransform, PanInfo, useAnimation } from "framer-motion";
-import { Heart, X, RotateCcw, Search, Info } from "lucide-react";
+import { Heart, X, RotateCcw, Search, Loader2 } from "lucide-react";
 import SwipeCard from "./SwipeCard";
 import { Movie } from "@/data/mockData";
 import { useTranslation, useLanguage } from "@/contexts/LanguageContext";
@@ -23,7 +23,7 @@ type DeckItem =
     | { type: "ad"; id: string };
 
 // Swipeable Ad Card Component - same size as movie cards
-function SwipeableAdCard({
+const SwipeableAdCard = memo(function SwipeableAdCard({
     onSwipe,
     isTop,
     index
@@ -102,7 +102,7 @@ function SwipeableAdCard({
             </div>
         </motion.div>
     );
-}
+});
 
 export default function CardStack({
     movies,
@@ -142,9 +142,9 @@ export default function CardStack({
         return items;
     }, [movies]);
 
-    // Current visible items (top 3)
+    // STRICT WINDOWING: Render ONLY current card + next card (2 max)
     const currentItems = useMemo(() =>
-        deck.slice(currentIndex, currentIndex + 3),
+        deck.slice(currentIndex, currentIndex + 2),
         [deck, currentIndex]
     );
 
@@ -216,13 +216,13 @@ export default function CardStack({
         setCurrentIndex((prev) => prev - 1);
     }, [swipedItems.length, currentIndex, isAnimating]);
 
-    const handleButtonSwipe = (direction: "left" | "right") => {
+    const handleButtonSwipe = useCallback((direction: "left" | "right") => {
         const currentItem = deck[currentIndex];
         if (!currentItem) return;
 
         const itemId = currentItem.type === "movie" ? `movie-${currentItem.movie.id}` : currentItem.id;
         handleSwipe(direction, itemId, currentItem.type === "ad");
-    };
+    }, [deck, currentIndex, handleSwipe]);
 
     // Check if we've gone through all cards (including final ad)
     const isFinished = currentIndex >= deck.length;
@@ -248,7 +248,13 @@ export default function CardStack({
 
             {/* Card Stack Area */}
             <div className="relative w-[320px] h-[480px] flex items-center justify-center">
-                {isFinished ? (
+                {/* Loading state - wait for data to be ready */}
+                {movies.length === 0 || !deck[currentIndex] ? (
+                    <div className="flex flex-col items-center justify-center">
+                        <Loader2 className="w-12 h-12 text-accent animate-spin mb-4" />
+                        <p className="text-white/60">{t("general.loading")}</p>
+                    </div>
+                ) : isFinished ? (
                     <div className="text-center">
                         <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-card flex items-center justify-center">
                             <Heart className="w-10 h-10 text-accent" />

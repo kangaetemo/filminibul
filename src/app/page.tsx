@@ -167,24 +167,19 @@ export default function Home() {
 
     return (
         <main className="min-h-screen bg-background relative overflow-hidden">
-            {/* Background Gradient Effects - Synced with current movie */}
+            {/* Background Gradient Effects - Static to avoid re-renders */}
             <div className="fixed inset-0 pointer-events-none">
-                <AnimatePresence mode="wait">
-                    {backgroundPoster && view === "swipe" && (
-                        <motion.div
-                            key={backgroundPoster}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 0.1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.5 }}
-                            className="absolute inset-0 bg-cover bg-center blur-3xl scale-110"
-                            style={{ backgroundImage: `url(${backgroundPoster})` }}
-                        />
-                    )}
-                </AnimatePresence>
+                {/* Simple static gradient background - no per-movie updates */}
+                <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-accent/5" />
                 <div className="absolute inset-0 bg-background/80" />
-                <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-accent/10 rounded-full blur-[120px] animate-gentle-pulse" />
-                <div className="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] bg-like/10 rounded-full blur-[100px] animate-gentle-pulse" style={{ animationDelay: "1.5s" }} />
+                <div
+                    className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-accent/10 rounded-full blur-[120px]"
+                    style={{ transform: "translate3d(0,0,0)" }}
+                />
+                <div
+                    className="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] bg-like/10 rounded-full blur-[100px]"
+                    style={{ transform: "translate3d(0,0,0)" }}
+                />
             </div>
 
             {/* Global Header */}

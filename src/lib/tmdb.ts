@@ -290,31 +290,47 @@ export async function discoverHiddenGems(language: "tr" | "en" = "tr"): Promise<
         return [];
     }
 
-    try {
-        // Random page between 1 and 500
-        const randomPage = Math.floor(Math.random() * 500) + 1;
-
+    const fetchPage = async (page: number): Promise<TMDBMoviesResponse> => {
         const url = buildUrl("/discover/movie", {
             language: getTMDBLanguage(language),
-            page: randomPage.toString(),
+            page: page.toString(),
             "vote_average.gte": "7",
-            "vote_count.gte": "100", // Ensure enough votes for reliability
+            "vote_count.gte": "100",
             sort_by: "vote_average.desc",
             include_adult: "false",
         });
 
         const response = await fetch(url, getAuthOptions());
-
         if (!response.ok) {
             throw new Error(`TMDB API error: ${response.status}`);
         }
+        return response.json();
+    };
 
-        const data: TMDBMoviesResponse = await response.json();
+    try {
+        // First, fetch page 1 to get total_pages
+        const firstPageData = await fetchPage(1);
+        const totalPages = Math.min(firstPageData.total_pages, 500); // TMDB max is 500
 
-        // Filter out movies without posters and shuffle for variety
-        const movies = data.results.filter((movie) => movie.poster_path !== null);
+        let movies = firstPageData.results.filter((movie) => movie.poster_path !== null);
 
-        // Shuffle the results for more randomness
+        // If we have enough pages, try a random one for variety
+        if (totalPages > 1 && movies.length < 20) {
+            const randomPage = Math.floor(Math.random() * Math.min(totalPages, 100)) + 1;
+            if (randomPage !== 1) {
+                try {
+                    const randomPageData = await fetchPage(randomPage);
+                    const randomMovies = randomPageData.results.filter((movie) => movie.poster_path !== null);
+                    if (randomMovies.length > 0) {
+                        movies = randomMovies;
+                    }
+                } catch {
+                    // Fallback to page 1 results if random page fails
+                }
+            }
+        }
+
+        // Shuffle and return up to 20 movies
         return movies.sort(() => Math.random() - 0.5).slice(0, 20);
     } catch (error) {
         console.error("Error discovering hidden gems:", error);
