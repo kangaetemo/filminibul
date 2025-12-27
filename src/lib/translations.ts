@@ -62,6 +62,17 @@ export const translations = {
         // Ads
         "ad.placeholder": "Reklam Alanı",
 
+        // Movie of the Day
+        "motd.title": "Günün Filmi",
+        "motd.button": "🎬 Günün Filmi",
+        "motd.comeback": "Yarın Görüşürüz!",
+        "motd.comebackHint": "Yarın yeni bir film ile seni bekliyoruz",
+        "motd.passed": "Beğenmedin mi? Sorun değil!",
+        "motd.passedHint": "Yarın başka bir film ile tekrar dene",
+        "motd.recommendations": "Beğendiğin filme göre öneriler",
+        "motd.alreadySwiped": "Bugün zaten karar verdin!",
+        "motd.nextReset": "Sıfırlanma:",
+
         // General
         "general.loading": "Yükleniyor...",
         "general.error": "Bir hata oluştu",
@@ -126,6 +137,17 @@ export const translations = {
 
         // Ads
         "ad.placeholder": "Advertisement",
+
+        // Movie of the Day
+        "motd.title": "Movie of the Day",
+        "motd.button": "🎬 Movie of the Day",
+        "motd.comeback": "See You Tomorrow!",
+        "motd.comebackHint": "Come back tomorrow for a new movie",
+        "motd.passed": "Not your taste? No worries!",
+        "motd.passedHint": "Try again tomorrow with a different pick",
+        "motd.recommendations": "Based on your pick",
+        "motd.alreadySwiped": "You've already decided today!",
+        "motd.nextReset": "Resets in:",
 
         // General
         "general.loading": "Loading...",

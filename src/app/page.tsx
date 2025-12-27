@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useCallback, useTransition } from "react";
+import { useState, useCallback, useTransition, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Film, Bookmark, Sparkles, ArrowLeft, BarChart3 } from "lucide-react";
 import LandingScreen from "@/components/LandingScreen";
 import CardStack from "@/components/CardStack";
+import MovieOfTheDay from "@/components/MovieOfTheDay";
 import Watchlist from "@/components/Watchlist";
 import StatsPanel from "@/components/StatsPanel";
 import PageTransition from "@/components/PageTransition";
 import UserMenu from "@/components/UserMenu";
 import LanguageToggle from "@/components/LanguageToggle";
-import AdBanner from "@/components/AdBanner";
 import Footer from "@/components/Footer";
 import { Movie } from "@/data/mockData";
 import { useWatchlist } from "@/hooks/useWatchlist";
@@ -22,11 +22,9 @@ import {
     getRecommendations,
     discoverHiddenGems,
     convertTMDBMovie,
-    TMDB_IMAGE_BASE,
-    POSTER_SIZE,
 } from "@/lib/tmdb";
 
-type AppView = "search" | "swipe";
+type AppView = "search" | "swipe" | "motd";
 
 export default function Home() {
     const [view, setView] = useState<AppView>("search");
@@ -37,9 +35,11 @@ export default function Home() {
     const [isWatchlistOpen, setIsWatchlistOpen] = useState(false);
     const [isStatsOpen, setIsStatsOpen] = useState(false);
     const [currentMovieIndex, setCurrentMovieIndex] = useState(0);
-    const [swipeCount, setSwipeCount] = useState(0);
 
-    // Use transition for non-blocking state updates
+    // Pre-fetch state
+    const [preFetchedMovies, setPreFetchedMovies] = useState<Movie[]>([]);
+    const isPreFetching = useRef(false);
+
     const [isPending, startTransition] = useTransition();
 
     const { watchlist, addToWatchlist, removeFromWatchlist, clearWatchlist } = useWatchlist();
@@ -52,7 +52,39 @@ export default function Home() {
     const currentMovie = movies[currentMovieIndex];
     const backgroundPoster = currentMovie?.posterUrl;
 
-    // Core function to load recommendations based on a seed movie
+    // Background pre-fetch function
+    const handlePreFetchNeeded = useCallback(async () => {
+        if (isPreFetching.current || preFetchedMovies.length > 0) return;
+
+        isPreFetching.current = true;
+        console.log("Pre-fetching more movies in background...");
+
+        try {
+            const newMovies = await discoverHiddenGems(language);
+            const converted = newMovies.map(convertTMDBMovie);
+
+            // Filter out duplicates
+            const existingIds = new Set(movies.map(m => m.id));
+            const uniqueNewMovies = converted.filter(m => !existingIds.has(m.id));
+
+            setPreFetchedMovies(uniqueNewMovies);
+            console.log(`Pre-fetched ${uniqueNewMovies.length} new movies`);
+        } finally {
+            isPreFetching.current = false;
+        }
+    }, [language, movies, preFetchedMovies.length]);
+
+    // Append pre-fetched movies when current batch is done
+    const appendPreFetchedMovies = useCallback(() => {
+        if (preFetchedMovies.length > 0) {
+            startTransition(() => {
+                setMovies(prev => [...prev, ...preFetchedMovies]);
+                setPreFetchedMovies([]);
+            });
+        }
+    }, [preFetchedMovies]);
+
+    // Core function to load recommendations
     const loadMoviesBySeed = useCallback(async (seedMovie: { id: number; title: string }) => {
         setIsLoading(true);
         setSeedMovieTitle(seedMovie.title);
@@ -61,7 +93,6 @@ export default function Home() {
             const recommendations = await getRecommendations(seedMovie.id, language);
 
             if (recommendations.length === 0) {
-                console.log("No recommendations found, trying discover...");
                 const discoveredMovies = await discoverHiddenGems(language);
                 startTransition(() => {
                     setMovies(discoveredMovies.map(convertTMDBMovie));
@@ -73,7 +104,7 @@ export default function Home() {
             }
 
             setCurrentMovieIndex(0);
-            setSwipeCount(0);
+            setPreFetchedMovies([]);
             setDirection(1);
             setView("swipe");
         } finally {
@@ -95,7 +126,7 @@ export default function Home() {
                 setMovies(hiddenGems.map(convertTMDBMovie));
             });
             setCurrentMovieIndex(0);
-            setSwipeCount(0);
+            setPreFetchedMovies([]);
             setDirection(1);
             setView("swipe");
         } finally {
@@ -109,7 +140,12 @@ export default function Home() {
         setMovies([]);
         setSeedMovieTitle(undefined);
         setCurrentMovieIndex(0);
-        setSwipeCount(0);
+        setPreFetchedMovies([]);
+    }, []);
+
+    const handleMovieOfTheDay = useCallback(() => {
+        setDirection(1);
+        setView("motd");
     }, []);
 
     const handleFindSimilar = useCallback(async (movie: Movie) => {
@@ -119,21 +155,15 @@ export default function Home() {
     const handleLike = useCallback((movie: Movie) => {
         addToWatchlist(movie);
         recordLike(movie);
-        setSwipeCount((prev) => prev + 1);
     }, [addToWatchlist, recordLike]);
 
     const handlePass = useCallback((movie: Movie) => {
         recordPass(movie);
-        setSwipeCount((prev) => prev + 1);
     }, [recordPass]);
 
-    // Callback to sync current movie index from CardStack
     const handleCurrentMovieChange = useCallback((index: number) => {
         setCurrentMovieIndex(index);
     }, []);
-
-    // Show interstitial ad every 10 swipes
-    const showInterstitialAd = swipeCount > 0 && swipeCount % 10 === 0;
 
     return (
         <main className="min-h-screen bg-background relative overflow-hidden">
@@ -197,21 +227,16 @@ export default function Home() {
                     animate={{ opacity: 1, x: 0 }}
                     className="flex items-center gap-2 sm:gap-3"
                 >
-                    {/* Language Toggle */}
                     <LanguageToggle />
 
-                    {/* Stats Button (only for logged in users) */}
-                    {user && (
-                        <button
-                            onClick={() => setIsStatsOpen(true)}
-                            className="w-10 h-10 rounded-full glass border border-white/10 hover:border-accent/50 flex items-center justify-center transition-all group"
-                            title={t("header.stats")}
-                        >
-                            <BarChart3 className="w-4 h-4 text-white/70 group-hover:text-accent transition-colors" />
-                        </button>
-                    )}
+                    <button
+                        onClick={() => setIsStatsOpen(true)}
+                        className="w-10 h-10 rounded-full glass border border-white/10 hover:border-accent/50 flex items-center justify-center transition-all group"
+                        title={t("header.stats")}
+                    >
+                        <BarChart3 className="w-4 h-4 text-white/70 group-hover:text-accent transition-colors" />
+                    </button>
 
-                    {/* Watchlist button */}
                     <button
                         onClick={() => setIsWatchlistOpen(true)}
                         className="relative flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full glass border border-white/10 hover:border-accent/50 transition-all group"
@@ -227,20 +252,27 @@ export default function Home() {
                         )}
                     </button>
 
-                    {/* User Menu */}
                     <UserMenu />
                 </motion.div>
             </header>
 
             {/* Main Content with Page Transitions */}
-            <div className="relative z-10">
+            <div className="relative z-10 pb-12">
                 <PageTransition viewKey={view} direction={direction}>
                     {view === "search" ? (
                         <LandingScreen
                             onMovieSelect={handleMovieSelect}
                             onSurpriseMe={handleSurpriseMe}
+                            onMovieOfTheDay={handleMovieOfTheDay}
                             isLoading={isLoading || isPending}
                         />
+                    ) : view === "motd" ? (
+                        <div className="flex flex-col items-center justify-center px-4 py-4">
+                            <MovieOfTheDay
+                                onBack={handleSearchAgain}
+                                onAddToWatchlist={addToWatchlist}
+                            />
+                        </div>
                     ) : (
                         <div className="flex flex-col items-center justify-center px-4 py-4">
                             <CardStack
@@ -250,20 +282,10 @@ export default function Home() {
                                 onPass={handlePass}
                                 onSearchAgain={handleSearchAgain}
                                 onCurrentMovieChange={handleCurrentMovieChange}
+                                onPreFetchNeeded={handlePreFetchNeeded}
                             />
 
-                            {/* Interstitial Ad (every 10 swipes) */}
-                            {showInterstitialAd && (
-                                <motion.div
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    className="mt-4"
-                                >
-                                    <AdBanner variant="interstitial" />
-                                </motion.div>
-                            )}
-
-                            {/* Instructions */}
+                            {/* Swipe Hint */}
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
@@ -276,13 +298,6 @@ export default function Home() {
                     )}
                 </PageTransition>
             </div>
-
-            {/* Bottom Ad Banner (swipe view only) */}
-            {view === "swipe" && (
-                <div className="fixed bottom-0 left-0 right-0 z-20 pb-2">
-                    <AdBanner variant="banner" />
-                </div>
-            )}
 
             {/* Watchlist Panel */}
             <Watchlist

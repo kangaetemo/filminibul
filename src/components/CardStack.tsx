@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { Heart, X, RotateCcw, Search } from "lucide-react";
+import { AnimatePresence, motion, useMotionValue, useTransform, PanInfo, useAnimation } from "framer-motion";
+import { Heart, X, RotateCcw, Search, Info } from "lucide-react";
 import SwipeCard from "./SwipeCard";
 import { Movie } from "@/data/mockData";
-import { useTranslation } from "@/contexts/LanguageContext";
+import { useTranslation, useLanguage } from "@/contexts/LanguageContext";
 
 interface CardStackProps {
     movies: Movie[];
@@ -14,50 +14,92 @@ interface CardStackProps {
     onPass: (movie: Movie) => void;
     onSearchAgain: () => void;
     onCurrentMovieChange?: (index: number) => void;
+    onPreFetchNeeded?: () => void; // Called when we need more movies
 }
 
-// Card-sized Ad Component
-function CardAd({ onDismiss }: { onDismiss: () => void }) {
-    const { t, language } = useTranslation();
+// Type for items in the deck (movie or ad)
+type DeckItem =
+    | { type: "movie"; movie: Movie }
+    | { type: "ad"; id: string };
+
+// Swipeable Ad Card Component - same size as movie cards
+function SwipeableAdCard({
+    onSwipe,
+    isTop,
+    index
+}: {
+    onSwipe: (direction: "left" | "right") => void;
+    isTop: boolean;
+    index: number;
+}) {
+    const { language } = useLanguage();
+    const controls = useAnimation();
+    const x = useMotionValue(0);
+    const y = useMotionValue(0);
+    const rotate = useTransform(x, [-300, 0, 300], [-30, 0, 30]);
+
+    const handleDragEnd = async (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+        const threshold = 100;
+        const velocity = info.velocity.x;
+
+        if (info.offset.x > threshold || velocity > 500) {
+            await controls.start({ x: 500, opacity: 0, transition: { duration: 0.3 } });
+            onSwipe("right");
+        } else if (info.offset.x < -threshold || velocity < -500) {
+            await controls.start({ x: -500, opacity: 0, transition: { duration: 0.3 } });
+            onSwipe("left");
+        } else {
+            controls.start({ x: 0, y: 0, rotate: 0, transition: { type: "spring", stiffness: 500, damping: 25 } });
+        }
+    };
+
+    const stackOffset = index * 10;
+    const stackScale = 1 - index * 0.05;
 
     return (
         <motion.div
-            initial={{ scale: 0.8, opacity: 0, rotateY: -90 }}
-            animate={{ scale: 1, opacity: 1, rotateY: 0 }}
-            exit={{ scale: 0.8, opacity: 0, x: 300 }}
-            transition={{ type: "spring", damping: 20, stiffness: 200 }}
-            className="absolute w-[320px] h-[480px] rounded-3xl bg-gradient-to-br from-card to-background border border-white/10 flex flex-col items-center justify-center p-6 shadow-2xl"
-            style={{ perspective: 1000 }}
+            drag={isTop ? "x" : false}
+            dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+            dragElastic={0.9}
+            onDragEnd={handleDragEnd}
+            animate={controls}
+            style={{
+                x: isTop ? x : 0,
+                y: isTop ? y : 0,
+                rotate: isTop ? rotate : 0,
+                scale: stackScale,
+                zIndex: 10 - index,
+                top: isTop ? 0 : stackOffset,
+            }}
+            initial={{ scale: 0.9, opacity: 0 }}
+            whileInView={{ scale: stackScale, opacity: 1 }}
+            className="absolute w-[320px] h-[480px] rounded-3xl bg-gradient-to-br from-accent/30 via-card to-like/20 border-2 border-accent/40 flex flex-col items-center justify-center p-6 shadow-2xl cursor-grab active:cursor-grabbing"
         >
-            {/* Ad Content */}
+            {/* AD Content */}
             <div className="w-full h-full flex flex-col items-center justify-center">
-                <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mb-4">
-                    <span className="text-accent text-2xl font-bold">AD</span>
+                <div className="w-20 h-20 rounded-2xl bg-accent/30 flex items-center justify-center mb-6 border-2 border-accent/50">
+                    <span className="text-accent text-3xl font-bold">AD</span>
                 </div>
 
-                <h3 className="text-white/80 text-xl font-semibold mb-2">
-                    {language === "tr" ? "Reklam Alanı" : "Advertisement"}
+                <h3 className="text-white text-2xl font-bold mb-3">
+                    {language === "tr" ? "Sponsor" : "Sponsored"}
                 </h3>
 
-                <p className="text-white/40 text-sm text-center mb-6 max-w-[200px]">
+                <p className="text-white/60 text-sm text-center mb-6 max-w-[220px]">
                     {language === "tr"
                         ? "Bu alan sponsorlu içerik için ayrılmıştır"
                         : "This space is reserved for sponsored content"
                     }
                 </p>
 
-                <div className="w-[280px] h-[200px] bg-white/5 rounded-xl flex items-center justify-center border border-dashed border-white/10">
-                    <span className="text-white/20 text-xs">300×250</span>
+                <div className="w-[280px] h-[180px] bg-white/10 rounded-xl flex items-center justify-center border border-dashed border-white/30">
+                    <span className="text-white/40 text-sm">300×250</span>
                 </div>
-            </div>
 
-            {/* Dismiss hint */}
-            <button
-                onClick={onDismiss}
-                className="absolute bottom-4 left-0 right-0 text-center text-white/40 text-sm hover:text-white/60 transition-colors"
-            >
-                {language === "tr" ? "Devam etmek için tıkla →" : "Click to continue →"}
-            </button>
+                <p className="text-white/50 text-xs mt-6 animate-pulse">
+                    {language === "tr" ? "← Geçmek için kaydır →" : "← Swipe to continue →"}
+                </p>
+            </div>
         </motion.div>
     );
 }
@@ -68,94 +110,131 @@ export default function CardStack({
     onLike,
     onPass,
     onSearchAgain,
-    onCurrentMovieChange
+    onCurrentMovieChange,
+    onPreFetchNeeded
 }: CardStackProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [swipedMovies, setSwipedMovies] = useState<{ movie: Movie; direction: "left" | "right" }[]>([]);
+    const [swipedItems, setSwipedItems] = useState<string[]>([]);
     const [isAnimating, setIsAnimating] = useState(false);
-    const [showAd, setShowAd] = useState(false);
-    const [adShownAt10, setAdShownAt10] = useState(false);
+    const [preFetchTriggered, setPreFetchTriggered] = useState(false);
     const { t } = useTranslation();
 
-    // Debounce ref to prevent spam clicks
-    const lastSwipeTime = useRef(0);
-    const DEBOUNCE_MS = 350;
 
-    // Memoize current movies for performance
-    const currentMovies = useMemo(() =>
-        movies.slice(currentIndex, currentIndex + 3),
-        [movies, currentIndex]
-    );
 
-    // Notify parent of current movie changes for background sync
-    useEffect(() => {
-        onCurrentMovieChange?.(currentIndex);
-    }, [currentIndex, onCurrentMovieChange]);
+    // Build deck with ads inserted after 10th movie and at end
+    const deck = useMemo((): DeckItem[] => {
+        const items: DeckItem[] = [];
 
-    // Reset index when movies change (new recommendations)
-    useEffect(() => {
-        setCurrentIndex(0);
-        setSwipedMovies([]);
-        setAdShownAt10(false);
-        setShowAd(false);
+        movies.forEach((movie, i) => {
+            items.push({ type: "movie", movie });
+
+            // Insert ad after 10th movie (index 9)
+            if (i === 9 && movies.length > 10) {
+                items.push({ type: "ad", id: "ad-after-10" });
+            }
+        });
+
+        // Add ad at the very end
+        if (movies.length > 0) {
+            items.push({ type: "ad", id: "ad-end" });
+        }
+
+        return items;
     }, [movies]);
 
-    // Show ad after 10th movie (only once per session)
-    useEffect(() => {
-        if (currentIndex === 10 && !adShownAt10 && movies.length > 10) {
-            setShowAd(true);
-            setAdShownAt10(true);
-        }
-    }, [currentIndex, adShownAt10, movies.length]);
+    // Current visible items (top 3)
+    const currentItems = useMemo(() =>
+        deck.slice(currentIndex, currentIndex + 3),
+        [deck, currentIndex]
+    );
 
-    const handleDismissAd = () => {
-        setShowAd(false);
-    };
+    // Get current movie for background sync (skip ads)
+    const currentMovieForBackground = useMemo(() => {
+        for (let i = currentIndex; i < deck.length; i++) {
+            const item = deck[i];
+            if (item.type === "movie") return item.movie;
+        }
+        return null;
+    }, [deck, currentIndex]);
+
+    // Notify parent of current movie changes
+    useEffect(() => {
+        if (currentMovieForBackground) {
+            const movieIndex = movies.findIndex(m => m.id === currentMovieForBackground.id);
+            onCurrentMovieChange?.(movieIndex);
+        }
+    }, [currentMovieForBackground, movies, onCurrentMovieChange]);
+
+    // Pre-fetch when reaching 15th card (or 5 cards before end)
+    useEffect(() => {
+        const remainingCards = deck.length - currentIndex;
+        if (remainingCards <= 5 && !preFetchTriggered && movies.length > 0) {
+            setPreFetchTriggered(true);
+            onPreFetchNeeded?.();
+        }
+    }, [currentIndex, deck.length, preFetchTriggered, onPreFetchNeeded, movies.length]);
+
+    // Reset when movies change
+    useEffect(() => {
+        setCurrentIndex(0);
+        setSwipedItems([]);
+        setPreFetchTriggered(false);
+    }, [movies]);
 
     const handleSwipe = useCallback(
-        (direction: "left" | "right") => {
-            const now = Date.now();
+        (direction: "left" | "right", itemId: string, isAd: boolean = false) => {
+            if (isAnimating) return;
 
-            if (isAnimating || showAd || now - lastSwipeTime.current < DEBOUNCE_MS) {
-                return;
-            }
-
-            const movie = movies[currentIndex];
-            if (!movie) return;
-
-            lastSwipeTime.current = now;
             setIsAnimating(true);
+            setSwipedItems((prev) => [...prev, itemId]);
 
-            setSwipedMovies((prev) => [...prev, { movie, direction }]);
-
-            if (direction === "right") {
-                onLike(movie);
-            } else {
-                onPass(movie);
+            // Only record stats for movies, not ads
+            if (!isAd) {
+                const currentItem = deck[currentIndex];
+                if (currentItem?.type === "movie") {
+                    if (direction === "right") {
+                        onLike(currentItem.movie);
+                    } else {
+                        onPass(currentItem.movie);
+                    }
+                }
             }
 
-            requestAnimationFrame(() => {
-                setTimeout(() => {
-                    setCurrentIndex((prev) => prev + 1);
-                    setIsAnimating(false);
-                }, 250);
-            });
+            // Quick transition for smooth swiping
+            setTimeout(() => {
+                setCurrentIndex((prev) => prev + 1);
+                setIsAnimating(false);
+            }, 100);
         },
-        [currentIndex, movies, onLike, onPass, isAnimating, showAd]
+        [currentIndex, deck, onLike, onPass, isAnimating]
     );
 
     const handleUndo = useCallback(() => {
-        if (swipedMovies.length === 0 || currentIndex === 0 || isAnimating || showAd) return;
+        if (swipedItems.length === 0 || currentIndex === 0 || isAnimating) return;
 
-        setSwipedMovies((prev) => prev.slice(0, -1));
+        setSwipedItems((prev) => prev.slice(0, -1));
         setCurrentIndex((prev) => prev - 1);
-    }, [swipedMovies.length, currentIndex, isAnimating, showAd]);
+    }, [swipedItems.length, currentIndex, isAnimating]);
 
     const handleButtonSwipe = (direction: "left" | "right") => {
-        handleSwipe(direction);
+        const currentItem = deck[currentIndex];
+        if (!currentItem) return;
+
+        const itemId = currentItem.type === "movie" ? `movie-${currentItem.movie.id}` : currentItem.id;
+        handleSwipe(direction, itemId, currentItem.type === "ad");
     };
 
-    const isFinished = currentIndex >= movies.length;
+    // Check if we've gone through all cards (including final ad)
+    const isFinished = currentIndex >= deck.length;
+
+    // Count actual movies swiped (not ads)
+    const moviesSwiped = useMemo(() => {
+        let count = 0;
+        for (let i = 0; i < currentIndex && i < deck.length; i++) {
+            if (deck[i].type === "movie") count++;
+        }
+        return count;
+    }, [currentIndex, deck]);
 
     return (
         <div className="flex flex-col items-center gap-6">
@@ -171,20 +250,6 @@ export default function CardStack({
             <div className="relative w-[320px] h-[480px] flex items-center justify-center">
                 {isFinished ? (
                     <div className="text-center">
-                        {/* End-of-stack Ad - Card sized */}
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="mb-4"
-                        >
-                            <div className="w-[280px] h-[180px] mx-auto bg-white/5 border border-white/10 rounded-xl flex flex-col items-center justify-center">
-                                <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center mb-2">
-                                    <span className="text-accent text-sm font-bold">AD</span>
-                                </div>
-                                <p className="text-white/30 text-xs">{t("ad.placeholder")}</p>
-                            </div>
-                        </motion.div>
-
                         <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-card flex items-center justify-center">
                             <Heart className="w-10 h-10 text-accent" />
                         </div>
@@ -200,28 +265,35 @@ export default function CardStack({
                     </div>
                 ) : (
                     <AnimatePresence mode="popLayout">
-                        {/* Show Ad Card when triggered */}
-                        {showAd && (
-                            <CardAd key="ad-card" onDismiss={handleDismissAd} />
-                        )}
-
-                        {/* Regular Movie Cards */}
-                        {!showAd && currentMovies.map((movie, index) => (
-                            <SwipeCard
-                                key={movie.id}
-                                movie={movie}
-                                onSwipe={handleSwipe}
-                                isTop={index === 0}
-                                index={index}
-                                isAnimating={isAnimating}
-                            />
-                        ))}
+                        {currentItems.map((item, index) => {
+                            if (item.type === "ad") {
+                                return (
+                                    <SwipeableAdCard
+                                        key={item.id}
+                                        onSwipe={(dir) => handleSwipe(dir, item.id, true)}
+                                        isTop={index === 0}
+                                        index={index}
+                                    />
+                                );
+                            } else {
+                                return (
+                                    <SwipeCard
+                                        key={item.movie.id}
+                                        movie={item.movie}
+                                        onSwipe={(dir) => handleSwipe(dir, `movie-${item.movie.id}`, false)}
+                                        isTop={index === 0}
+                                        index={index}
+                                        isAnimating={isAnimating}
+                                    />
+                                );
+                            }
+                        })}
                     </AnimatePresence>
                 )}
             </div>
 
             {/* Action Buttons */}
-            {!isFinished && !showAd && (
+            {!isFinished && (
                 <div className="flex items-center gap-6">
                     <button
                         onClick={() => handleButtonSwipe("left")}
@@ -233,7 +305,7 @@ export default function CardStack({
 
                     <button
                         onClick={handleUndo}
-                        disabled={swipedMovies.length === 0 || isAnimating}
+                        disabled={swipedItems.length === 0 || isAnimating}
                         className="w-12 h-12 rounded-full bg-card border border-white/10 flex items-center justify-center hover:border-white/30 transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed hover:scale-105"
                     >
                         <RotateCcw className="w-5 h-5 text-white/70" />
@@ -250,10 +322,10 @@ export default function CardStack({
             )}
 
             {/* Progress & Search Again */}
-            {!isFinished && !showAd && (
+            {!isFinished && (
                 <div className="flex flex-col items-center gap-4">
                     <div className="flex items-center gap-2 text-white/40 text-sm">
-                        <span>{Math.min(currentIndex + 1, movies.length)}</span>
+                        <span>{Math.min(moviesSwiped + 1, movies.length)}</span>
                         <span>/</span>
                         <span>{movies.length}</span>
                     </div>

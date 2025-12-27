@@ -10,10 +10,11 @@ import { useTranslation, useLanguage } from "@/contexts/LanguageContext";
 interface LandingScreenProps {
     onMovieSelect: (movie: TMDBMovie) => void;
     onSurpriseMe: () => void;
+    onMovieOfTheDay?: () => void;
     isLoading: boolean;
 }
 
-export default function LandingScreen({ onMovieSelect, onSurpriseMe, isLoading }: LandingScreenProps) {
+export default function LandingScreen({ onMovieSelect, onSurpriseMe, onMovieOfTheDay, isLoading }: LandingScreenProps) {
     const [query, setQuery] = useState("");
     const [searchResults, setSearchResults] = useState<TMDBMovie[]>([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -265,6 +266,27 @@ export default function LandingScreen({ onMovieSelect, onSurpriseMe, isLoading }
                 </div>
                 <p className="text-xs text-white/50 mt-1">{t("landing.hiddenGems")}</p>
             </motion.button>
+
+            {/* Movie of the Day Button */}
+            {onMovieOfTheDay && (
+                <motion.button
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                    onClick={onMovieOfTheDay}
+                    disabled={isLoading}
+                    className="group mt-4 relative px-8 py-4 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-2xl text-white font-semibold transition-all hover:border-yellow-400/60 hover:shadow-lg hover:shadow-yellow-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <div className="flex items-center gap-3">
+                        <span className="text-xl">🎬</span>
+                        <span>{t("motd.title")}</span>
+                        <span className="text-yellow-400 animate-pulse">✨</span>
+                    </div>
+                    <p className="text-xs text-white/50 mt-1">
+                        {language === "tr" ? "Her gün yeni bir film önerisi!" : "A new movie recommendation every day!"}
+                    </p>
+                </motion.button>
+            )}
 
             {/* Click outside to close dropdown */}
             {showResults && (

@@ -9,6 +9,7 @@ import {
     getProviderLogoUrl,
     WatchProvidersCountry,
 } from "@/lib/tmdb";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 interface SwipeCardProps {
     movie: Movie;
@@ -24,6 +25,7 @@ export default function SwipeCard({ movie, onSwipe, isTop, index, isAnimating = 
     const [isLoadingProviders, setIsLoadingProviders] = useState(false);
     const [hasLoadedProviders, setHasLoadedProviders] = useState(false);
     const [isSwiping, setIsSwiping] = useState(false);
+    const { t } = useTranslation();
 
     // Ref to track if this card has already triggered a swipe
     const hasSwipedRef = useRef(false);
@@ -169,6 +171,14 @@ export default function SwipeCard({ movie, onSwipe, isTop, index, isAnimating = 
                     <div className="absolute w-full h-full rounded-3xl overflow-hidden shadow-glow-card" style={{ backfaceVisibility: "hidden" }}>
                         <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url(${movie.posterUrl})` }}>
                             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+
+                            {/* Tap for Info Visual Cue */}
+                            {isTop && !isFlipped && (
+                                <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-sm border border-white/20 animate-pulse">
+                                    <span className="text-white/80 text-xs">ℹ️ Detay için dokun</span>
+                                </div>
+                            )}
+
                             <div className="absolute bottom-0 left-0 right-0 p-6">
                                 <h2 className="text-2xl font-bold text-white mb-2">{movie.title}</h2>
                                 <div className="flex items-center gap-4 text-white/80 text-sm">
@@ -216,12 +226,12 @@ export default function SwipeCard({ movie, onSwipe, isTop, index, isAnimating = 
                             <div className="mb-4">
                                 <div className="flex items-center gap-2 mb-2">
                                     <Tv className="w-4 h-4 text-white/60" />
-                                    <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wider">Stream in Turkey</h3>
+                                    <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wider">{t("movie.streamIn")}</h3>
                                 </div>
                                 {isLoadingProviders ? (
                                     <div className="flex items-center gap-2 text-white/50">
                                         <Loader2 className="w-4 h-4 animate-spin" />
-                                        <span className="text-sm">Loading...</span>
+                                        <span className="text-sm">{t("movie.loading")}</span>
                                     </div>
                                 ) : hasStreamingInTR ? (
                                     <div className="flex flex-wrap gap-2">
@@ -233,15 +243,15 @@ export default function SwipeCard({ movie, onSwipe, isTop, index, isAnimating = 
                                         ))}
                                     </div>
                                 ) : (
-                                    <p className="text-white/40 text-sm italic">Not streaming in Turkey</p>
+                                    <p className="text-white/40 text-sm italic">{t("movie.notStreaming")}</p>
                                 )}
                             </div>
 
                             <div className="flex-1 overflow-y-auto">
-                                <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wider mb-2">Overview</h3>
+                                <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wider mb-2">{t("movie.overview")}</h3>
                                 <p className="text-white/80 text-sm leading-relaxed">{movie.overview}</p>
                             </div>
-                            <p className="text-center text-white/40 text-xs mt-4">Tap to flip back</p>
+                            <p className="text-center text-white/40 text-xs mt-4">{t("movie.tapToFlip")}</p>
                         </div>
                     </div>
                 </motion.div>

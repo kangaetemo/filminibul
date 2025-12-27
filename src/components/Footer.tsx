@@ -16,15 +16,6 @@ export default function Footer() {
                 >
                     {language === "tr" ? "Gizlilik Politikası" : "Privacy Policy"}
                 </a>
-                <span>•</span>
-                <a
-                    href="https://www.themoviedb.org/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-white/60 transition-colors"
-                >
-                    TMDB
-                </a>
             </div>
         </footer>
     );

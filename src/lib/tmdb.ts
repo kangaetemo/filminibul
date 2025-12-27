@@ -321,3 +321,96 @@ export async function discoverHiddenGems(language: "tr" | "en" = "tr"): Promise<
         return [];
     }
 }
+
+/**
+ * Fetch a random Movie of the Day (vote_average > 7.5)
+ * Uses random page from top-rated movies for true randomness
+ */
+export async function fetchMovieOfTheDay(language: "tr" | "en" = "tr"): Promise<TMDBMovie | null> {
+    if (!API_KEY) {
+        console.error("TMDB API key not found");
+        return null;
+    }
+
+    try {
+        // Generate random page between 1 and 50 from top rated movies
+        const randomPage = Math.floor(Math.random() * 50) + 1;
+
+        const url = buildUrl("/discover/movie", {
+            language: getTMDBLanguage(language),
+            page: randomPage.toString(),
+            "vote_average.gte": "7.5",
+            "vote_count.gte": "500", // Ensure reliability with enough votes
+            sort_by: "vote_average.desc",
+            include_adult: "false",
+        });
+
+        const response = await fetch(url, getAuthOptions());
+
+        if (!response.ok) {
+            throw new Error(`TMDB API error: ${response.status}`);
+        }
+
+        const data: TMDBMoviesResponse = await response.json();
+
+        // Filter movies with posters
+        const validMovies = data.results.filter((movie) => movie.poster_path !== null);
+
+        if (validMovies.length === 0) {
+            return null;
+        }
+
+        // Pick a random movie from the page
+        const randomIndex = Math.floor(Math.random() * validMovies.length);
+        return validMovies[randomIndex];
+    } catch (error) {
+        console.error("Error fetching movie of the day:", error);
+        return null;
+    }
+}
+
+/**
+ * Turkish genre names from TMDB
+ */
+export const GENRE_MAP_TR: Record<number, string> = {
+    28: "Aksiyon",
+    12: "Macera",
+    16: "Animasyon",
+    35: "Komedi",
+    80: "Suç",
+    99: "Belgesel",
+    18: "Dram",
+    10751: "Aile",
+    14: "Fantastik",
+    36: "Tarih",
+    27: "Korku",
+    10402: "Müzik",
+    9648: "Gizem",
+    10749: "Romantik",
+    878: "Bilim Kurgu",
+    10770: "TV Filmi",
+    53: "Gerilim",
+    10752: "Savaş",
+    37: "Western",
+};
+
+/**
+ * Convert TMDB movie to our app's Movie format with Turkish genres
+ */
+export function convertTMDBMovieTR(tmdbMovie: TMDBMovie) {
+    return {
+        id: tmdbMovie.id,
+        title: tmdbMovie.title,
+        posterUrl: tmdbMovie.poster_path
+            ? `${TMDB_IMAGE_BASE}/${POSTER_SIZE}${tmdbMovie.poster_path}`
+            : "/placeholder-poster.jpg",
+        overview: tmdbMovie.overview || "Özet mevcut değil.",
+        rating: Math.round(tmdbMovie.vote_average * 10) / 10,
+        releaseYear: tmdbMovie.release_date
+            ? new Date(tmdbMovie.release_date).getFullYear()
+            : 0,
+        genres: tmdbMovie.genre_ids
+            .slice(0, 3)
+            .map((id) => GENRE_MAP_TR[id] || GENRE_MAP[id] || "Diğer"),
+    };
+}
