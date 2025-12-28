@@ -37,6 +37,19 @@ const SwipeableAdCard = memo(function SwipeableAdCard({
     const x = useMotionValue(0);
     const y = useMotionValue(0);
     const rotate = useTransform(x, [-300, 0, 300], [-30, 0, 30]);
+    const adRef = useRef<HTMLDivElement>(null);
+
+    // Initialize Google AdSense when the card becomes visible
+    useEffect(() => {
+        if (isTop && adRef.current) {
+            try {
+                // @ts-ignore - adsbygoogle is loaded from external script
+                (window.adsbygoogle = window.adsbygoogle || []).push({});
+            } catch (e) {
+                console.error("AdSense error:", e);
+            }
+        }
+    }, [isTop]);
 
     const handleDragEnd = async (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
         const threshold = 100;
@@ -77,26 +90,23 @@ const SwipeableAdCard = memo(function SwipeableAdCard({
         >
             {/* AD Content */}
             <div className="w-full h-full flex flex-col items-center justify-center">
-                <div className="w-20 h-20 rounded-2xl bg-accent/30 flex items-center justify-center mb-6 border-2 border-accent/50">
-                    <span className="text-accent text-3xl font-bold">AD</span>
-                </div>
-
-                <h3 className="text-white text-2xl font-bold mb-3">
+                <h3 className="text-white text-lg font-semibold mb-4">
                     {language === "tr" ? "Sponsor" : "Sponsored"}
                 </h3>
 
-                <p className="text-white/60 text-sm text-center mb-6 max-w-[220px]">
-                    {language === "tr"
-                        ? "Bu alan sponsorlu içerik için ayrılmıştır"
-                        : "This space is reserved for sponsored content"
-                    }
-                </p>
-
-                <div className="w-[280px] h-[180px] bg-white/10 rounded-xl flex items-center justify-center border border-dashed border-white/30">
-                    <span className="text-white/40 text-sm">300×250</span>
+                {/* Google AdSense Container */}
+                <div ref={adRef} className="w-[300px] h-[250px] bg-white/5 rounded-xl overflow-hidden flex items-center justify-center">
+                    <ins
+                        className="adsbygoogle"
+                        style={{ display: "block", width: "300px", height: "250px" }}
+                        data-ad-client="ca-pub-2982897620909749"
+                        data-ad-slot="5014557835"
+                        data-ad-format="rectangle"
+                        data-full-width-responsive="false"
+                    />
                 </div>
 
-                <p className="text-white/50 text-xs mt-6 animate-pulse">
+                <p className="text-white/50 text-xs mt-4 animate-pulse">
                     {language === "tr" ? "← Geçmek için kaydır →" : "← Swipe to continue →"}
                 </p>
             </div>
