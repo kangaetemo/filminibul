@@ -283,6 +283,7 @@ export async function getRecommendations(movieId: number, language: "tr" | "en" 
 
 /**
  * Discover hidden gems - random high-rated movies (7+)
+ * Uses /discover/movie with random page selection for true variety
  */
 export async function discoverHiddenGems(language: "tr" | "en" = "tr"): Promise<TMDBMovie[]> {
     if (!API_KEY) {
@@ -290,48 +291,58 @@ export async function discoverHiddenGems(language: "tr" | "en" = "tr"): Promise<
         return [];
     }
 
-    const fetchPage = async (page: number): Promise<TMDBMoviesResponse> => {
+    // Maximum page limit for randomness (TMDB has many pages, but we limit for consistency)
+    const MAX_PAGE = 50;
+
+    // Generate a truly random page number
+    const randomPage = Math.floor(Math.random() * MAX_PAGE) + 1;
+
+    try {
         const url = buildUrl("/discover/movie", {
             language: getTMDBLanguage(language),
-            page: page.toString(),
+            page: randomPage.toString(),
             "vote_average.gte": "7",
-            "vote_count.gte": "100",
+            "vote_count.gte": "300", // Higher threshold for quality assurance
             sort_by: "vote_average.desc",
             include_adult: "false",
         });
 
         const response = await fetch(url, getAuthOptions());
+
         if (!response.ok) {
             throw new Error(`TMDB API error: ${response.status}`);
         }
-        return response.json();
-    };
 
-    try {
-        // First, fetch page 1 to get total_pages
-        const firstPageData = await fetchPage(1);
-        const totalPages = Math.min(firstPageData.total_pages, 500); // TMDB max is 500
+        const data: TMDBMoviesResponse = await response.json();
 
-        let movies = firstPageData.results.filter((movie) => movie.poster_path !== null);
+        // Filter out movies without posters
+        let movies = data.results.filter((movie) => movie.poster_path !== null);
 
-        // If we have enough pages, try a random one for variety
-        if (totalPages > 1 && movies.length < 20) {
-            const randomPage = Math.floor(Math.random() * Math.min(totalPages, 100)) + 1;
-            if (randomPage !== 1) {
-                try {
-                    const randomPageData = await fetchPage(randomPage);
-                    const randomMovies = randomPageData.results.filter((movie) => movie.poster_path !== null);
-                    if (randomMovies.length > 0) {
-                        movies = randomMovies;
-                    }
-                } catch {
-                    // Fallback to page 1 results if random page fails
-                }
+        // If random page returned empty (edge case), fallback to page 1
+        if (movies.length === 0) {
+            const fallbackUrl = buildUrl("/discover/movie", {
+                language: getTMDBLanguage(language),
+                page: "1",
+                "vote_average.gte": "7",
+                "vote_count.gte": "300",
+                sort_by: "vote_average.desc",
+                include_adult: "false",
+            });
+            const fallbackResponse = await fetch(fallbackUrl, getAuthOptions());
+            if (fallbackResponse.ok) {
+                const fallbackData: TMDBMoviesResponse = await fallbackResponse.json();
+                movies = fallbackData.results.filter((movie) => movie.poster_path !== null);
             }
         }
 
-        // Shuffle and return up to 20 movies
-        return movies.sort(() => Math.random() - 0.5).slice(0, 20);
+        // Shuffle the results locally using Fisher-Yates algorithm for true randomness
+        for (let i = movies.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [movies[i], movies[j]] = [movies[j], movies[i]];
+        }
+
+        // Return up to 20 movies
+        return movies.slice(0, 20);
     } catch (error) {
         console.error("Error discovering hidden gems:", error);
         return [];
