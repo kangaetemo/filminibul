@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { Analytics } from "@vercel/analytics/react";
+import Script from 'next/script';
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -22,8 +23,12 @@ export default function RootLayout({
     return (
         <html lang="tr">
             <body className={inter.className}>
-			<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2982897620909749"
-     crossorigin="anonymous"></script>
+			<Script
+				async
+				src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2982897620909749"
+				rossOrigin="anonymous"
+				strategy="afterInteractive"
+				/>
                 <LanguageProvider>
                     <AuthProvider>{children}</AuthProvider>
                 </LanguageProvider>
