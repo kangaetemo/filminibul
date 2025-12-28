@@ -2,14 +2,16 @@
 
 import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { motion, useMotionValue, useTransform, PanInfo, useAnimation } from "framer-motion";
-import { Star, Calendar, Film, Tv, Loader2 } from "lucide-react";
+import { Star, Calendar, Film, Tv, Loader2, Play } from "lucide-react";
 import { Movie } from "@/data/mockData";
 import {
     fetchWatchProviders,
     getProviderLogoUrl,
     WatchProvidersCountry,
+    fetchMovieTrailer,
 } from "@/lib/tmdb";
 import { useTranslation } from "@/contexts/LanguageContext";
+import TrailerModal from "./TrailerModal";
 
 interface SwipeCardProps {
     movie: Movie;
@@ -25,6 +27,12 @@ function SwipeCardComponent({ movie, onSwipe, isTop, index, isAnimating = false 
     const [isLoadingProviders, setIsLoadingProviders] = useState(false);
     const [hasLoadedProviders, setHasLoadedProviders] = useState(false);
     const [isSwiping, setIsSwiping] = useState(false);
+
+    // Trailer state
+    const [trailerKey, setTrailerKey] = useState<string | null>(null);
+    const [isLoadingTrailer, setIsLoadingTrailer] = useState(false);
+    const [showTrailerModal, setShowTrailerModal] = useState(false);
+
     const { t } = useTranslation();
 
     // Ref to track if this card has already triggered a swipe
@@ -57,10 +65,23 @@ function SwipeCardComponent({ movie, onSwipe, isTop, index, isAnimating = false 
         }
     }, [isFlipped, hasLoadedProviders, movie.id, isTop]);
 
+    // Fetch trailer when card is flipped (lazy loading)
+    useEffect(() => {
+        if (isFlipped && isTop && trailerKey === null && !isLoadingTrailer) {
+            setIsLoadingTrailer(true);
+            fetchMovieTrailer(movie.id)
+                .then((key) => setTrailerKey(key))
+                .finally(() => setIsLoadingTrailer(false));
+        }
+    }, [isFlipped, isTop, movie.id, trailerKey, isLoadingTrailer]);
+
     // Reset when movie changes (including undo)
     useEffect(() => {
         hasSwipedRef.current = false;
         setIsSwiping(false);
+        setTrailerKey(null);
+        setIsLoadingTrailer(false);
+        setShowTrailerModal(false);
         // Reset animation controls to bring card back to center
         controls.set({ x: 0, y: 0, rotate: 0, scale: 1, opacity: 1 });
     }, [movie.id, controls]);
@@ -260,11 +281,41 @@ function SwipeCardComponent({ movie, onSwipe, isTop, index, isAnimating = false 
                                 <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wider mb-2">{t("movie.overview")}</h3>
                                 <p className="text-white/80 text-sm leading-relaxed">{movie.overview}</p>
                             </div>
-                            <p className="text-center text-white/40 text-xs mt-4">{t("movie.tapToFlip")}</p>
+
+                            {/* Trailer Button */}
+                            {trailerKey ? (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowTrailerModal(true);
+                                    }}
+                                    className="mt-4 flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-accent to-like rounded-xl hover:opacity-90 transition-opacity group"
+                                >
+                                    <Play className="w-5 h-5 text-white fill-white group-hover:scale-110 transition-transform" />
+                                    <span className="text-white font-semibold">Fragmanı İzle</span>
+                                </button>
+                            ) : isLoadingTrailer ? (
+                                <div className="mt-4 flex items-center justify-center gap-2 py-3 text-white/50">
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    <span className="text-sm">Fragman yükleniyor...</span>
+                                </div>
+                            ) : (
+                                <p className="text-center text-white/30 text-xs mt-4">Fragman bulunamadı</p>
+                            )}
+
+                            <p className="text-center text-white/40 text-xs mt-2">{t("movie.tapToFlip")}</p>
                         </div>
                     </div>
                 </motion.div>
             </div>
+
+            {/* Trailer Modal */}
+            <TrailerModal
+                isOpen={showTrailerModal}
+                onClose={() => setShowTrailerModal(false)}
+                videoKey={trailerKey}
+                movieTitle={movie.title}
+            />
         </motion.div>
     );
 }
@@ -281,3 +332,4 @@ const SwipeCard = memo(SwipeCardComponent, (prevProps, nextProps) => {
 });
 
 export default SwipeCard;
+

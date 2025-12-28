@@ -40,6 +40,25 @@ export interface WatchProvidersResponse {
     };
 }
 
+// Video/Trailer types
+export interface TMDBVideo {
+    iso_639_1: string;
+    iso_3166_1: string;
+    name: string;
+    key: string;
+    site: string;
+    size: number;
+    type: string;
+    official: boolean;
+    published_at: string;
+    id: string;
+}
+
+export interface TMDBVideosResponse {
+    id: number;
+    results: TMDBVideo[];
+}
+
 // Genre mapping for TMDB genre_ids
 export const GENRE_MAP: Record<number, string> = {
     28: "Action",
@@ -179,6 +198,66 @@ export async function fetchWatchProviders(
         return trProviders;
     } catch (error) {
         console.error("Error fetching watch providers:", error);
+        return null;
+    }
+}
+
+/**
+ * Fetch movie trailer with smart language fallback
+ * Priority: Turkish trailer > English trailer
+ * Filters: YouTube, type "Trailer"
+ * Returns YouTube video key or null
+ */
+export async function fetchMovieTrailer(movieId: number): Promise<string | null> {
+    if (!API_KEY) {
+        console.error("TMDB API key not found");
+        return null;
+    }
+
+    try {
+        const url = buildUrl(`/movie/${movieId}/videos`);
+        const response = await fetch(url, getAuthOptions());
+
+        if (!response.ok) {
+            throw new Error(`TMDB API error: ${response.status}`);
+        }
+
+        const data: TMDBVideosResponse = await response.json();
+        const videos = data.results;
+
+        // Filter for YouTube trailers only
+        const youtubeTrailers = videos.filter(
+            (v) => v.site === "YouTube" && v.type === "Trailer"
+        );
+
+        if (youtubeTrailers.length === 0) {
+            // Fallback: try any YouTube video (teaser, clip, etc.)
+            const anyYouTube = videos.filter((v) => v.site === "YouTube");
+            if (anyYouTube.length > 0) {
+                // Prefer official ones
+                const official = anyYouTube.find((v) => v.official);
+                return official?.key || anyYouTube[0].key;
+            }
+            return null;
+        }
+
+        // Priority 1: Turkish trailer
+        const turkishTrailer = youtubeTrailers.find((v) => v.iso_639_1 === "tr");
+        if (turkishTrailer) {
+            return turkishTrailer.key;
+        }
+
+        // Priority 2: English trailer
+        const englishTrailer = youtubeTrailers.find((v) => v.iso_639_1 === "en");
+        if (englishTrailer) {
+            return englishTrailer.key;
+        }
+
+        // Priority 3: Any available trailer (prefer official)
+        const officialTrailer = youtubeTrailers.find((v) => v.official);
+        return officialTrailer?.key || youtubeTrailers[0].key;
+    } catch (error) {
+        console.error("Error fetching movie trailer:", error);
         return null;
     }
 }
