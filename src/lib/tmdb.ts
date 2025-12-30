@@ -82,6 +82,52 @@ export const GENRE_MAP: Record<number, string> = {
     37: "Western",
 };
 
+// Turkish genre names
+export const GENRE_MAP_TR: Record<number, string> = {
+    28: "Aksiyon",
+    12: "Macera",
+    16: "Animasyon",
+    35: "Komedi",
+    80: "Suç",
+    99: "Belgesel",
+    18: "Drama",
+    10751: "Aile",
+    14: "Fantastik",
+    36: "Tarih",
+    27: "Korku",
+    10402: "Müzik",
+    9648: "Gizem",
+    10749: "Romantik",
+    878: "Bilim Kurgu",
+    10770: "TV Filmi",
+    53: "Gerilim",
+    10752: "Savaş",
+    37: "Western",
+};
+
+// Reverse mapping: English name to Turkish name (for stats matching)
+export const GENRE_EN_TO_TR: Record<string, string> = {
+    "Action": "Aksiyon",
+    "Adventure": "Macera",
+    "Animation": "Animasyon",
+    "Comedy": "Komedi",
+    "Crime": "Suç",
+    "Documentary": "Belgesel",
+    "Drama": "Drama",
+    "Family": "Aile",
+    "Fantasy": "Fantastik",
+    "History": "Tarih",
+    "Horror": "Korku",
+    "Music": "Müzik",
+    "Mystery": "Gizem",
+    "Romance": "Romantik",
+    "Sci-Fi": "Bilim Kurgu",
+    "TV Movie": "TV Filmi",
+    "Thriller": "Gerilim",
+    "War": "Savaş",
+    "Western": "Western",
+};
+
 // TMDB Image base URLs
 export const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p";
 export const POSTER_SIZE = "w500";
@@ -199,6 +245,290 @@ export async function fetchWatchProviders(
     } catch (error) {
         console.error("Error fetching watch providers:", error);
         return null;
+    }
+}
+
+/**
+ * Fetch IMDB ID for a movie from TMDB
+ * Uses the movie details endpoint which includes external_ids
+ */
+export async function fetchIMDBId(movieId: number): Promise<string | null> {
+    if (!API_KEY) {
+        console.error("TMDB API key not found");
+        return null;
+    }
+
+    try {
+        const url = buildUrl(`/movie/${movieId}/external_ids`);
+        const response = await fetch(url, getAuthOptions());
+
+        if (!response.ok) {
+            throw new Error(`TMDB API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.imdb_id || null;
+    } catch (error) {
+        console.error("Error fetching IMDB ID:", error);
+        return null;
+    }
+}
+
+/**
+ * Keyword with ID and name for display
+ */
+export interface Keyword {
+    id: number;
+    name: string;
+}
+
+/**
+ * Fetch keywords for a movie from TMDB (IDs only - for backward compatibility)
+ */
+export async function fetchMovieKeywords(movieId: number): Promise<number[]> {
+    if (!API_KEY) {
+        return [];
+    }
+
+    try {
+        const url = buildUrl(`/movie/${movieId}/keywords`);
+        const response = await fetch(url, getAuthOptions());
+
+        if (!response.ok) {
+            return [];
+        }
+
+        const data = await response.json();
+        return (data.keywords || []).slice(0, 10).map((k: { id: number }) => k.id);
+    } catch {
+        return [];
+    }
+}
+
+/**
+ * Fetch keywords with names for display in badges
+ */
+export async function fetchMovieKeywordsWithNames(movieId: number): Promise<Keyword[]> {
+    if (!API_KEY) {
+        return [];
+    }
+
+    try {
+        const url = buildUrl(`/movie/${movieId}/keywords`);
+        const response = await fetch(url, getAuthOptions());
+
+        if (!response.ok) {
+            return [];
+        }
+
+        const data = await response.json();
+        return (data.keywords || []).slice(0, 10).map((k: { id: number; name: string }) => ({
+            id: k.id,
+            name: k.name,
+        }));
+    } catch {
+        return [];
+    }
+}
+
+/**
+ * Movie DNA for similarity matching
+ */
+export interface MovieDNA {
+    id: number;
+    title: string;
+    genres: number[];
+    keywords: Keyword[];
+    releaseYear: number;
+    isAnimation: boolean;
+}
+
+/**
+ * Fetch complete movie DNA (genres, keywords, year) for similarity scoring
+ */
+export async function fetchMovieDNA(movieId: number, language: "tr" | "en" = "tr"): Promise<MovieDNA | null> {
+    if (!API_KEY) {
+        return null;
+    }
+
+    try {
+        // Fetch details and keywords in parallel
+        const [detailsRes, keywordsRes] = await Promise.all([
+            fetch(buildUrl(`/movie/${movieId}`, { language: getTMDBLanguage(language) }), getAuthOptions()),
+            fetch(buildUrl(`/movie/${movieId}/keywords`), getAuthOptions()),
+        ]);
+
+        if (!detailsRes.ok) return null;
+
+        const details = await detailsRes.json();
+        const keywordsData = keywordsRes.ok ? await keywordsRes.json() : { keywords: [] };
+
+        const genres = (details.genres || []).map((g: { id: number }) => g.id);
+        const keywords = (keywordsData.keywords || []).slice(0, 10).map((k: { id: number; name: string }) => ({
+            id: k.id,
+            name: k.name,
+        }));
+        const releaseYear = details.release_date ? new Date(details.release_date).getFullYear() : 0;
+
+        return {
+            id: movieId,
+            title: details.title,
+            genres,
+            keywords,
+            releaseYear,
+            isAnimation: genres.includes(16),
+        };
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Discover movies by keywords with quality filters
+ * Uses pipe (|) separator for OR logic - finds movies with ANY of these keywords
+ */
+export async function discoverByKeywords(
+    keywordIds: number[],
+    language: "tr" | "en" = "tr"
+): Promise<TMDBMovie[]> {
+    if (!API_KEY || keywordIds.length === 0) {
+        return [];
+    }
+
+    try {
+        // Fetch multiple pages to get more results
+        const allResults: TMDBMovie[] = [];
+
+        for (let page = 1; page <= 3; page++) {
+            const url = buildUrl("/discover/movie", {
+                language: getTMDBLanguage(language),
+                with_keywords: keywordIds.join("|"), // OR logic
+                "vote_average.gte": "6.5", // Lowered from 7.0
+                "vote_count.gte": "100",   // Lowered from 500 for niche genres
+                sort_by: "vote_average.desc",
+                include_adult: "false",
+                page: page.toString(),
+            });
+
+            const response = await fetch(url, getAuthOptions());
+            if (!response.ok) break;
+
+            const data: TMDBMoviesResponse = await response.json();
+            allResults.push(...data.results.filter((m) => m.poster_path !== null));
+
+            // Stop if we have enough or no more results
+            if (data.results.length < 20) break;
+        }
+
+        return allResults;
+    } catch {
+        return [];
+    }
+}
+
+/**
+ * Get keyword IDs for a single movie (for overlap calculation)
+ */
+export async function getMovieKeywordIds(movieId: number): Promise<number[]> {
+    if (!API_KEY) {
+        return [];
+    }
+
+    try {
+        const url = buildUrl(`/movie/${movieId}/keywords`);
+        const response = await fetch(url, getAuthOptions());
+
+        if (!response.ok) {
+            return [];
+        }
+
+        const data = await response.json();
+        return (data.keywords || []).map((k: { id: number }) => k.id);
+    } catch {
+        return [];
+    }
+}
+
+/**
+ * Fetch movie details including genres
+ * Returns genre_ids array for the movie
+ */
+export async function fetchMovieDetails(movieId: number, language: "tr" | "en" = "tr"): Promise<{
+    genres: number[];
+    title: string;
+} | null> {
+    if (!API_KEY) {
+        return null;
+    }
+
+    try {
+        const url = buildUrl(`/movie/${movieId}`, { language: getTMDBLanguage(language) });
+        const response = await fetch(url, getAuthOptions());
+
+        if (!response.ok) {
+            return null;
+        }
+
+        const data = await response.json();
+        return {
+            genres: (data.genres || []).map((g: { id: number }) => g.id),
+            title: data.title,
+        };
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Discover movies matching specific genres and keywords
+ * Used for smart vibe-based recommendations
+ */
+export async function discoverWithGenresAndKeywords(
+    genreIds: number[],
+    keywordIds: number[] = [],
+    language: "tr" | "en" = "tr",
+    excludeGenreIds: number[] = []
+): Promise<TMDBMovie[]> {
+    if (!API_KEY) {
+        return [];
+    }
+
+    try {
+        const params: Record<string, string> = {
+            language: getTMDBLanguage(language),
+            "vote_average.gte": "6.0",
+            "vote_count.gte": "100",
+            sort_by: "vote_average.desc",
+            include_adult: "false",
+            page: (Math.floor(Math.random() * 3) + 1).toString(),
+        };
+
+        // Must have at least one of these genres
+        if (genreIds.length > 0) {
+            params.with_genres = genreIds.join("|");
+        }
+
+        // Prefer movies with these keywords
+        if (keywordIds.length > 0) {
+            params.with_keywords = keywordIds.join("|");
+        }
+
+        // Exclude certain genres
+        if (excludeGenreIds.length > 0) {
+            params.without_genres = excludeGenreIds.join(",");
+        }
+
+        const url = buildUrl("/discover/movie", params);
+        const response = await fetch(url, getAuthOptions());
+
+        if (!response.ok) {
+            return [];
+        }
+
+        const data: TMDBMoviesResponse = await response.json();
+        return data.results.filter((m) => m.poster_path !== null);
+    } catch {
+        return [];
     }
 }
 
@@ -474,31 +804,6 @@ export async function fetchMovieOfTheDay(language: "tr" | "en" = "tr"): Promise<
         return null;
     }
 }
-
-/**
- * Turkish genre names from TMDB
- */
-export const GENRE_MAP_TR: Record<number, string> = {
-    28: "Aksiyon",
-    12: "Macera",
-    16: "Animasyon",
-    35: "Komedi",
-    80: "Suç",
-    99: "Belgesel",
-    18: "Dram",
-    10751: "Aile",
-    14: "Fantastik",
-    36: "Tarih",
-    27: "Korku",
-    10402: "Müzik",
-    9648: "Gizem",
-    10749: "Romantik",
-    878: "Bilim Kurgu",
-    10770: "TV Filmi",
-    53: "Gerilim",
-    10752: "Savaş",
-    37: "Western",
-};
 
 /**
  * Convert TMDB movie to our app's Movie format with Turkish genres

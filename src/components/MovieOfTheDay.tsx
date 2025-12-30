@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, X, Calendar, Clock, Sparkles, RotateCcw, Search } from "lucide-react";
+import { Heart, X, Calendar, Clock, Sparkles, RotateCcw, Search, ArrowLeft } from "lucide-react";
 import SwipeCard from "./SwipeCard";
 import CardStack from "./CardStack";
 import { Movie } from "@/data/mockData";
@@ -237,6 +237,19 @@ export default function MovieOfTheDay({ onBack, onAddToWatchlist }: MovieOfTheDa
     if (state.status === "pending" && movie) {
         return (
             <div className="flex flex-col items-center">
+                {/* Header with Back Button */}
+                <div className="w-full max-w-[320px] flex items-center justify-between mb-4">
+                    <button
+                        onClick={onBack}
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all group"
+                    >
+                        <ArrowLeft className="w-4 h-4 text-white/70 group-hover:text-white transition-colors" />
+                        <span className="text-sm text-white/70 group-hover:text-white transition-colors">
+                            {t("header.newSearch")}
+                        </span>
+                    </button>
+                </div>
+
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -276,14 +289,6 @@ export default function MovieOfTheDay({ onBack, onAddToWatchlist }: MovieOfTheDa
                         <Heart className="w-8 h-8 text-like group-hover:scale-110 group-hover:fill-like transition-all" />
                     </button>
                 </div>
-
-                <button
-                    onClick={onBack}
-                    className="mt-6 flex items-center gap-2 text-white/50 hover:text-white text-sm transition-colors"
-                >
-                    <RotateCcw className="w-4 h-4" />
-                    {t("header.newSearch")}
-                </button>
             </div>
         );
     }

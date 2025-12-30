@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@upstash/vector": "^1.2.2",
     "@vercel/analytics": "^1.6.1",
     "firebase": "^12.7.0",
     "framer-motion": "^11.0.0",

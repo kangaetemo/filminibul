@@ -1,9 +1,11 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Trash2, Star, Calendar, Sparkles } from "lucide-react";
+import { X, Trash2, Star, Calendar, Sparkles, Search, Loader2, Plus } from "lucide-react";
 import { Movie } from "@/data/mockData";
-import { useTranslation } from "@/contexts/LanguageContext";
+import { useTranslation, useLanguage } from "@/contexts/LanguageContext";
+import { searchMovie, TMDBMovie, TMDB_IMAGE_BASE, POSTER_SIZE, convertTMDBMovie, convertTMDBMovieTR } from "@/lib/tmdb";
+import { useState, useRef, useEffect } from "react";
 
 interface WatchlistProps {
     movies: Movie[];
@@ -12,6 +14,7 @@ interface WatchlistProps {
     onRemove: (movieId: number) => void;
     onClear: () => void;
     onFindSimilar: (movie: Movie) => void;
+    onAddToWatchlist?: (movie: Movie) => void;
 }
 
 export default function Watchlist({
@@ -21,8 +24,47 @@ export default function Watchlist({
     onRemove,
     onClear,
     onFindSimilar,
+    onAddToWatchlist,
 }: WatchlistProps) {
     const { t } = useTranslation();
+    const { language } = useLanguage();
+
+    // Manual add state
+    const [showAddSearch, setShowAddSearch] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [searchResults, setSearchResults] = useState<TMDBMovie[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Search for movies to add
+    useEffect(() => {
+        if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+        if (searchQuery.trim().length < 2) {
+            setSearchResults([]);
+            return;
+        }
+        searchTimeoutRef.current = setTimeout(async () => {
+            setIsSearching(true);
+            try {
+                const results = await searchMovie(searchQuery, language);
+                setSearchResults(results.slice(0, 5));
+            } finally {
+                setIsSearching(false);
+            }
+        }, 300);
+        return () => { if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current); };
+    }, [searchQuery, language]);
+
+    const handleAddMovie = (tmdbMovie: TMDBMovie) => {
+        const converted = language === "tr" ? convertTMDBMovieTR(tmdbMovie) : convertTMDBMovie(tmdbMovie);
+        // Check if already in watchlist
+        if (!movies.find(m => m.id === converted.id) && onAddToWatchlist) {
+            onAddToWatchlist(converted);
+        }
+        setSearchQuery("");
+        setSearchResults([]);
+        setShowAddSearch(false);
+    };
 
     const handleFindSimilar = (movie: Movie) => {
         onFindSimilar(movie);
@@ -51,19 +93,86 @@ export default function Watchlist({
                         className="fixed top-0 right-0 h-full w-full max-w-md bg-card border-l border-white/10 z-50 flex flex-col"
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between p-6 border-b border-white/10">
-                            <div>
-                                <h2 className="text-xl font-bold text-white">{t("watchlist.title")}</h2>
-                                <p className="text-white/50 text-sm">
-                                    {movies.length} {t("watchlist.count")}
-                                </p>
+                        <div className="p-6 border-b border-white/10">
+                            <div className="flex items-center justify-between mb-4">
+                                <div>
+                                    <h2 className="text-xl font-bold text-white">{t("watchlist.title")}</h2>
+                                    <p className="text-white/50 text-sm">
+                                        {movies.length} {t("watchlist.count")}
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => setShowAddSearch(!showAddSearch)}
+                                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${showAddSearch ? 'bg-accent text-white' : 'bg-white/5 hover:bg-white/10 text-white/70'}`}
+                                        title={language === "tr" ? "Film ekle" : "Add movie"}
+                                    >
+                                        <Plus className="w-5 h-5" />
+                                    </button>
+                                    <button
+                                        onClick={onClose}
+                                        className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
+                                    >
+                                        <X className="w-5 h-5 text-white/70" />
+                                    </button>
+                                </div>
                             </div>
-                            <button
-                                onClick={onClose}
-                                className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
-                            >
-                                <X className="w-5 h-5 text-white/70" />
-                            </button>
+
+                            {/* Manual Add Search */}
+                            <AnimatePresence>
+                                {showAddSearch && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                                placeholder={language === "tr" ? "Film ara ve ekle..." : "Search and add movie..."}
+                                                className="w-full px-4 py-3 pl-10 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-accent/50 transition-all"
+                                                autoFocus
+                                            />
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+                                            {isSearching && (
+                                                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-accent animate-spin" />
+                                            )}
+                                        </div>
+
+                                        {/* Search Results */}
+                                        {searchResults.length > 0 && (
+                                            <div className="mt-2 bg-white/5 rounded-xl overflow-hidden">
+                                                {searchResults.map((movie) => (
+                                                    <button
+                                                        key={movie.id}
+                                                        onClick={() => handleAddMovie(movie)}
+                                                        className="w-full flex items-center gap-3 p-3 hover:bg-white/5 transition-colors text-left"
+                                                    >
+                                                        <div
+                                                            className="w-10 h-14 rounded bg-cover bg-center flex-shrink-0"
+                                                            style={{
+                                                                backgroundImage: movie.poster_path
+                                                                    ? `url(${TMDB_IMAGE_BASE}/${POSTER_SIZE}${movie.poster_path})`
+                                                                    : undefined,
+                                                            }}
+                                                        />
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-white font-medium truncate">{movie.title}</p>
+                                                            <p className="text-white/50 text-sm">
+                                                                {movie.release_date ? new Date(movie.release_date).getFullYear() : ""}
+                                                            </p>
+                                                        </div>
+                                                        <Plus className="w-5 h-5 text-accent" />
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
 
                         {/* Movie List */}

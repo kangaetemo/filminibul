@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { motion, useMotionValue, useTransform, PanInfo, useAnimation } from "framer-motion";
-import { Star, Calendar, Film, Tv, Loader2, Play } from "lucide-react";
+import { Star, Calendar, Film, Tv, Loader2, Play, Copy, Check } from "lucide-react";
 import { Movie } from "@/data/mockData";
 import {
     fetchWatchProviders,
     getProviderLogoUrl,
     WatchProvidersCountry,
     fetchMovieTrailer,
+    fetchIMDBId,
 } from "@/lib/tmdb";
 import { useTranslation } from "@/contexts/LanguageContext";
 import TrailerModal from "./TrailerModal";
@@ -32,6 +33,13 @@ function SwipeCardComponent({ movie, onSwipe, isTop, index, isAnimating = false 
     const [trailerKey, setTrailerKey] = useState<string | null>(null);
     const [isLoadingTrailer, setIsLoadingTrailer] = useState(false);
     const [showTrailerModal, setShowTrailerModal] = useState(false);
+
+    // Copy title state
+    const [copied, setCopied] = useState(false);
+
+    // IMDB ID state
+    const [imdbId, setImdbId] = useState<string | null>(null);
+    const [isLoadingImdb, setIsLoadingImdb] = useState(false);
 
     const { t } = useTranslation();
 
@@ -75,6 +83,16 @@ function SwipeCardComponent({ movie, onSwipe, isTop, index, isAnimating = false 
         }
     }, [isFlipped, isTop, movie.id, trailerKey, isLoadingTrailer]);
 
+    // Fetch IMDB ID when card is flipped (lazy loading)
+    useEffect(() => {
+        if (isFlipped && isTop && imdbId === null && !isLoadingImdb) {
+            setIsLoadingImdb(true);
+            fetchIMDBId(movie.id)
+                .then((id) => setImdbId(id))
+                .finally(() => setIsLoadingImdb(false));
+        }
+    }, [isFlipped, isTop, movie.id, imdbId, isLoadingImdb]);
+
     // Reset when movie changes (including undo)
     useEffect(() => {
         hasSwipedRef.current = false;
@@ -82,9 +100,33 @@ function SwipeCardComponent({ movie, onSwipe, isTop, index, isAnimating = false 
         setTrailerKey(null);
         setIsLoadingTrailer(false);
         setShowTrailerModal(false);
+        setImdbId(null);
+        setIsLoadingImdb(false);
         // Reset animation controls to bring card back to center
         controls.set({ x: 0, y: 0, rotate: 0, scale: 1, opacity: 1 });
     }, [movie.id, controls]);
+
+    // Copy movie title to clipboard
+    const handleCopyTitle = useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(movie.title).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        });
+    }, [movie.title]);
+
+    // Open IMDB page with direct link
+    const handleOpenIMDB = useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (imdbId) {
+            // Direct IMDB link
+            window.open(`https://www.imdb.com/title/${imdbId}`, '_blank', 'noopener,noreferrer');
+        } else {
+            // Fallback to search if IMDB ID not loaded yet
+            const imdbSearchUrl = `https://www.imdb.com/find/?q=${encodeURIComponent(movie.title)}&s=tt`;
+            window.open(imdbSearchUrl, '_blank', 'noopener,noreferrer');
+        }
+    }, [imdbId, movie.title]);
 
     const handleDragEnd = useCallback(async (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
         // Prevent multiple swipes
@@ -96,6 +138,7 @@ function SwipeCardComponent({ movie, onSwipe, isTop, index, isAnimating = false 
         if (info.offset.x > threshold || velocity > 500) {
             hasSwipedRef.current = true;
             setIsSwiping(true);
+            setIsFlipped(false); // Reset flip state before animation
             await controls.start({
                 x: 500, y: info.offset.y * 0.5, rotate: 30, scale: 0.8, opacity: 0,
                 transition: { type: "spring", stiffness: 300, damping: 20, opacity: { duration: 0.2 } }
@@ -104,6 +147,7 @@ function SwipeCardComponent({ movie, onSwipe, isTop, index, isAnimating = false 
         } else if (info.offset.x < -threshold || velocity < -500) {
             hasSwipedRef.current = true;
             setIsSwiping(true);
+            setIsFlipped(false); // Reset flip state before animation
             await controls.start({
                 x: -500, y: info.offset.y * 0.5, rotate: -30, scale: 0.8, opacity: 0,
                 transition: { type: "spring", stiffness: 300, damping: 20, opacity: { duration: 0.2 } }
@@ -128,8 +172,8 @@ function SwipeCardComponent({ movie, onSwipe, isTop, index, isAnimating = false 
     const streamingProviders = providers?.flatrate || [];
     const hasStreamingInTR = streamingProviders.length > 0;
 
-    // Disable drag when animating or already swiped
-    const canDrag = isTop && !isFlipped && !isSwiping && !isAnimating;
+    // Allow drag on both front and back of card (removed !isFlipped check)
+    const canDrag = isTop && !isSwiping && !isAnimating;
 
     return (
         <motion.div
@@ -203,8 +247,15 @@ function SwipeCardComponent({ movie, onSwipe, isTop, index, isAnimating = false 
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
+                        {/* Recommendation Reason Badge */}
+                        {movie.recommendationReason && (
+                            <div className="absolute top-4 left-4 z-10 max-w-[60%] flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-accent/90 to-purple-500/90 backdrop-blur-sm border border-white/20 shadow-lg">
+                                <span className="text-white text-xs font-medium truncate">{movie.recommendationReason}</span>
+                            </div>
+                        )}
+
                         {/* Tap for Info Visual Cue */}
-                        {isTop && !isFlipped && (
+                        {isTop && !isFlipped && !movie.recommendationReason && (
                             <div className="absolute top-4 right-4 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/50 border border-white/20 animate-pulse">
                                 <span className="text-white/80 text-xs">ℹ️ Detay için dokun</span>
                             </div>
@@ -233,9 +284,35 @@ function SwipeCardComponent({ movie, onSwipe, isTop, index, isAnimating = false 
                     {/* Back Face */}
                     <div className="absolute w-full h-full rounded-3xl overflow-hidden bg-card shadow-glow-card p-6" style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
                         <div className="flex flex-col h-full">
-                            <div className="flex items-center gap-3 mb-4">
-                                <Film className="w-6 h-6 text-accent" />
-                                <h2 className="text-xl font-bold text-white">{movie.title}</h2>
+                            {/* Header with title + action buttons */}
+                            <div className="flex items-start justify-between gap-2 mb-4">
+                                <div className="flex items-center gap-3 min-w-0 flex-1">
+                                    <Film className="w-6 h-6 text-accent flex-shrink-0" />
+                                    <h2 className="text-xl font-bold text-white truncate">{movie.title}</h2>
+                                </div>
+                                {/* Action buttons */}
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                    {/* Copy Title */}
+                                    <button
+                                        onClick={handleCopyTitle}
+                                        className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all"
+                                        title="Film adını kopyala"
+                                    >
+                                        {copied ? (
+                                            <Check className="w-4 h-4 text-like" />
+                                        ) : (
+                                            <Copy className="w-4 h-4 text-white/70" />
+                                        )}
+                                    </button>
+                                    {/* IMDB Link - Logo styled button */}
+                                    <button
+                                        onClick={handleOpenIMDB}
+                                        className="h-8 px-2 rounded-lg bg-[#F5C518] hover:bg-[#E8B708] flex items-center justify-center transition-all"
+                                        title="IMDB'de aç"
+                                    >
+                                        <span className="text-black font-black text-xs tracking-tight">IMDb</span>
+                                    </button>
+                                </div>
                             </div>
                             <div className="flex items-center gap-2 mb-4">
                                 <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />

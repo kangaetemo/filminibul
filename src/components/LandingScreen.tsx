@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Sparkles, Film, Loader2, Star, Calendar } from "lucide-react";
 import { searchMovie, TMDBMovie, TMDB_IMAGE_BASE, POSTER_SIZE } from "@/lib/tmdb";
+import { MOODS } from "@/lib/recommendationService";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation, useLanguage } from "@/contexts/LanguageContext";
 
@@ -11,10 +12,11 @@ interface LandingScreenProps {
     onMovieSelect: (movie: TMDBMovie) => void;
     onSurpriseMe: () => void;
     onMovieOfTheDay?: () => void;
+    onMoodSelect?: (moodId: string) => void;
     isLoading: boolean;
 }
 
-export default function LandingScreen({ onMovieSelect, onSurpriseMe, onMovieOfTheDay, isLoading }: LandingScreenProps) {
+export default function LandingScreen({ onMovieSelect, onSurpriseMe, onMovieOfTheDay, onMoodSelect, isLoading }: LandingScreenProps) {
     const [query, setQuery] = useState("");
     const [searchResults, setSearchResults] = useState<TMDBMovie[]>([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -254,7 +256,7 @@ export default function LandingScreen({ onMovieSelect, onSurpriseMe, onMovieOfTh
                 transition={{ delay: 0.4 }}
                 onClick={onSurpriseMe}
                 disabled={isLoading}
-                className="group relative px-8 py-4 bg-gradient-to-r from-like/20 to-accent/20 border border-white/10 rounded-2xl text-white font-semibold transition-all hover:border-accent/50 hover:shadow-lg hover:shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="group relative z-40 px-8 py-4 bg-gradient-to-r from-like/20 to-accent/20 border border-white/10 rounded-2xl text-white font-semibold transition-all hover:border-accent/50 hover:shadow-lg hover:shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 <div className="flex items-center gap-3">
                     {isLoading ? (
@@ -267,6 +269,40 @@ export default function LandingScreen({ onMovieSelect, onSurpriseMe, onMovieOfTh
                 <p className="text-xs text-white/50 mt-1">{t("landing.hiddenGems")}</p>
             </motion.button>
 
+            {/* Mood Selector Section */}
+            {onMoodSelect && (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.45 }}
+                    className="mt-8 w-full max-w-lg relative z-40"
+                >
+                    <p className="text-center text-white/60 text-sm mb-4">
+                        {language === "tr" ? "ya da ruh haline göre seç" : "or choose by mood"}
+                    </p>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                        {MOODS.map((mood, index) => (
+                            <motion.button
+                                key={mood.id}
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: 0.5 + index * 0.05 }}
+                                onClick={() => onMoodSelect(mood.id)}
+                                disabled={isLoading}
+                                className="group flex flex-col items-center gap-2 p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/10 hover:border-white/20 transition-all disabled:opacity-50"
+                            >
+                                <span className="text-2xl group-hover:scale-125 transition-transform">
+                                    {mood.emoji}
+                                </span>
+                                <span className="text-xs text-white/70 text-center leading-tight">
+                                    {language === "tr" ? mood.labelTR.split(" ").slice(0, 2).join(" ") : mood.labelEN.split(" ").slice(0, 3).join(" ")}
+                                </span>
+                            </motion.button>
+                        ))}
+                    </div>
+                </motion.div>
+            )}
+
             {/* Movie of the Day Button */}
             {onMovieOfTheDay && (
                 <motion.button
@@ -275,7 +311,7 @@ export default function LandingScreen({ onMovieSelect, onSurpriseMe, onMovieOfTh
                     transition={{ delay: 0.5 }}
                     onClick={onMovieOfTheDay}
                     disabled={isLoading}
-                    className="group mt-4 relative px-8 py-4 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-2xl text-white font-semibold transition-all hover:border-yellow-400/60 hover:shadow-lg hover:shadow-yellow-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="group mt-4 relative z-40 px-8 py-4 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 rounded-2xl text-white font-semibold transition-all hover:border-yellow-400/60 hover:shadow-lg hover:shadow-yellow-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <div className="flex items-center gap-3">
                         <span className="text-xl">🎬</span>
@@ -288,10 +324,10 @@ export default function LandingScreen({ onMovieSelect, onSurpriseMe, onMovieOfTh
                 </motion.button>
             )}
 
-            {/* Click outside to close dropdown */}
+            {/* Click outside to close dropdown - positioned below search but above nothing else */}
             {showResults && (
                 <div
-                    className="fixed inset-0 z-40"
+                    className="fixed inset-0 z-[35]"
                     onClick={() => setShowResults(false)}
                 />
             )}

@@ -6,6 +6,7 @@ export interface Movie {
     rating: number;
     releaseYear: number;
     genres: string[];
+    recommendationReason?: string; // Why this movie was recommended
 }
 
 export const mockMovies: Movie[] = [

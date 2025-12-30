@@ -78,7 +78,7 @@ export default function UserMenu() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -10, scale: 0.95 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute right-0 top-full mt-2 w-48 bg-card border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
+                        className="absolute right-0 top-full mt-2 w-48 bg-card border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[100]"
                     >
                         <div className="p-3 border-b border-white/10">
                             <p className="text-sm font-medium text-white truncate">{user.displayName}</p>
