@@ -10,9 +10,9 @@ import Script from 'next/script';
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "Filminibul - Bir Sonraki Favorini Keşfet",
-    description: "Tinder tarzı film keşif uygulaması. Kaydırarak bir sonraki favori filmini bul.",
-    keywords: ["film", "sinema", "keşfet", "kaydır", "izleme listesi", "öneriler"],
+    title: "Filminibul - Sevdiğin Filme Benzeyenleri Bul",
+    description: "Bir film seç; tema, atmosfer ve hikâye yapısı bakımından ona gerçekten benzeyen filmleri keşfet.",
+    keywords: ["film", "sinema", "benzer filmler", "film önerisi", "ne izlesem", "keşfet"],
 };
 
 export default function RootLayout({

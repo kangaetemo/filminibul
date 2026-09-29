@@ -1,0 +1,149 @@
+{
+  "_aciklama": "Her seed için 'Top 20'de görmek istediğimiz' filmler. Başlık TMDB İngilizce başlığı, yıl ±1 tolerans. Veritabanında olmayanlar raporda ayrıca listelenir ve skora katılmaz.",
+  "seeds": [
+    {
+      "id": 603,
+      "title": "The Matrix",
+      "expected": [
+        ["The Matrix Reloaded", 2003],
+        ["The Matrix Revolutions", 2003],
+        ["The Animatrix", 2003],
+        ["Ghost in the Shell", 1995],
+        ["Dark City", 1998],
+        ["The Thirteenth Floor", 1999],
+        ["eXistenZ", 1999],
+        ["The Terminator", 1984],
+        ["Ex Machina", 2015],
+        ["Akira", 1988],
+        ["Equilibrium", 2002],
+        ["Blade Runner", 1982]
+      ]
+    },
+    {
+      "id": 26466,
+      "title": "Triangle",
+      "expected": [
+        ["Timecrimes", 2007],
+        ["Coherence", 2014],
+        ["Predestination", 2014],
+        ["Source Code", 2011],
+        ["Happy Death Day", 2017],
+        ["Primer", 2004],
+        ["Donnie Darko", 2001],
+        ["Jacob's Ladder", 1990],
+        ["The Machinist", 2004],
+        ["Identity", 2003],
+        ["The Endless", 2017],
+        ["Time Trap", 2017]
+      ]
+    },
+    {
+      "id": 220289,
+      "title": "Coherence",
+      "expected": [
+        ["Primer", 2004],
+        ["Triangle", 2009],
+        ["The Endless", 2017],
+        ["Timecrimes", 2007],
+        ["Predestination", 2014],
+        ["The Thirteenth Floor", 1999],
+        ["Dark City", 1998],
+        ["The Invitation", 2015],
+        ["Circle", 2015],
+        ["Cube", 1997],
+        ["Another Earth", 2011],
+        ["The One I Love", 2014]
+      ]
+    },
+    {
+      "id": 129,
+      "title": "Spirited Away",
+      "expected": [
+        ["Howl's Moving Castle", 2004],
+        ["Princess Mononoke", 1997],
+        ["My Neighbor Totoro", 1988],
+        ["Kiki's Delivery Service", 1989],
+        ["Castle in the Sky", 1986],
+        ["The Boy and the Heron", 2023],
+        ["Nausicaä of the Valley of the Wind", 1984],
+        ["Ponyo", 2008],
+        ["Pom Poko", 1994],
+        ["The Tale of The Princess Kaguya", 2013],
+        ["Coraline", 2009],
+        ["Wolf Children", 2012]
+      ]
+    },
+    {
+      "id": 807,
+      "title": "Se7en",
+      "expected": [
+        ["Zodiac", 2007],
+        ["The Silence of the Lambs", 1991],
+        ["Memories of Murder", 2003],
+        ["Prisoners", 2013],
+        ["Manhunter", 1986],
+        ["Red Dragon", 2002],
+        ["The Bone Collector", 1999],
+        ["Copycat", 1995],
+        ["Kiss the Girls", 1997],
+        ["The Crimson Rivers", 2000],
+        ["I Saw the Devil", 2010],
+        ["Insomnia", 2002]
+      ]
+    },
+    {
+      "id": 310131,
+      "title": "The Witch",
+      "expected": [
+        ["Hereditary", 2018],
+        ["Midsommar", 2019],
+        ["The Lighthouse", 2019],
+        ["Apostle", 2018],
+        ["The Wicker Man", 1973],
+        ["Kill List", 2011],
+        ["A Dark Song", 2016],
+        ["The Blackcoat's Daughter", 2015],
+        ["Gretel & Hansel", 2020],
+        ["The Ritual", 2017],
+        ["Saint Maud", 2019],
+        ["Lamb", 2021]
+      ]
+    },
+    {
+      "id": 157336,
+      "title": "Interstellar",
+      "expected": [
+        ["Gravity", 2013],
+        ["The Martian", 2015],
+        ["Arrival", 2016],
+        ["Contact", 1997],
+        ["2001: A Space Odyssey", 1968],
+        ["Ad Astra", 2019],
+        ["Sunshine", 2007],
+        ["Solaris", 1972],
+        ["Moon", 2009],
+        ["First Man", 2018],
+        ["Inception", 2010],
+        ["Annihilation", 2018]
+      ]
+    },
+    {
+      "id": 2111,
+      "title": "Balzac and the Little Chinese Seamstress",
+      "expected": [
+        ["To Live", 1994],
+        ["Farewell My Concubine", 1993],
+        ["The Blue Kite", 1993],
+        ["Raise the Red Lantern", 1991],
+        ["Xiu Xiu: The Sent-Down Girl", 1998],
+        ["Under the Hawthorn Tree", 2010],
+        ["Not One Less", 1999],
+        ["The Road Home", 1999],
+        ["In the Heat of the Sun", 1994],
+        ["Coming Home", 2014],
+        ["Shower", 1999],
+        ["Postmen in the Mountains", 1999]
+      ]
+    }
+  ]
+}

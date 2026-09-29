@@ -23,6 +23,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Data exports (Supabase/Upstash yedekleri)
+/data/export/
+/data/embeddings/
+/data/tmdb/
+/data/*.log
+
 # Local env files
 .env*.local
 
