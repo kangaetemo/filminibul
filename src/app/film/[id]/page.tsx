@@ -5,12 +5,16 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, Star } from "lucide-react";
 import Footer from "@/components/Footer";
 import { getFilm, getSimilarFilms } from "@/lib/recommend/similar";
+import { Suspense } from "react";
 import FilmCard from "@/components/film/FilmCard";
+import WatchProviders from "@/components/film/WatchProviders";
+import PlatformFilter from "@/components/film/PlatformFilter";
+import { FEATURED_PLATFORMS, getLiveProviders } from "@/lib/recommend/providers";
 
 export const revalidate = 3600;
 
 // Next 14: params senkron nesne (Next 15+'da Promise olur ve await gerekir)
-type Props = { params: { id: string } };
+type Props = { params: { id: string }; searchParams?: { p?: string } };
 
 function parseId(raw: string): number | null {
     const id = Number(raw);
@@ -27,11 +31,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
 }
 
-export default async function FilmPage({ params }: Props) {
+export default async function FilmPage({ params, searchParams }: Props) {
     const id = parseId(params.id);
     if (!id) notFound();
 
-    const [film, similar] = await Promise.all([getFilm(id), getSimilarFilms(id, 20)]);
+    // ?p=8,119 → sadece bu platformlarda izlenebilen benzer filmler
+    const platforms = (searchParams?.p ?? "").split(",").map(Number).filter((x) => Number.isInteger(x) && x > 0);
+
+    const [film, similar, providers] = await Promise.all([getFilm(id), getSimilarFilms(id, 20, false, platforms), getLiveProviders(id)]);
     if (!film) notFound();
 
     return (
@@ -98,20 +105,31 @@ export default async function FilmPage({ params }: Props) {
                             </>
                         )}
                     </dl>
+
+                    <WatchProviders providers={providers} />
                 </div>
             </section>
 
             {/* Benzer filmler */}
             <section className="mt-12 px-4 sm:px-8 max-w-6xl mx-auto">
                 <h2 className="text-2xl font-bold text-white">Benzer Filmler</h2>
+                {film.inCatalog && (
+                    <div className="mt-4">
+                        <Suspense>
+                            <PlatformFilter platforms={FEATURED_PLATFORMS} selected={platforms} />
+                        </Suspense>
+                    </div>
+                )}
                 {!film.inCatalog ? (
                     <p className="mt-4 text-white/50">Bu film henüz öneri kataloğumuzda yok, bu yüzden benzer film öneremiyoruz.</p>
                 ) : similar.length === 0 ? (
-                    <p className="mt-4 text-white/50">Bu film için öneri bulunamadı.</p>
+                    <p className="mt-4 text-white/50">
+                        {platforms.length ? "Seçtiğin platformlarda bu filme benzer bir film bulamadık. Platform ekle ya da tümünü göster." : "Bu film için öneri bulunamadı."}
+                    </p>
                 ) : (
                     <ul className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
                         {similar.map((s) => (
-                            <FilmCard key={s.film.id} film={s.film} reasons={s.reasons} />
+                            <FilmCard key={s.film.id} film={s.film} reasons={s.reasons} platforms={s.platforms} />
                         ))}
                     </ul>
                 )}

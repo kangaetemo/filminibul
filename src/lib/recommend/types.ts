@@ -1,3 +1,5 @@
+import type { Platform } from "./providers";
+
 // Supabase film_embeddings_v3 satırı (embedding hariç) — similar_movies_v3 RPC'sinin döndürdüğü alanlar
 export interface FilmRow {
     movie_id: number;
@@ -50,6 +52,8 @@ export interface SimilarFilmDTO {
     reason: string;
     // Aynı bilgi satır satır, önem sırasıyla (kartlarda ilk 2'si gösterilir)
     reasons: string[];
+    // Türkiye'de abonelikle/ücretsiz izlenebildiği platformlar (JustWatch)
+    platforms: Platform[];
     score: number;
     // Sadece ?debug=1 ile
     debug?: {

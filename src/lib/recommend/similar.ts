@@ -5,6 +5,7 @@ import { supabaseRpc, supabaseSelect } from "@/lib/server/supabase";
 import { getMovieDetails } from "@/lib/server/tmdbServer";
 import { GENRE_MAP_TR } from "@/lib/tmdb";
 import { rerank, explain, explainParts } from "./reranker";
+import { getProvidersFor, platform, watchableIds } from "./providers";
 import type { Candidate, FilmDTO, FilmRow, SimilarFilmDTO } from "./types";
 
 const IMG = "https://image.tmdb.org/t/p";
@@ -69,19 +70,31 @@ export async function getFilm(id: number): Promise<FilmDTO | null> {
     };
 }
 
-/** Katalogda olmayan film için boş liste döner (embedding'i yok). */
-export async function getSimilarFilms(id: number, limit = 20, debug = false): Promise<SimilarFilmDTO[]> {
+/**
+ * Benzer filmler. `platforms` verilirse sadece bu platformlardan birinde (abonelik/ücretsiz) izlenebilenler:
+ * önce 200 adayın tamamı sıralanır, sonra filtrelenir — böylece ilk 20 dışında kalan izlenebilir filmler de gelir.
+ * Katalogda olmayan film için boş liste döner (embedding'i yok).
+ */
+export async function getSimilarFilms(id: number, limit = 20, debug = false, platforms: number[] = []): Promise<SimilarFilmDTO[]> {
     const [seed, candidates] = await Promise.all([
         getFilmRow(id),
         supabaseRpc<Candidate[]>("similar_movies_v3", { seed_movie_id: id, match_limit: CANDIDATE_POOL }),
     ]);
     if (!seed || !candidates.length) return [];
 
-    return rerank(seed, candidates, limit).map((s) => ({
+    const ranked = rerank(seed, candidates, platforms.length ? candidates.length : limit);
+    const providers = await getProvidersFor(ranked.map((s) => s.film.movie_id));
+    const wanted = new Set(platforms);
+    const top = platforms.length
+        ? ranked.filter((s) => watchableIds(providers.get(s.film.movie_id)).some((p) => wanted.has(p))).slice(0, limit)
+        : ranked;
+
+    return top.map((s) => ({
         film: toFilmDTO(s.film),
         reason: explain(s),
         reasons: explainParts(s),
         score: Math.round(s.final * 1000) / 1000,
+        platforms: watchableIds(providers.get(s.film.movie_id)).map(platform),
         ...(debug && {
             debug: { similarity: s.film.similarity, weighted: s.weighted, penalties: s.penalties },
         }),
