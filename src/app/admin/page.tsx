@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { getProviderStats } from "@/lib/server/adminStats";
+import { getDbUsage, getProviderStats, type DbUsage } from "@/lib/server/adminStats";
 import { githubConfigured, listRuns, type WorkflowRun } from "@/lib/server/github";
 import RefreshProvidersPanel from "@/components/admin/RefreshProvidersPanel";
 import LogoutButton from "@/components/admin/LogoutButton";
+import CatalogAdder from "@/components/admin/CatalogAdder";
 
 // Erişim kontrolü src/middleware.ts'te (oturum yoksa /admin/login'e yönlendirir)
 export const dynamic = "force-dynamic";
@@ -20,9 +21,10 @@ function daysAgo(iso: string | null) {
 
 export default async function AdminPage() {
     const configured = githubConfigured();
-    const [stats, runs] = await Promise.all([
+    const [stats, runs, usage] = await Promise.all([
         getProviderStats(),
         configured ? listRuns().catch((err): WorkflowRun[] => (console.error("GitHub runs:", err), [])) : Promise.resolve([]),
+        getDbUsage(),
     ]);
     const coverage = stats.catalogFilms ? Math.round((stats.filmsWithProviders / stats.catalogFilms) * 1000) / 10 : 0;
 
@@ -40,6 +42,19 @@ export default async function AdminPage() {
                 </header>
 
                 <section className="mt-8 p-5 rounded-2xl bg-card border border-white/10">
+                    <h2 className="text-lg font-semibold text-white">Katalog</h2>
+                    <p className="mt-1 text-sm text-white/40">
+                        Eklenen film anında aranabilir, kendi benzer filmleri çıkar ve diğer filmlerin önerilerine girer. Mod listeleri ve keyword çevirileri haftalık güncellemeyle yenilenir.
+                    </p>
+                    <div className="mt-4">
+                        <DbUsageBar usage={usage} />
+                    </div>
+                    <div className="mt-5">
+                        <CatalogAdder />
+                    </div>
+                </section>
+
+                <section className="mt-6 p-5 rounded-2xl bg-card border border-white/10">
                     <h2 className="text-lg font-semibold text-white">Platform bilgisi (Nerede izlenir?)</h2>
                     <p className="mt-1 text-sm text-white/40">
                         Kaynak: JustWatch (TMDB). Her pazartesi 06:00&apos;da otomatik yenilenir.
@@ -79,6 +94,36 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
             <div className="text-xs text-white/40">{label}</div>
             <div className="mt-1 text-xl font-semibold text-white">{value}</div>
             {sub && <div className="text-xs text-white/40">{sub}</div>}
+        </div>
+    );
+}
+
+const mb = (b: number) => `${Math.round(b / 1024 / 1024)} MB`;
+
+function DbUsageBar({ usage }: { usage: DbUsage | null }) {
+    if (!usage) {
+        return (
+            <p className="text-sm text-yellow-300">
+                Veritabanı doluluğu okunamadı. Supabase SQL Editor&apos;de <code>scripts/sql/admin_db_usage.sql</code> dosyasını çalıştır.
+            </p>
+        );
+    }
+    const pct = Math.min(100, Math.round((usage.usedBytes / usage.limitBytes) * 100));
+    const color = pct >= 90 ? "bg-pass" : pct >= 75 ? "bg-yellow-400" : "bg-like";
+    return (
+        <div>
+            <div className="flex flex-wrap items-baseline justify-between gap-2 text-sm">
+                <span className="text-white/80">
+                    Veritabanı: <b className="text-white">{mb(usage.usedBytes)}</b> / {mb(usage.limitBytes)} (%{pct})
+                </span>
+                <span className="text-white/50">
+                    {usage.films.toLocaleString("tr-TR")} film · tahminen <b className="text-white">~{usage.remainingFilms.toLocaleString("tr-TR")}</b> film daha sığar
+                </span>
+            </div>
+            <div className="mt-2 h-2 rounded-full bg-white/10 overflow-hidden">
+                <div className={`h-full ${color}`} style={{ width: `${pct}%` }} />
+            </div>
+            {pct >= 90 && <p className="mt-2 text-xs text-pass-glow">Ücretsiz plan sınırına yaklaşıldı: yeni film eklemeden önce yer açmak gerekir.</p>}
         </div>
     );
 }

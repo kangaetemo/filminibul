@@ -27,6 +27,26 @@ export interface TmdbMovieDetails extends TmdbSearchResult {
     };
 }
 
+/**
+ * Geçici ağ hatalarında (ECONNRESET vb. "fetch failed") ve 429/5xx'te kısa beklemelerle tekrar dener.
+ * TMDB/OpenAI bağlantısı ara sıra sıfırlanabiliyor; tek hata yüzünden istek başarısız olmasın.
+ */
+export async function fetchWithRetry(input: URL | string, init: RequestInit & { next?: { revalidate?: number } }, attempts = 3): Promise<Response> {
+    for (let i = 1; ; i++) {
+        try {
+            const res = await fetch(input, init);
+            if ((res.status === 429 || res.status >= 500) && i < attempts) {
+                await new Promise((r) => setTimeout(r, 400 * 2 ** i));
+                continue;
+            }
+            return res;
+        } catch (err) {
+            if (i >= attempts) throw err;
+            await new Promise((r) => setTimeout(r, 400 * 2 ** i));
+        }
+    }
+}
+
 export async function tmdbGet<T>(path: string, params: Record<string, string> = {}, revalidateSeconds = 3600): Promise<T | null> {
     if (!API_KEY) throw new Error("TMDB_API_KEY tanımlı değil (.env.local)");
     const isBearer = API_KEY.length > 40;
@@ -34,7 +54,7 @@ export async function tmdbGet<T>(path: string, params: Record<string, string> = 
     if (!isBearer) url.searchParams.set("api_key", API_KEY);
     for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
 
-    const res = await fetch(url, {
+    const res = await fetchWithRetry(url, {
         headers: isBearer ? { Authorization: `Bearer ${API_KEY}` } : {},
         next: { revalidate: revalidateSeconds },
     });
