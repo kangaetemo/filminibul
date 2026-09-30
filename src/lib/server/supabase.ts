@@ -21,6 +21,17 @@ export async function supabaseSelect<T>(query: string, revalidateSeconds = 3600)
     return res.json() as Promise<T>;
 }
 
+/** Satır sayısı (önbelleksiz), ör. `film_providers?flatrate=cs.{8}` */
+export async function supabaseCount(query: string): Promise<number> {
+    const sep = query.includes("?") ? "&" : "?";
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${query}${sep}limit=1`, {
+        headers: { ...headers(), Prefer: "count=exact" },
+        cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`Supabase ${res.status}: ${(await res.text()).slice(0, 300)}`);
+    return Number(res.headers.get("content-range")?.split("/")[1] ?? 0);
+}
+
 /** RPC çağrısı (POST) */
 export async function supabaseRpc<T>(fn: string, body: Record<string, unknown>, revalidateSeconds = 3600): Promise<T> {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
