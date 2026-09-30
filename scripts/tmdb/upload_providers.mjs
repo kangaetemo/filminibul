@@ -4,6 +4,9 @@
 //
 // Kullanım:
 //   node scripts/tmdb/fetch_providers.mjs && node scripts/tmdb/upload_providers.mjs
+//   node scripts/tmdb/upload_providers.mjs --force   # yeni veri çok az olsa da yükle (güvenlik kontrolünü atla)
+//
+// Otomatik: .github/workflows/refresh-providers.yml her pazartesi çalıştırır.
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -25,7 +28,16 @@ const rows = readFileSync(resolve(ROOT, "data", "tmdb", "providers_tr.jsonl"), "
     .filter(Boolean)
     .map(JSON.parse);
 const runStart = new Date().toISOString();
-console.log(`📦 ${rows.length} film yükleniyor`);
+
+// Güvenlik: yeni veri mevcut tablonun belirgin şekilde altındaysa (TMDB/JustWatch arızası vb.) silme yapma
+const FORCE = process.argv.includes("--force");
+const countRes = await request("film_providers?select=movie_id&limit=1", { method: "GET", headers: { Prefer: "count=exact" } });
+const existing = Number(countRes.headers.get("content-range")?.split("/")[1] ?? 0);
+if (!FORCE && existing > 0 && rows.length < existing * 0.7) {
+    console.error(`❌ Yeni veri ${rows.length} film, tabloda ${existing} var (%70 altı). Muhtemelen tarama eksik; hiçbir şey değiştirilmedi. Eminsen --force ile çalıştır.`);
+    process.exit(1);
+}
+console.log(`📦 ${rows.length} film yükleniyor (tabloda şu an ${existing})`);
 
 for (let i = 0; i < rows.length; i += BATCH) {
     const batch = rows.slice(i, i + BATCH).map((r) => ({ ...r, updated_at: new Date().toISOString() }));

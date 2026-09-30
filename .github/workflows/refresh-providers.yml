@@ -1,0 +1,39 @@
+# Türkiye yayın platformlarını (TMDB / JustWatch) yeniler ve Supabase film_providers tablosuna yükler.
+# Zamanlanmış: her pazartesi 03:00 UTC (06:00 Türkiye). Elle: Actions → "Platform bilgisini yenile" → Run workflow.
+# Gerekli repo secret'ları: TMDB_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+name: Platform bilgisini yenile
+
+on:
+  schedule:
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+# Aynı anda iki yenileme çalışmasın
+concurrency:
+  group: refresh-providers
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Script'ler bağımlılıksız (sadece fetch), npm install gerekmiyor
+      - name: TMDB'den platformları çek
+        run: node scripts/tmdb/fetch_providers.mjs --no-catalog
+
+      - name: Supabase'e yükle
+        run: node scripts/tmdb/upload_providers.mjs
