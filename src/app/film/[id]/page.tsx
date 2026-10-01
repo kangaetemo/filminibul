@@ -8,6 +8,8 @@ import { getFilm, getSimilarFilms } from "@/lib/recommend/similar";
 import { Suspense } from "react";
 import FilmCard from "@/components/film/FilmCard";
 import WatchProviders from "@/components/film/WatchProviders";
+import TrailerButton from "@/components/film/TrailerButton";
+import { getTrailer } from "@/lib/recommend/trailer";
 import PlatformFilter from "@/components/film/PlatformFilter";
 import { FEATURED_PLATFORMS, getLiveProviders } from "@/lib/recommend/providers";
 
@@ -39,7 +41,7 @@ export default async function FilmPage({ params, searchParams }: Props) {
     const platforms = (searchParams?.p ?? "").split(",").map(Number).filter((x) => Number.isInteger(x) && x > 0);
 
     // Film bilgisi hızlı gelir; benzer filmler (HNSW sorgusu, soğukken 1–4 sn) aşağıda Suspense ile akışla yüklenir.
-    const [film, providers] = await Promise.all([getFilm(id), getLiveProviders(id)]);
+    const [film, providers, trailer] = await Promise.all([getFilm(id), getLiveProviders(id), getTrailer(id)]);
     if (!film) notFound();
 
     return (
@@ -85,6 +87,12 @@ export default async function FilmPage({ params, searchParams }: Props) {
                     </div>
 
                     {film.overview && <p className="mt-6 max-w-3xl text-[17px] leading-relaxed text-white/70">{film.overview}</p>}
+
+                    {trailer && (
+                        <div className="mt-6">
+                            <TrailerButton videoKey={trailer.key} filmTitle={film.title} />
+                        </div>
+                    )}
 
                     <dl className="mt-6 grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5 text-sm">
                         {film.director && (

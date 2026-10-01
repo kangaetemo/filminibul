@@ -40,6 +40,7 @@ export default function PrivacyPolicy() {
                         </p>
                         <ul className="list-disc list-inside text-white/70 space-y-1 mt-2">
                             <li><strong>TMDB API</strong> - Film verileri ve görseller için</li>
+                            <li><strong>YouTube</strong> - Fragmanlar için; video yalnızca &quot;Fragmanı izle&quot; düğmesine tıkladığında, gizlilik odaklı (youtube-nocookie.com) olarak yüklenir</li>
                             <li><strong>Google Firebase</strong> - İsteğe bağlı kimlik doğrulama için</li>
                             <li><strong>Google AdSense</strong> - Reklam gösterimi için (yakında)</li>
                         </ul>
