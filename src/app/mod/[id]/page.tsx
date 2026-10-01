@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Shuffle } from "lucide-react";
+import { Shuffle } from "lucide-react";
 import Footer from "@/components/Footer";
+import SiteHeader from "@/components/SiteHeader";
 import FilmCard from "@/components/film/FilmCard";
 import MoodChips from "@/components/search/MoodChips";
 import { getMood, getMoodFilms } from "@/lib/recommend/moods";
@@ -24,44 +24,42 @@ export default async function MoodPage({ params }: Props) {
     const films = await getMoodFilms(mood, 20);
 
     return (
-        <main className="min-h-screen bg-background pb-16">
-            <header className="px-4 sm:px-8 pt-4 max-w-6xl mx-auto">
-                <Link
-                    href="/"
-                    className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm text-white/80 transition-colors"
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    Ana sayfa
-                </Link>
-            </header>
+        <main className="min-h-screen bg-background">
+            <div className="spotlight">
+                <SiteHeader />
+                <section className="mx-auto max-w-6xl px-4 pb-10 pt-6 sm:px-8">
+                    <p className="text-xs uppercase tracking-[0.3em] text-accent-glow/80">Ruh hâline göre</p>
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
+                        <h1 className="font-display text-4xl leading-tight text-white sm:text-5xl">
+                            <span className="mr-3" aria-hidden>
+                                {mood.emoji}
+                            </span>
+                            {mood.label}
+                        </h1>
+                        {/* Düz <a>: aynı sayfayı yeniden yükler, sunucu yeni rastgele seçim yapar */}
+                        <a
+                            href={`/mod/${mood.id}`}
+                            className="flex items-center gap-2 rounded-full border border-accent/40 bg-accent/15 px-5 py-2.5 text-sm text-white transition-colors hover:bg-accent/25"
+                        >
+                            <Shuffle className="h-4 w-4" aria-hidden />
+                            Karıştır
+                        </a>
+                    </div>
+                    <p className="mt-3 text-white/50">Bir filme tıkla, ona benzeyen filmleri gör.</p>
 
-            <section className="px-4 sm:px-8 max-w-6xl mx-auto mt-8">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                    <h1 className="text-3xl font-bold text-white">
-                        <span className="mr-3">{mood.emoji}</span>
-                        {mood.label}
-                    </h1>
-                    {/* Düz <a>: aynı sayfayı yeniden yükler, sunucu yeni rastgele seçim yapar */}
-                    <a
-                        href={`/mod/${mood.id}`}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent/20 hover:bg-accent/30 border border-accent/40 text-sm text-white transition-colors"
-                    >
-                        <Shuffle className="w-4 h-4" />
-                        Karıştır
-                    </a>
-                </div>
-                <p className="mt-2 text-white/50">Bir filme tıkla, ona benzeyen filmleri gör.</p>
+                    <div className="mt-6">
+                        <MoodChips activeId={mood.id} />
+                    </div>
+                </section>
+            </div>
 
-                <div className="mt-6">
-                    <MoodChips activeId={mood.id} />
-                </div>
-
+            <section className="mx-auto max-w-6xl px-4 sm:px-8">
                 {films.length === 0 ? (
-                    <p className="mt-8 text-white/50">Bu mod için film bulunamadı.</p>
+                    <p className="text-white/50">Bu mod için film bulunamadı.</p>
                 ) : (
-                    <ul className="mt-8 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-                        {films.map((f) => (
-                            <FilmCard key={f.id} film={f} />
+                    <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 md:grid-cols-4 lg:grid-cols-5">
+                        {films.map((f, i) => (
+                            <FilmCard key={f.id} film={f} index={i} />
                         ))}
                     </ul>
                 )}

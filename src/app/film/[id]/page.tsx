@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import Footer from "@/components/Footer";
+import SiteHeader from "@/components/SiteHeader";
 import { getFilm, getSimilarFilms } from "@/lib/recommend/similar";
 import { Suspense } from "react";
 import FilmCard from "@/components/film/FilmCard";
@@ -43,66 +43,66 @@ export default async function FilmPage({ params, searchParams }: Props) {
     if (!film) notFound();
 
     return (
-        <main className="min-h-screen bg-background pb-16">
-            {/* Backdrop */}
-            <div className="relative h-[42vh] min-h-[280px] w-full overflow-hidden">
-                {film.backdropUrl && <Image src={film.backdropUrl} alt="" fill priority sizes="100vw" className="object-cover opacity-40" />}
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-                <Link
-                    href="/"
-                    className="absolute top-4 left-4 flex items-center gap-2 px-3 py-2 rounded-xl bg-black/40 hover:bg-black/60 border border-white/10 text-sm text-white/80 transition-colors"
-                >
-                    <ArrowLeft className="w-4 h-4" />
-                    Yeni arama
-                </Link>
+        <main className="min-h-screen bg-background">
+            {/* Kapak: backdrop + yumuşak karartma, üst çubuk görselin üstünde */}
+            <div className="relative h-[52vh] min-h-[340px] w-full overflow-hidden">
+                {film.backdropUrl && <Image src={film.backdropUrl} alt="" fill priority sizes="100vw" className="object-cover opacity-45" />}
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-background/30" />
+                <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-transparent to-transparent" />
+                <SiteHeader overlay />
             </div>
 
             {/* Film bilgisi */}
-            <section className="relative -mt-40 px-4 sm:px-8 max-w-6xl mx-auto flex flex-col sm:flex-row gap-6 sm:gap-8">
-                <div className="relative w-40 sm:w-56 aspect-[2/3] shrink-0 rounded-xl overflow-hidden bg-card shadow-glow-card">
-                    {film.posterUrl && <Image src={film.posterUrl} alt={film.title} fill priority sizes="224px" className="object-cover" />}
+            <section className="relative -mt-56 mx-auto flex max-w-6xl flex-col gap-6 px-4 sm:-mt-64 sm:flex-row sm:gap-10 sm:px-8">
+                <div className="relative aspect-[2/3] w-40 shrink-0 overflow-hidden rounded-xl bg-card shadow-glow-card ring-1 ring-white/15 sm:w-60">
+                    {film.posterUrl && <Image src={film.posterUrl} alt={film.title} fill priority sizes="240px" className="object-cover" />}
                 </div>
-                <div className="min-w-0 sm:pt-24">
-                    <h1 className="text-3xl sm:text-4xl font-bold text-white">
-                        {film.title}
-                        {film.year && <span className="ml-3 text-2xl font-normal text-white/40">{film.year}</span>}
-                    </h1>
-                    {film.originalTitle && <p className="mt-1 text-white/40">{film.originalTitle}</p>}
+                <div className="min-w-0 sm:pt-28">
+                    <h1 className="font-display text-4xl leading-[1.05] tracking-tight text-white sm:text-6xl">{film.title}</h1>
+                    <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-white/50">
+                        {film.year && <span className="tabular-nums">{film.year}</span>}
+                        {film.originalTitle && (
+                            <>
+                                <span aria-hidden>·</span>
+                                <span className="italic">{film.originalTitle}</span>
+                            </>
+                        )}
+                    </p>
 
-                    <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
+                    <div className="mt-5 flex flex-wrap items-center gap-2 text-sm">
                         {film.rating != null && film.rating > 0 && (
-                            <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/5 text-white/80">
-                                <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                            <span className="flex items-center gap-1.5 rounded-full bg-accent/15 px-3 py-1 text-accent-glow">
+                                <Star className="h-3.5 w-3.5 fill-accent-glow" aria-hidden />
                                 {film.rating.toFixed(1)}
                                 {film.voteCount != null && <span className="text-white/40">({film.voteCount.toLocaleString("tr-TR")})</span>}
                             </span>
                         )}
                         {film.genres.map((g) => (
-                            <span key={g} className="px-2 py-1 rounded-lg bg-accent/15 text-accent-glow">
+                            <span key={g} className="rounded-full border border-white/10 px-3 py-1 text-white/65">
                                 {g}
                             </span>
                         ))}
                     </div>
 
-                    {film.overview && <p className="mt-4 max-w-3xl leading-relaxed text-white/70">{film.overview}</p>}
+                    {film.overview && <p className="mt-6 max-w-3xl text-[17px] leading-relaxed text-white/70">{film.overview}</p>}
 
-                    <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+                    <dl className="mt-6 grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5 text-sm">
                         {film.director && (
                             <>
-                                <dt className="text-white/40">Yönetmen</dt>
-                                <dd className="text-white/80">{film.director}</dd>
+                                <dt className="text-white/35">Yönetmen</dt>
+                                <dd className="text-white/85">{film.director}</dd>
                             </>
                         )}
                         {film.cast.length > 0 && (
                             <>
-                                <dt className="text-white/40">Oyuncular</dt>
-                                <dd className="text-white/80">{film.cast.slice(0, 5).join(", ")}</dd>
+                                <dt className="text-white/35">Oyuncular</dt>
+                                <dd className="text-white/85">{film.cast.slice(0, 5).join(", ")}</dd>
                             </>
                         )}
                         {film.collectionName && (
                             <>
-                                <dt className="text-white/40">Seri</dt>
-                                <dd className="text-white/80">{film.collectionName}</dd>
+                                <dt className="text-white/35">Seri</dt>
+                                <dd className="text-white/85">{film.collectionName}</dd>
                             </>
                         )}
                     </dl>
@@ -112,17 +112,22 @@ export default async function FilmPage({ params, searchParams }: Props) {
             </section>
 
             {/* Benzer filmler */}
-            <section className="mt-12 px-4 sm:px-8 max-w-6xl mx-auto">
-                <h2 className="text-2xl font-bold text-white">Benzer Filmler</h2>
+            <section className="mx-auto mt-20 max-w-6xl px-4 sm:px-8">
+                <div className="flex flex-wrap items-end justify-between gap-3 border-b border-white/10 pb-4">
+                    <div>
+                        <p className="text-xs uppercase tracking-[0.3em] text-accent-glow/80">Tema · atmosfer · hikâye</p>
+                        <h2 className="mt-2 font-display text-3xl text-white sm:text-4xl">Benzer filmler</h2>
+                    </div>
+                </div>
                 {film.inCatalog && (
-                    <div className="mt-4">
+                    <div className="mt-5">
                         <Suspense>
                             <PlatformFilter platforms={FEATURED_PLATFORMS} selected={platforms} />
                         </Suspense>
                     </div>
                 )}
                 {!film.inCatalog ? (
-                    <p className="mt-4 text-white/50">Bu film henüz öneri kataloğumuzda yok, bu yüzden benzer film öneremiyoruz.</p>
+                    <p className="mt-6 text-white/50">Bu film henüz öneri kataloğumuzda yok, bu yüzden benzer film öneremiyoruz.</p>
                 ) : (
                     <Suspense key={`${id}:${platforms.join(",")}`} fallback={<SimilarSkeleton />}>
                         <SimilarList id={id} platforms={platforms} />
@@ -139,15 +144,15 @@ async function SimilarList({ id, platforms }: { id: number; platforms: number[] 
     const similar = await getSimilarFilms(id, 20, false, platforms);
     if (similar.length === 0) {
         return (
-            <p className="mt-4 text-white/50">
+            <p className="mt-6 text-white/50">
                 {platforms.length ? "Seçtiğin platformlarda bu filme benzer bir film bulamadık. Platform ekle ya da tümünü göster." : "Bu film için öneri bulunamadı."}
             </p>
         );
     }
     return (
-        <ul className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-            {similar.map((s) => (
-                <FilmCard key={s.film.id} film={s.film} reasons={s.reasons} platforms={s.platforms} />
+        <ul className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 md:grid-cols-4 lg:grid-cols-5">
+            {similar.map((s, i) => (
+                <FilmCard key={s.film.id} film={s.film} reasons={s.reasons} platforms={s.platforms} index={i} />
             ))}
         </ul>
     );
@@ -156,10 +161,10 @@ async function SimilarList({ id, platforms }: { id: number; platforms: number[] 
 function SimilarSkeleton() {
     return (
         <div aria-busy="true" aria-label="Benzer filmler yükleniyor">
-            <p className="mt-4 text-sm text-white/40">Benzer filmler aranıyor…</p>
-            <ul className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+            <p className="mt-6 text-sm text-white/40">Benzer filmler aranıyor…</p>
+            <ul className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 md:grid-cols-4 lg:grid-cols-5">
                 {Array.from({ length: 10 }, (_, i) => (
-                    <li key={i} className="aspect-[2/3] rounded-xl bg-white/5 animate-pulse" />
+                    <li key={i} className="aspect-[2/3] animate-pulse rounded-xl bg-white/5" />
                 ))}
             </ul>
         </div>

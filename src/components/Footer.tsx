@@ -3,19 +3,19 @@
 import { useTranslation } from "@/contexts/LanguageContext";
 
 export default function Footer() {
-    const { t, language } = useTranslation();
+    const { language } = useTranslation();
 
     return (
-        <footer className="fixed bottom-0 left-0 right-0 z-10 py-2 px-4 bg-background/80 backdrop-blur-sm border-t border-white/5">
-            <div className="max-w-6xl mx-auto flex items-center justify-center gap-4 text-xs text-white/30">
-                <span>© 2024 filminibul</span>
-                <span>•</span>
-                <a
-                    href="/privacy"
-                    className="hover:text-white/60 transition-colors"
-                >
-                    {language === "tr" ? "Gizlilik Politikası" : "Privacy Policy"}
-                </a>
+        <footer className="mt-20 border-t border-white/5">
+            <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/35">
+                <span className="font-display text-sm text-white/50">Filminibul</span>
+                <div className="flex items-center gap-4">
+                    <span>© {new Date().getFullYear()} filminibul</span>
+                    <a href="/privacy" className="hover:text-white/70 transition-colors">
+                        {language === "tr" ? "Gizlilik Politikası" : "Privacy Policy"}
+                    </a>
+                </div>
+                <span>Film verileri: TMDB · Yayın bilgisi: JustWatch</span>
             </div>
         </footer>
     );
