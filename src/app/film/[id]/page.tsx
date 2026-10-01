@@ -38,7 +38,8 @@ export default async function FilmPage({ params, searchParams }: Props) {
     // ?p=8,119 → sadece bu platformlarda izlenebilen benzer filmler
     const platforms = (searchParams?.p ?? "").split(",").map(Number).filter((x) => Number.isInteger(x) && x > 0);
 
-    const [film, similar, providers] = await Promise.all([getFilm(id), getSimilarFilms(id, 20, false, platforms), getLiveProviders(id)]);
+    // Film bilgisi hızlı gelir; benzer filmler (HNSW sorgusu, soğukken 1–4 sn) aşağıda Suspense ile akışla yüklenir.
+    const [film, providers] = await Promise.all([getFilm(id), getLiveProviders(id)]);
     if (!film) notFound();
 
     return (
@@ -122,20 +123,45 @@ export default async function FilmPage({ params, searchParams }: Props) {
                 )}
                 {!film.inCatalog ? (
                     <p className="mt-4 text-white/50">Bu film henüz öneri kataloğumuzda yok, bu yüzden benzer film öneremiyoruz.</p>
-                ) : similar.length === 0 ? (
-                    <p className="mt-4 text-white/50">
-                        {platforms.length ? "Seçtiğin platformlarda bu filme benzer bir film bulamadık. Platform ekle ya da tümünü göster." : "Bu film için öneri bulunamadı."}
-                    </p>
                 ) : (
-                    <ul className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-                        {similar.map((s) => (
-                            <FilmCard key={s.film.id} film={s.film} reasons={s.reasons} platforms={s.platforms} />
-                        ))}
-                    </ul>
+                    <Suspense key={`${id}:${platforms.join(",")}`} fallback={<SimilarSkeleton />}>
+                        <SimilarList id={id} platforms={platforms} />
+                    </Suspense>
                 )}
             </section>
 
             <Footer />
         </main>
+    );
+}
+
+async function SimilarList({ id, platforms }: { id: number; platforms: number[] }) {
+    const similar = await getSimilarFilms(id, 20, false, platforms);
+    if (similar.length === 0) {
+        return (
+            <p className="mt-4 text-white/50">
+                {platforms.length ? "Seçtiğin platformlarda bu filme benzer bir film bulamadık. Platform ekle ya da tümünü göster." : "Bu film için öneri bulunamadı."}
+            </p>
+        );
+    }
+    return (
+        <ul className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+            {similar.map((s) => (
+                <FilmCard key={s.film.id} film={s.film} reasons={s.reasons} platforms={s.platforms} />
+            ))}
+        </ul>
+    );
+}
+
+function SimilarSkeleton() {
+    return (
+        <div aria-busy="true" aria-label="Benzer filmler yükleniyor">
+            <p className="mt-4 text-sm text-white/40">Benzer filmler aranıyor…</p>
+            <ul className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+                {Array.from({ length: 10 }, (_, i) => (
+                    <li key={i} className="aspect-[2/3] rounded-xl bg-white/5 animate-pulse" />
+                ))}
+            </ul>
+        </div>
     );
 }

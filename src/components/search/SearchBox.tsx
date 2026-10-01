@@ -24,6 +24,7 @@ export default function SearchBox() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const abortRef = useRef<AbortController | null>(null);
+    const warmedRef = useRef<Set<number>>(new Set());
 
     // 300ms debounce; eski istek iptal edilir
     useEffect(() => {
@@ -44,6 +45,15 @@ export default function SearchBox() {
                 if (!res.ok) throw new Error(data.error ?? "Arama başarısız");
                 setResults(data.results);
                 setError(null);
+                // İlk katalog sonuçlarının benzer film sorgusunu önceden ısıt (soğuk HNSW sorgusu 1–4 sn sürüyor);
+                // kullanıcı tıkladığında sunucu önbelleğinden anında gelir. Sonuç kullanılmaz.
+                (data.results as SearchResult[])
+                    .filter((r) => r.inCatalog && !warmedRef.current.has(r.id))
+                    .slice(0, 2)
+                    .forEach((r) => {
+                        warmedRef.current.add(r.id);
+                        fetch(`/api/similar/${r.id}`).catch(() => {});
+                    });
             } catch (err) {
                 if ((err as Error).name !== "AbortError") setError("Arama yapılamadı, tekrar dene.");
             } finally {
