@@ -56,8 +56,9 @@ export default async function FilmPage({ params, searchParams }: Props) {
 
             {/* Film bilgisi */}
             <section className="relative -mt-56 mx-auto flex max-w-6xl flex-col gap-6 px-4 sm:-mt-64 sm:flex-row sm:gap-10 sm:px-8">
-                <div className="relative aspect-[2/3] w-40 shrink-0 overflow-hidden rounded-xl bg-card shadow-glow-card ring-1 ring-white/15 sm:w-60">
-                    {film.posterUrl && <Image src={film.posterUrl} alt={film.title} fill priority sizes="240px" className="object-cover" />}
+                {/* self-start: flex satırında afiş metin sütunu kadar uzamasın, 2:3 oranını korusun */}
+                <div className="relative aspect-[2/3] w-40 shrink-0 self-start overflow-hidden rounded-xl bg-card shadow-glow-card ring-1 ring-white/15 sm:w-60 lg:w-72">
+                    {film.posterUrl && <Image src={film.posterUrl} alt={film.title} fill priority sizes="(min-width: 1024px) 288px, (min-width: 640px) 240px, 160px" className="object-cover" />}
                 </div>
                 <div className="min-w-0 sm:pt-28">
                     <h1 className="font-display text-4xl leading-[1.05] tracking-tight text-white sm:text-6xl">{film.title}</h1>
