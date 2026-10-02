@@ -3,6 +3,7 @@ import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 import Script from 'next/script';
+import { OG_BASE } from "@/lib/seo";
 
 
 // latin-ext şart: ş, ğ, ı, İ gibi Türkçe karakterler bu alt kümede (yoksa sistem fontuna düşer)
@@ -15,6 +16,8 @@ export const metadata: Metadata = {
     title: "Filminibul - Sevdiğin Filme Benzeyenleri Bul",
     description: "Sevdiğin bir filmi seç ya da aradığını tarif et; tema, atmosfer ve hikâye yapısı bakımından en çok uyan filmleri keşfet.",
     keywords: ["film", "sinema", "benzer filmler", "film önerisi", "ne izlesem", "keşfet"],
+    // Sayfalar kendi başlık/görselini verir; vermeyenler bunları kullanır (canonical/url burada YOK: alt sayfalara miras kalırdı)
+    openGraph: { ...OG_BASE, type: "website" },
 };
 
 export default function RootLayout({

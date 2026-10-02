@@ -73,6 +73,7 @@ Kullanıcı ─► Next.js 14 (Vercel) ─► reranker.ts (hafif hybrid) ─► 
 
 **Öne çıkan davranışlar**
 - Arama: katalogda "içinde geçer" araması (yarım kelime, "ruhların kaç") + TMDB (sunucuda, anahtar tarayıcıya gitmez).
+- **SEO (2026-10-02):** `src/app/sitemap.ts` (ana sayfa + 8 mod + tüm filmler, ~26,6 bin adres / 3,5 MB; günde bir yenilenir), `src/app/robots.ts` (`/admin`, `/api/` kapalı). Film sayfası: kısaltılmış özet açıklama, canonical, paylaşım önizlemesi (kapak görseli w1280 → `summary_large_image`, yoksa afiş), `og:type video.movie`. Mod ve ana sayfada canonical + önizleme. Ortak alanlar `src/lib/seo.ts` (Next openGraph'ı birleştirmez, üzerine yazar). Layout'ta canonical YOK (alt sayfalara miras kalırdı). **Yapılacak (kullanıcı):** Google Search Console'a site haritasını bildir.
 - **Görseller doğrudan TMDB CDN'inden (2026-10-02):** Vercel ücretsiz planının görsel optimizasyon kotası doldu, afişler `402 OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED` verdi. `next.config.mjs` → `loader: 'custom'`, `src/lib/tmdbImageLoader.ts`: next/image'ın istediği genişlik en yakın TMDB boyutuna çevrilir (w45…w1280; hepsi afiş/arka plan/logoda çalışıyor). `/_next/image` artık hiç kullanılmıyor. **Yeni görsel eklerken TMDB dışı kaynak kullanılırsa yükleyici onu olduğu gibi döndürür (optimize edilmez).**
 - **Film adresleri (2026-10-02):** `/film/<tmdb id>-<başlık>` (`src/lib/filmUrl.ts`: `filmPath`, `slugify`, `parseFilmParam`). Türkçe harfler sadeleşir (ş→s, ı→i…), Latin olmayan başlıkta sadece id. Sadece id'li, büyük harfli ya da eski başlıklı adresler **308** ile güncel adrese gider (`?p=` korunur); sayfada `canonical` var (`metadataBase: https://filminibul.com`). Admin'deki bağlantılar id'li kalır (yönlendirilir).
 - **Türk filmleri az (2026-10-02):** 25 bin filmlik katalogda orijinal dili Türkçe olan sadece **48** film vardı (TMDB'de Türk filmleri az oy alıyor, eşiklere takılıyordu). TMDB'de dili Türkçe: tümü 9.751 · ≥1 oy 5.229 · **≥5 oy 1.527** · ≥20 oy 624. ≥5 oylu örneklem (100 film): afiş %100, Türkçe özet %100, İngilizce özet %96, keyword %47. Başka kaynak değerlendirildi: IMDb veri setleri ticari olmayan lisans (sitede reklam alanı var), Sinemalar/Beyazperde/Sinematürk'ün açık API'si yok, Wikidata TMDB'den fazlasını vermez → **TMDB'de kalınıyor, sonuçlar gözlemlenecek.** Eksik ≥5 oylu Türk filmi: 1.498 (~30 MB). **Eklendi (2026-10-02, GitHub'dan `max_add=1500` ile):** katalog 26.575, Türkçe film 48 → **1.546**. Örnek: Devlet Kuşu → İbo ile Güllüşah, Bizim Aile, Tokatçı, Salako, Çöpçüler Kralı.
@@ -190,7 +191,7 @@ GitHub'da: kod, `src/data/*.json`, `data/eval/` (golden set, LLM puan önbelleğ
 ### Fikir listesi (araştırmadan çıkanlar, sırayla)
 - 👍/👎 (hesapsız, tarayıcıda): kişiselleştirme + **gerçek kullanıcı verisi** toplamak
 - "İki filmi karıştır" (iki embedding'in ortası)
-- SEO: sitemap, paylaşım görseli (OG), "X'e benzer filmler" başlıkları
+- ~~SEO: sitemap, paylaşım görseli (OG), "X'e benzer filmler" başlıkları~~ (yapıldı; Search Console'a bildirilmeli)
 - Seri adlarını Türkçeleştirmek ("The Matrix Collection" → "Matrix serisi")
 - İlk açılış gecikmesi → aşağıdaki "Arama hızı" maddesine bakınız
 

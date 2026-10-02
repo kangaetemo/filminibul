@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { OG_BASE } from "@/lib/seo";
 import { notFound } from "next/navigation";
 import { Shuffle } from "lucide-react";
 import Footer from "@/components/Footer";
@@ -15,7 +16,14 @@ type Props = { params: { id: string } };
 
 export function generateMetadata({ params }: Props): Metadata {
     const mood = getMood(params.id);
-    return { title: mood ? `${mood.label} · Filminibul` : "Filminibul" };
+    if (!mood) return { title: "Filminibul" };
+    const description = `"${mood.label}" diyenler için film önerileri: her açılışta farklı filmler.`;
+    return {
+        title: `${mood.label} · Filminibul`,
+        description,
+        alternates: { canonical: `/mod/${mood.id}` },
+        openGraph: { ...OG_BASE, type: "website", url: `/mod/${mood.id}`, title: `${mood.emoji} ${mood.label} · Filminibul`, description },
+    };
 }
 
 export default async function MoodPage({ params }: Props) {

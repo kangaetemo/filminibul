@@ -13,6 +13,7 @@ import { getTrailer } from "@/lib/recommend/trailer";
 import PlatformFilter from "@/components/film/PlatformFilter";
 import { FEATURED_PLATFORMS, getLiveProviders } from "@/lib/recommend/providers";
 import { filmPath, parseFilmParam } from "@/lib/filmUrl";
+import { OG_BASE } from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -23,10 +24,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const id = parseFilmParam(params.id);
     const film = id ? await getFilm(id) : null;
     if (!film) return { title: "Film bulunamadı · Filminibul" };
+    const name = `${film.title}${film.year ? ` (${film.year})` : ""}`;
+    const url = filmPath(film.id, film.title);
+    // Paylaşım önizlemesi (WhatsApp, X…): kısa açıklama + geniş kapak görseli, yoksa afiş
+    const description = film.overview
+        ? film.overview.length > 200
+            ? film.overview.slice(0, 197).replace(/s+S*$/, "") + "…"
+            : film.overview
+        : `${film.title} filmine tema, atmosfer ve hikâyece benzeyen filmler.`;
+    const image = film.backdropUrl ?? film.posterUrl;
     return {
-        title: `${film.title}${film.year ? ` (${film.year})` : ""} ve benzer filmler · Filminibul`,
-        description: film.overview ?? undefined,
-        alternates: { canonical: filmPath(film.id, film.title) },
+        title: `${name} ve benzer filmler · Filminibul`,
+        description,
+        alternates: { canonical: url },
+        openGraph: {
+            ...OG_BASE,
+            type: "video.movie",
+            url,
+            title: `${name} gibi filmler`,
+            description,
+            ...(image && { images: [{ url: image, alt: film.title }] }),
+        },
+        twitter: { card: image === film.backdropUrl ? "summary_large_image" : "summary" },
     };
 }
 

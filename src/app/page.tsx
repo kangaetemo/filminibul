@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { OG_BASE } from "@/lib/seo";
 import Link from "next/link";
 import { Suspense } from "react";
 import { MessageSquareText, Search, Lightbulb } from "lucide-react";
@@ -36,6 +38,8 @@ const STEPS = [
 ];
 
 // Ana akış: film adı yaz ya da tarif et → sonuçlar; ya da ruh hâline göre seç.
+export const metadata: Metadata = { alternates: { canonical: "/" }, openGraph: { ...OG_BASE, type: "website", url: "/" } };
+
 export default function HomePage() {
     return (
         <main className="min-h-screen bg-background">
