@@ -1,10 +1,4 @@
-"use client";
-
-import { useTranslation } from "@/contexts/LanguageContext";
-
 export default function Footer() {
-    const { language } = useTranslation();
-
     return (
         <footer className="mt-20 border-t border-white/5">
             <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/35">
@@ -12,7 +6,7 @@ export default function Footer() {
                 <div className="flex items-center gap-4">
                     <span>© {new Date().getFullYear()} filminibul</span>
                     <a href="/privacy" className="hover:text-white/70 transition-colors">
-                        {language === "tr" ? "Gizlilik Politikası" : "Privacy Policy"}
+                        Gizlilik Politikası
                     </a>
                 </div>
                 <span>Film verileri: TMDB · Yayın bilgisi: JustWatch</span>

@@ -136,7 +136,7 @@ async function main() {
     }
 
     // ---------------- Yerel arşiv ----------------
-    const archivePath = resolve(ROOT, "dev_dev_arsiv.json");
+    const archivePath = resolve(ROOT, "data", "export", "dev_dev_arsiv.json"); // eski Upstash arşivi (repodan çıkarıldı, sadece yerelde)
     if (existsSync(archivePath)) {
         const archive = JSON.parse(readFileSync(archivePath, "utf8"));
         idSets["dev_dev_arsiv.json"] = new Set(archive.map((f) => Number(f.id)));

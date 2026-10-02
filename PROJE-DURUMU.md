@@ -170,7 +170,7 @@ GitHub'da: kod, `src/data/*.json`, `data/eval/` (golden set, LLM puan önbelleğ
 ## 7. Yapılacaklar / açık konular
 
 ### Öncelikli
-1. **Upstash token'ını iptal et.** Eski commit'lerde (`upload_to_upstash.py`) açıkta duruyor; dosya silindi ama git geçmişinde kalır.
+1. ~~Upstash token'ını iptal et~~ **Yapıldı (2026-10-02):** git geçmişindeki token'ın adresi 404 (veritabanı silinmiş), `.env.local`'daki token 403 (iptal). `.env.local`'dan Upstash satırları silindi.
 2. **Haftalık katalog güncellemesi kuruldu (2026-10-02)**, ayrıntı: bölüm 3 → Otomasyon. Kalanlar:
    - İlk çalıştırma admin panelinden yapıldı (2026-10-02): ekleme adımı çalıştı (100 film), sonra kullanıcı işi iptal etti. İkinci elle çalıştırma **uçtan uca başarılı**: 100 film daha eklendi (katalog 25.074) ve iş main'e `2ec09bc` commit'ini attı (yazar: repo sahibi). Vercel deploy'u panelden doğrulanabilir.
    - İlk dolgu yapıldı (yukarıda, Veri gerçekleri).
@@ -184,7 +184,7 @@ GitHub'da: kod, `src/data/*.json`, `data/eval/` (golden set, LLM puan önbelleğ
    - Sınır: admin'den eklenen film kendi listesini anında canlı HNSW'den alır; başka filmlerin listelerine pazartesi girer.
    - **halfvec kalite ölçümü** (yerel, 150 film, tam arama): en yakın 20 birebir aynı, en yakın 200'ün %99,89'u aynı, en büyük benzerlik farkı 0,0004. Benzer filmler halfvec'e hiç dokunmaz (tablo tam hassasiyetle hesaplanır); index'i kullanan iki sorgu da benzerliği tam hassasiyetle yeniden hesaplar.
    - **Geri alma:** `scripts/sql/halfvec_revert.sql` (embedding sütunu değişmediği için veri kaybı yok; tam index ~2 kat yer ister, script önce yeri kontrol eder). Alternatif (kullanıcı halfvec istemezse): sadece `vote_count >= 100` filmler için kısmi tam hassasiyetli index.
-4. **Tasarım turu devam:** yeni tasarım beğenilmeyen yerler olursa elden geçirilecek (ör. afiş görseli 500 px → retina'da yumuşak olabilir, `w780`'e geçilebilir). Admin paneli ayrıca tasarlanmadı. `README.md` ve eski swipe metinleri hâlâ güncellenmedi.
+4. **Tasarım turu devam:** yeni tasarım beğenilmeyen yerler olursa elden geçirilecek (ör. afiş görseli 500 px → retina'da yumuşak olabilir, `w780`'e geçilebilir). Admin paneli ayrıca tasarlanmadı. README ve eski swipe metinleri 2026-10-02'de temizlendi.
 
 ### Fikir listesi (araştırmadan çıkanlar, sırayla)
 - 👍/👎 (hesapsız, tarayıcıda): kişiselleştirme + **gerçek kullanıcı verisi** toplamak
@@ -197,9 +197,7 @@ GitHub'da: kod, `src/data/*.json`, `data/eval/` (golden set, LLM puan önbelleğ
 - Niş filmlerde (ör. Triangle) öneriler zayıf: veri sınırı (az keyword, "time loop" filmlerinin çoğu katalogda yok).
 - Keyword çevirileri sözlükte düz JSON; hatalı olanlar elle düzeltilebilir (`src/data/keywords_tr.json`, örn. "halk korku filmi", "gnostisizm").
 - Yeni bir TV/streaming platformu gelirse adı/logosu için `fetch_providers.mjs`'i **bilgisayarda** çalıştırıp `src/data/providers_tr.json`'ı commit'lemek gerekir (Actions `--no-catalog` ile çalışır).
-- `dev_dev_arsiv.json` (79 MB, eski Upstash verisi) hâlâ repoda; `package.json`'da kullanılmayan `@upstash/vector` ve `framer-motion` var.
-- `README.md` ve sekme başlığı dışındaki bazı metinler eski swipe uygulamasından kalma olabilir; arayüz elden geçirilecek.
-- `NEXT_PUBLIC_TMDB_API_KEY` eski koddan kalma referanslar temizlendi mi kontrol edilebilir (`src/lib/tmdb.ts` yalnızca genre haritaları için kullanılıyor).
+- **Temizlendi (2026-10-02):** kullanılmayan Firebase girişi (`AuthContext`, `firebase.ts`), dil sistemi (`LanguageContext`, `translations.ts`), boş reklam kutusu (`AdBanner`), eski TMDB istemcisi (`tmdb.ts`'te sadece `GENRE_MAP_TR` kaldı; `NEXT_PUBLIC_TMDB_API_KEY` referansı yok), paketler `firebase`, `@upstash/vector`, `framer-motion`. `dev_dev_arsiv.json` (79 MB) repodan çıkarıldı → yerelde `data/export/` (git geçmişinde hâlâ duruyor). README yeniden yazıldı. **Gizlilik sayfası gerçeğe göre güncellendi** (eskisi swipe beğenileri/izleme listesi/Google girişinden bahsediyordu; tarif metninin OpenAI'ye gittiği, AdSense, Vercel Analytics eklendi). Vercel'de `NEXT_PUBLIC_FIREBASE_*` değişkenleri artık gereksiz.
 - **Tarif araması bulgusu:** LLM bazen tema listesine olmayan şeyler ekleyebilir; "Setting" satırını yalnızca sorguda açıkça ülke/dil/dönem geçerse yazması için istemde kural var (Türkçe yazıldı diye "Turkish" eklemesin). Sonuçlar kalitesiz görünürse önce `vibe_try.mjs` ile istemi ölç.
 - **Geliştirme ortamı:** Bu bilgisayarda `gh` (GitHub CLI) kurulu ama PATH'te değil (`C:\Program Files\GitHub CLI\gh.exe`) ve giriş yapılmadı (`gh auth login --web --git-protocol https`, kendi PowerShell penceresinde). Ağ zaman zaman takılıyor (github.com / TMDB zaman aşımı), yeniden denemek yeterli. Claude oturumları worktree'de çalışıyor ve **main'e push/merge yapmıyor**: branch push'lanır, `git merge --ff-only origin/<branch>` + `git push origin main` sende.
 - Başsız Chrome (`chrome.exe --headless=new --screenshot`) ile ekran görüntüsü alınabiliyor; 500 px'ten dar pencere açmaz, mobil için iframe sarmalayıcı kullanıldı.

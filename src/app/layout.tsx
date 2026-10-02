@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { LanguageProvider } from "@/contexts/LanguageContext";
 import { Analytics } from "@vercel/analytics/react";
 import Script from 'next/script';
 
@@ -33,9 +31,7 @@ export default function RootLayout({
 				crossOrigin="anonymous"
 				strategy="afterInteractive"
 				/>
-                <LanguageProvider>
-                    <AuthProvider>{children}</AuthProvider>
-                </LanguageProvider>
+                {children}
                 <Analytics />
             </body>
         </html>
