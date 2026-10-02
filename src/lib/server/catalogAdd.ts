@@ -89,7 +89,8 @@ export async function addFilmToCatalog(id: number): Promise<AddResult> {
     if (d.adult) throw new AddFilmError("Yetişkin içerik kataloğa eklenmez");
 
     const row = toRow(d);
-    const doc = buildDoc(row);
+    // İngilizce özet yoksa Türkçesi (sadece belge için; Türk filmlerinde sık); scripts/catalog/add_missing.mjs ile aynı
+    const doc = buildDoc({ ...row, overview: row.overview || row.tr_overview });
     if (!doc.trim()) throw new AddFilmError("Filmin tür/keyword/özet bilgisi yok, embedding üretilemez");
 
     const warnings: string[] = [];

@@ -1,8 +1,10 @@
 // Katalogda eksik filmleri bulur ve ekler (haftalık iş; elle de çalıştırılabilir).
 //
-// İki kanal, bu öncelik sırasıyla:
+// Üç kanal, bu öncelik sırasıyla:
 //   1. Türkiye'de son haftalarda vizyona girenler (TMDB discover, region=TR)
-//   2. TMDB'de çok oy almış ama katalogda olmayanlar (oy sayısına göre, en bilinenden başlayarak)
+//   2. Türk filmleri: orijinal dili Türkçe, düşük oy eşiği (TMDB'de Türk filmleri az oy alıyor; yüksek eşikle
+//      25 bin filmlik katalogda sadece 48 Türk filmi vardı)
+//   3. TMDB'de çok oy almış ama katalogda olmayanlar (oy sayısına göre, en bilinenden başlayarak)
 //
 // Ekleme, admin panelindeki "Kataloğa ekle" ile aynı (src/lib/server/catalogAdd.ts):
 // TMDB detay + TR çeviri → v3 belge (embeddingDoc.mjs) → OpenAI embedding → film_embeddings_v3 → film_providers.
@@ -29,6 +31,8 @@ const ONLY_IDS = arg("ids", "")
 const TR_WINDOW_DAYS = 60; // vizyon kanalı: son kaç günün filmleri
 const TR_PAGES = 5;
 const TR_MIN_VOTES = 10;
+const TURKISH_MIN_VOTES = 5;
+const TURKISH_PAGES = 150; // ≥5 oylu Türk filmi ~1.500 (2026-10), sayfa başı 20
 const POPULAR_MIN_VOTES = 300;
 const POPULAR_PAGES = 500; // TMDB discover en fazla 500 sayfa (10.000 film) verir
 const DB_STOP_MB = 480;
@@ -36,7 +40,8 @@ const BYTES_PER_FILM = 17_000; // tablo + index, yaklaşık (admin panelindeki h
 const EMBED_BATCH = 50;
 
 const day = (offset = 0) => new Date(Date.now() + offset * 86400000).toISOString().slice(0, 10);
-const usable = (m) => !m.adult && m.poster_path && m.overview;
+// Özet şartı: embedding büyük ölçüde özetten çıkar. Türk filmlerinde İngilizce özet yoksa Türkçesi kullanılır (aşağıda).
+const usable = (m, needOverview = true) => !m.adult && m.poster_path && (m.overview || !needOverview);
 
 async function discover(params, pages) {
     const out = [];
@@ -55,21 +60,23 @@ async function discover(params, pages) {
 
 /** Aday listesi: öncelik sırasıyla, katalogda olmayanlar, tekrarsız. */
 async function findCandidates(inCatalog) {
-    const [tr, popular] = await Promise.all([
+    const [tr, turkish, popular] = await Promise.all([
         discover(
             { region: "TR", with_release_type: "2|3", "release_date.gte": day(-TR_WINDOW_DAYS), "release_date.lte": day(), sort_by: "popularity.desc", "vote_count.gte": TR_MIN_VOTES },
             TR_PAGES
         ),
+        discover({ with_original_language: "tr", sort_by: "vote_count.desc", "vote_count.gte": TURKISH_MIN_VOTES }, TURKISH_PAGES),
         discover({ sort_by: "vote_count.desc", "vote_count.gte": POPULAR_MIN_VOTES }, POPULAR_PAGES),
     ]);
     const seen = new Set();
-    const pick = (list, source) =>
+    const pick = (list, source, needOverview = true) =>
         list
-            .filter((m) => usable(m) && !inCatalog.has(m.id) && !seen.has(m.id) && seen.add(m.id))
+            .filter((m) => usable(m, needOverview) && !inCatalog.has(m.id) && !seen.has(m.id) && seen.add(m.id))
             .map((m) => ({ id: m.id, title: m.title, year: m.release_date?.slice(0, 4) ?? "?", votes: m.vote_count, source }));
     const trNew = pick(tr, "vizyon (TR)");
+    const turkishMissing = pick(turkish, "Türk filmi", false).sort((a, b) => b.votes - a.votes);
     const popularMissing = pick(popular, "popüler").sort((a, b) => b.votes - a.votes);
-    return { trNew, popularMissing, scanned: { tr: tr.length, popular: popular.length } };
+    return { trNew, turkishMissing, popularMissing, scanned: { tr: tr.length, turkish: turkish.length, popular: popular.length } };
 }
 
 // src/lib/server/catalogAdd.ts → toRow ile aynı alanlar
@@ -126,10 +133,12 @@ async function main() {
     if (ONLY_IDS.length) {
         queue = ONLY_IDS.filter((id) => !inCatalog.has(id)).map((id) => ({ id, source: "elle" }));
     } else {
-        const { trNew, popularMissing, scanned } = await findCandidates(inCatalog);
-        console.log(`🔎 Tarandı: vizyon ${scanned.tr}, popüler ${scanned.popular} · eksik: vizyon ${trNew.length}, popüler ${popularMissing.length}`);
+        const { trNew, turkishMissing, popularMissing, scanned } = await findCandidates(inCatalog);
+        console.log(
+            `🔎 Tarandı: vizyon ${scanned.tr}, Türk filmi ${scanned.turkish}, popüler ${scanned.popular} · eksik: vizyon ${trNew.length}, Türk filmi ${turkishMissing.length}, popüler ${popularMissing.length}`
+        );
         console.log("   eksik popülerler (oy eşiğine göre): " + [5000, 2000, 1000, 500, 300].map((t) => `≥${t}: ${popularMissing.filter((c) => c.votes >= t).length}`).join(" · "));
-        queue = [...trNew, ...popularMissing];
+        queue = [...trNew, ...turkishMissing, ...popularMissing];
     }
 
     // Veritabanı doluluğu: sınırı aşacak kadar ekleme
@@ -160,7 +169,8 @@ async function main() {
             const d = await tmdb(`/movie/${c.id}`, { language: "en-US", append_to_response: "keywords,credits,translations,watch/providers" });
             if (!d || d.adult) return null;
             const row = toRow(d);
-            const doc = buildDoc(row);
+            // İngilizce özet yoksa Türkçesi (sadece belge için; overview sütunu TMDB'deki gibi kalır)
+            const doc = buildDoc({ ...row, overview: row.overview || row.tr_overview });
             if (!doc.trim()) return null;
             return { row, doc, providers: toProviders(d.id, d["watch/providers"]), source: c.source };
         })
