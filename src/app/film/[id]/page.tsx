@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound, permanentRedirect } from "next/navigation";
-import { Star } from "lucide-react";
+import Link from "next/link";
+import { Blend, Star } from "lucide-react";
 import Footer from "@/components/Footer";
 import SiteHeader from "@/components/SiteHeader";
 import { getFilm, getSimilarFilms } from "@/lib/recommend/similar";
@@ -112,9 +113,18 @@ export default async function FilmPage({ params, searchParams }: Props) {
 
                     {film.overview && <p className="mt-6 max-w-3xl text-[17px] leading-relaxed text-white/70">{film.overview}</p>}
 
-                    {trailer && (
-                        <div className="mt-6">
-                            <TrailerButton videoKey={trailer.key} filmTitle={film.title} />
+                    {(trailer || film.inCatalog) && (
+                        <div className="mt-6 flex flex-wrap items-center gap-3">
+                            {trailer && <TrailerButton videoKey={trailer.key} filmTitle={film.title} />}
+                            {film.inCatalog && (
+                                <Link
+                                    href={`/karistir?a=${film.id}`}
+                                    className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-2.5 text-sm font-medium text-white/80 transition hover:border-accent/50 hover:text-white"
+                                >
+                                    <Blend className="h-4 w-4" aria-hidden />
+                                    Başka bir filmle karıştır
+                                </Link>
+                            )}
                         </div>
                     )}
 

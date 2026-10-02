@@ -159,6 +159,14 @@ export function explainParts(s: ScoredFilm): string[] {
 
 export const explain = (s: ScoredFilm) => explainParts(s).join(" · ");
 
+/** İki filmin ortak temaları, en nadirden başlayarak, Türkçe (gösterilmeyen meta keyword'ler hariç). */
+export function sharedThemes(a: string[] | null, b: string[] | null, limit = 2): string[] {
+    const other = new Set(b ?? []);
+    const shared = (a ?? []).filter((k) => other.has(k) && !HIDDEN_KEYWORDS.has(k));
+    shared.sort((x, y) => kwIdf(y) - kwIdf(x));
+    return displayKeywords(shared.slice(0, limit));
+}
+
 /** Semantic adayları yeniden sıralar; diversity sınırlarıyla Top N döndürür. */
 export function rerank(seed: FilmRow, candidates: Candidate[], topN = 20): ScoredFilm[] {
     if (!candidates.length) return [];

@@ -5,7 +5,7 @@ import { displayTitle } from "@/lib/recommend/similar";
 import type { FilmRow } from "@/lib/recommend/types";
 import { supabaseSelect } from "@/lib/server/supabase";
 
-// /sitemap.xml: ana sayfa, mod sayfaları ve katalogdaki tüm filmler (~26 bin; Google sınırı 50 bin adres).
+// /sitemap.xml: ana sayfa, /karistir, mod sayfaları ve katalogdaki tüm filmler (~26 bin; Google sınırı 50 bin adres).
 // Günde bir yeniden üretilir; haftalık katalog işi yeni filmleri ekler.
 export const revalidate = 86400;
 
@@ -30,6 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const films = await allFilms();
     return [
         { url: SITE, changeFrequency: "weekly", priority: 1 },
+        { url: `${SITE}/karistir`, changeFrequency: "monthly", priority: 0.6 },
         ...MOODS.map((m) => ({ url: `${SITE}/mod/${m.id}`, changeFrequency: "weekly" as const, priority: 0.6 })),
         ...films.map((f) => ({ url: SITE + filmPath(f.movie_id, displayTitle(f)), changeFrequency: "monthly" as const, priority: 0.5 })),
     ];

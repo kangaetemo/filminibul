@@ -23,11 +23,14 @@ export default function SiteHeader({ overlay = false, search = true }: { overlay
                     </div>
                 )}
                 <nav className={`flex items-center gap-1 text-sm text-white/60 ${search ? "ml-auto sm:ml-0" : "ml-auto"}`}>
-                    <Link href="/#modlar" className="px-3 py-2 rounded-lg hover:text-white hover:bg-white/5 transition-colors">
+                    <Link href="/#modlar" className="px-2 sm:px-3 py-2 rounded-lg hover:text-white hover:bg-white/5 transition-colors">
                         Ruh hâlleri
                     </Link>
-                    <Link href="/ara" className="px-3 py-2 rounded-lg hover:text-white hover:bg-white/5 transition-colors">
+                    <Link href="/ara" className="px-2 sm:px-3 py-2 rounded-lg hover:text-white hover:bg-white/5 transition-colors">
                         Tarif et
+                    </Link>
+                    <Link href="/karistir" className="px-2 sm:px-3 py-2 rounded-lg hover:text-white hover:bg-white/5 transition-colors">
+                        Karıştır
                     </Link>
                 </nav>
             </div>
