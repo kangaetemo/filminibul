@@ -56,11 +56,11 @@ Kullanıcı ─► Next.js 14 (Vercel) ─► reranker.ts (hafif hybrid) ─► 
 - Ağırlık değiştirmeden önce mutlaka `llm_judge.mjs` ile ölç (puanlar önbellekli, tekrar ödeme yok).
 
 ### Veri gerçekleri
-- Katalog: **22.933 film** (22.931 + admin'den eklenen *Düşman* #181886 ve *Kapsül/Primer* #14337).
+- Katalog: **24.974 film** (2026-10-02). 22.931 orijinal + admin'den 3 film + haftalık işin ilk elle çalıştırması 100 + ilk dolgu 1.940 (TMDB'de ≥1.000 oylu eksik filmler, `add_missing.mjs --max=1940`).
 - Keyword'ü olan film %57 (TMDB'de gerçekten yok, çekim eksikliği değil). Seri (collection) bilgisi %14. Türkçe başlık/özet ~%25.
 - Filmlerin yarısından fazlası <10 oy almış. Bunları silmek önerilmedi: az bilinen filmlerin önerilerini besliyorlar (LLM ort. 1.83/3).
 - **Oy/puan verisi eskiyebilir (2026-10-02 bulgusu):** vizyondan önce eklenen filmler `vote_count=0` kalıyor; reranker bunlara `lowVotes` cezası (−0,08) + kalite 0 veriyor ve film top 20'den düşüyor (ör. Marslı → Project Hail Mary: adaylarda 7. sıradaydı ama katalogda 0 oy, TMDB'de 8.078). `scripts/tmdb/refresh_stats.mjs` ile 2021+ filmlerde 2.575 satır tazelendi (2026'da "<20 oy" görünen 671 → 491). Eski değerler: `data/tmdb/stats_backup_2026-10-02_dry.json` (tam liste). **Henüz otomatik değil**, haftalık işe bağlanmalı.
-- **Katalogda çok sayıda popüler film eksik (2026-10-02 taraması):** TMDB'nin en çok oy alan 10.000 filminden **5.154'ü katalogda yok** (≥5.000 oy: 104 · ≥2.000: 807 · ≥1.000: 2.019 · ≥500: 3.953; ör. Transformers, Minions, Hızlı ve Öfkeli 6, Cloverfield, Addams Ailesi 2019). Katalogdaki 22.934 filmin yalnızca 2.906'sı ≥1.000 oylu, yarısından fazlası <10 oylu. Haftalık iş bunları 100'er ekler; **toplu ilk dolgu kararı bekliyor** (yer: 480 MB sınırına kadar ~4.600 film).
+- **Katalogda çok sayıda popüler film eksik (2026-10-02 taraması):** TMDB'nin en çok oy alan 10.000 filminden **5.154'ü katalogda yok** (≥5.000 oy: 104 · ≥2.000: 807 · ≥1.000: 2.019 · ≥500: 3.953; ör. Transformers, Minions, Hızlı ve Öfkeli 6, Cloverfield, Addams Ailesi 2019). O gün katalogdaki 22.934 filmin yalnızca 2.906'sı ≥1.000 oyluydu. **Aynı gün 2.040 film eklendi** (≥1.000 oylu eksiklerin hepsi; ~0,1 $ OpenAI). Kalan ~3.100 eksik (300–1.000 oy) haftalık işle 100'er gelir. Sonrasında `rebuild_static.mjs` ile 1.907 yeni keyword çevrildi, modlara 7–43 yeni film girdi.
 - Supabase doluluk: ~403 MB / 500 MB → tahminen ~5 bin film daha sığar. Admin panelinde göstergesi var.
 
 ---
@@ -168,8 +168,8 @@ GitHub'da: kod, `src/data/*.json`, `data/eval/` (golden set, LLM puan önbelleğ
 ### Öncelikli
 1. **Upstash token'ını iptal et.** Eski commit'lerde (`upload_to_upstash.py`) açıkta duruyor; dosya silindi ama git geçmişinde kalır.
 2. **Haftalık katalog güncellemesi kuruldu (2026-10-02)**, ayrıntı: bölüm 3 → Otomasyon. Kalanlar:
-   - GitHub Secrets'a `OPENAI_API_KEY` eklenmeli (yoksa iş ilk adımda durur) ve ilk çalıştırma Actions'tan elle denenmeli.
-   - **İlk dolgu:** 5.154 eksik popüler film için karar (ör. ≥1.000 oylu 2.019 film: ~35 MB, ~0,1 $). `node scripts/catalog/add_missing.mjs --max=2000`.
+   - İlk çalıştırma admin panelinden yapıldı (2026-10-02): ekleme adımı çalıştı (100 film). **Commit adımı doğrulanmadı**: o çalıştırmadan main'e commit gelmedi; Actions log'unda bakılmalı (push yetkisi `contents: write` var, Vercel'in bot yazarlı commit'i deploy edip etmediği de kontrol edilecek).
+   - İlk dolgu yapıldı (yukarıda, Veri gerçekleri).
    - Admin panelinde eklenen filmlerin listesi yok (GitHub Summary'de); istenirse panele taşınır.
 3. **Arama hızı (kenara bırakıldı, sırada):** soğuk film sayfası hâlâ yavaş. Ölçümler (2026-10-01):
    - Vercel fonksiyon bölgesi NA'daydı, **Frankfurt'a çekildi** (canlıda `fra1` doğrulandı).
