@@ -19,8 +19,16 @@ export const FILM_COLUMNS = [
 
 const genreName = (g: { id: number; name: string }) => GENRE_MAP_TR[g.id] ?? g.name;
 
+/**
+ * Sitede gösterilen başlık: Türkçe çeviri → Türkçe çekilmiş filmde orijinal başlık → İngilizce.
+ * TMDB, orijinali zaten Türkçe olan filmlerin "tr" çevirisinde başlık tutmuyor (Devlet Kuşu → "Windfall" görünüyordu).
+ */
+export function displayTitle(row: Pick<FilmRow, "tr_title" | "title" | "original_title" | "language">): string {
+    return row.tr_title || (row.language === "tr" && row.original_title) || row.title;
+}
+
 export function toFilmDTO(row: FilmRow): FilmDTO {
-    const title = row.tr_title || row.title;
+    const title = displayTitle(row);
     return {
         id: row.movie_id,
         title,

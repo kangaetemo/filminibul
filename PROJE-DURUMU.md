@@ -67,12 +67,14 @@ Kullanıcı ─► Next.js 14 (Vercel) ─► reranker.ts (hafif hybrid) ─► 
 
 ## 3. Site
 
-**Sayfalar:** `/` (tek arama kutusu + örnek tarifler + mod kutucukları) · `/ara?q=` (tarife göre arama) · `/film/[id]` (detay, fragman, nerede izlenir, platform filtresi, benzer filmler) · `/mod/[id]` (8 mod, "Karıştır") · `/privacy` · `/admin` · `/admin/login`
+**Sayfalar:** `/` (tek arama kutusu + örnek tarifler + mod kutucukları) · `/ara?q=` (tarife göre arama) · `/film/[id]` (adres `/film/126986-devlet-kusu`) (detay, fragman, nerede izlenir, platform filtresi, benzer filmler) · `/mod/[id]` (8 mod, "Karıştır") · `/privacy` · `/admin` · `/admin/login`
 
 **API:** `/api/search-movie?q=` · `/api/vibe-search?q=` · `/api/similar/[id]?limit=&debug=1&p=8,337` · `/api/admin/*` (login, logout, refresh-providers, catalog/search, catalog/add)
 
 **Öne çıkan davranışlar**
 - Arama: katalogda "içinde geçer" araması (yarım kelime, "ruhların kaç") + TMDB (sunucuda, anahtar tarayıcıya gitmez).
+- **Film adresleri (2026-10-02):** `/film/<tmdb id>-<başlık>` (`src/lib/filmUrl.ts`: `filmPath`, `slugify`, `parseFilmParam`). Türkçe harfler sadeleşir (ş→s, ı→i…), Latin olmayan başlıkta sadece id. Sadece id'li, büyük harfli ya da eski başlıklı adresler **308** ile güncel adrese gider (`?p=` korunur); sayfada `canonical` var (`metadataBase: https://filminibul.com`). Admin'deki bağlantılar id'li kalır (yönlendirilir).
+- **Gösterilen başlık** (`displayTitle`, `similar.ts`): Türkçe çeviri → **Türkçe çekilmiş filmde orijinal başlık** → İngilizce. TMDB, orijinali Türkçe olan filmlerin "tr" çevirisinde başlık tutmuyor; 48 Türkçe filmin 45'i İngilizce görünüyordu (Devlet Kuşu → "Windfall").
 - "Neden önerildi?": reranker'daki gerçek sinyallerden (seri, yönetmen, ortak temalar, türler); keyword'ler Türkçe.
 - Modlar semantic: mod tanım metni embed edilir, en yakın filmler `src/data/moods.json`'da. **Nostalji** dönem tanımı olduğu için tür/yıl/puan filtresiyle kalır.
 - "Nerede izlenir?": TMDB/JustWatch Türkiye verisi (kaynak belirtmek şart, UI'da yazıyor). Filtre 200 adayın tamamında arar, seçim tarayıcıda hatırlanır.

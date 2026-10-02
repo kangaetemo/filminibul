@@ -12,6 +12,8 @@ const inter = Inter({ subsets: ["latin", "latin-ext"], variable: "--font-sans", 
 const fraunces = Fraunces({ subsets: ["latin", "latin-ext"], variable: "--font-display", display: "swap", axes: ["opsz"] });
 
 export const metadata: Metadata = {
+    // Göreli canonical/OG adresleri bu alan adına çözülür (film sayfası: /film/126986-devlet-kusu)
+    metadataBase: new URL("https://filminibul.com"),
     title: "Filminibul - Sevdiğin Filme Benzeyenleri Bul",
     description: "Sevdiğin bir filmi seç ya da aradığını tarif et; tema, atmosfer ve hikâye yapısı bakımından en çok uyan filmleri keşfet.",
     keywords: ["film", "sinema", "benzer filmler", "film önerisi", "ne izlesem", "keşfet"],

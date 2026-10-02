@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Loader2, Search, Sparkles, Star } from "lucide-react";
+import { filmPath } from "@/lib/filmUrl";
 
 interface SearchResult {
     id: number;
@@ -98,12 +99,12 @@ export default function SearchBox({ initialQuery = "", autoFocus = true, size = 
 
     const itemCount = (canDescribe ? 1 : 0) + results.length;
     const goVibe = () => router.push(vibeHref(trimmed));
-    const goFilm = (id: number) => router.push(`/film/${id}`);
+    const goFilm = (r: SearchResult) => router.push(filmPath(r.id, r.title));
 
     const activate = (index: number) => {
         if (canDescribe && index === 0) return goVibe();
         const r = results[index - (canDescribe ? 1 : 0)];
-        if (r) goFilm(r.id);
+        if (r) goFilm(r);
     };
 
     const onKeyDown = (e: React.KeyboardEvent) => {
@@ -124,7 +125,7 @@ export default function SearchBox({ initialQuery = "", autoFocus = true, size = 
         if (!canDescribe) return;
         // Çok kelimeli yazıldıysa ya da film sonucu çıkmadıysa tarif; kısa ve eşleşen bir ad ise ilk film
         if (wordCount >= DESCRIBING_WORDS || results.length === 0) return goVibe();
-        goFilm(results[0].id);
+        goFilm(results[0]);
     };
 
     const showList = open && trimmed.length >= 2 && (canDescribe || results.length > 0);
@@ -199,7 +200,7 @@ export default function SearchBox({ initialQuery = "", autoFocus = true, size = 
                         const index = i + (canDescribe ? 1 : 0);
                         return (
                             <li key={r.id} id={`${listId}-${index}`} role="option" aria-selected={active === index}>
-                                <Link href={`/film/${r.id}`} className={`flex gap-4 p-3 transition-colors ${active === index ? "bg-card-hover" : "hover:bg-card-hover"}`}>
+                                <Link href={filmPath(r.id, r.title)} className={`flex gap-4 p-3 transition-colors ${active === index ? "bg-card-hover" : "hover:bg-card-hover"}`}>
                                     <div className="relative w-12 h-[72px] shrink-0 rounded-md overflow-hidden bg-white/5">
                                         {r.posterUrl && <Image src={r.posterUrl} alt="" fill sizes="48px" className="object-cover" />}
                                     </div>

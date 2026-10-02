@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { Star } from "lucide-react";
 import Footer from "@/components/Footer";
 import SiteHeader from "@/components/SiteHeader";
@@ -12,29 +12,26 @@ import TrailerButton from "@/components/film/TrailerButton";
 import { getTrailer } from "@/lib/recommend/trailer";
 import PlatformFilter from "@/components/film/PlatformFilter";
 import { FEATURED_PLATFORMS, getLiveProviders } from "@/lib/recommend/providers";
+import { filmPath, parseFilmParam } from "@/lib/filmUrl";
 
 export const revalidate = 3600;
 
 // Next 14: params senkron nesne (Next 15+'da Promise olur ve await gerekir)
 type Props = { params: { id: string }; searchParams?: { p?: string } };
 
-function parseId(raw: string): number | null {
-    const id = Number(raw);
-    return Number.isInteger(id) && id > 0 ? id : null;
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const id = parseId(params.id);
+    const id = parseFilmParam(params.id);
     const film = id ? await getFilm(id) : null;
     if (!film) return { title: "Film bulunamadı · Filminibul" };
     return {
         title: `${film.title}${film.year ? ` (${film.year})` : ""} ve benzer filmler · Filminibul`,
         description: film.overview ?? undefined,
+        alternates: { canonical: filmPath(film.id, film.title) },
     };
 }
 
 export default async function FilmPage({ params, searchParams }: Props) {
-    const id = parseId(params.id);
+    const id = parseFilmParam(params.id);
     if (!id) notFound();
 
     // ?p=8,119 → sadece bu platformlarda izlenebilen benzer filmler
@@ -43,6 +40,12 @@ export default async function FilmPage({ params, searchParams }: Props) {
     // Film bilgisi hızlı gelir; benzer filmler (HNSW sorgusu, soğukken 1–4 sn) aşağıda Suspense ile akışla yüklenir.
     const [film, providers, trailer] = await Promise.all([getFilm(id), getLiveProviders(id), getTrailer(id)]);
     if (!film) notFound();
+
+    // Sadece id'li (/film/126986) ya da eski başlıklı adres → güncel adres (platform filtresi korunur)
+    const canonical = filmPath(film.id, film.title);
+    if (`/film/${params.id}` !== canonical) {
+        permanentRedirect(searchParams?.p ? `${canonical}?p=${encodeURIComponent(searchParams.p)}` : canonical);
+    }
 
     return (
         <main className="relative min-h-screen bg-background">

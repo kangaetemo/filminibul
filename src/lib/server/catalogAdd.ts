@@ -5,6 +5,7 @@
 // (HNSW index kendiliğinden güncellenir). Mod listeleri/keyword çevirileri/IDF statik dosya: ayrıca yenilenir.
 
 import { buildDoc, EMBEDDING_DIMS, EMBEDDING_MODEL } from "@/lib/recommend/embeddingDoc.mjs";
+import { displayTitle } from "@/lib/recommend/similar";
 import { getLiveProviders } from "@/lib/recommend/providers";
 import type { FilmRow } from "@/lib/recommend/types";
 import { supabaseUpsert } from "./supabase";
@@ -105,5 +106,5 @@ export async function addFilmToCatalog(id: number): Promise<AddResult> {
         await supabaseUpsert("film_providers", [{ movie_id: id, ...providers, updated_at: new Date().toISOString() }], "movie_id");
     }
 
-    return { id, title: row.tr_title || row.title, year: row.year, warnings, hasProviders: !!providers };
+    return { id, title: displayTitle(row), year: row.year, warnings, hasProviders: !!providers };
 }

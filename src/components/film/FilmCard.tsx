@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Star } from "lucide-react";
 import type { FilmDTO } from "@/lib/recommend/types";
+import { filmPath } from "@/lib/filmUrl";
 import type { Platform } from "@/lib/recommend/providers";
 
 // Poster kartı: benzer filmler, mod ve tarif sonuçlarında ortak.
@@ -10,7 +11,7 @@ import type { Platform } from "@/lib/recommend/providers";
 export default function FilmCard({ film, reasons, platforms, index = 0 }: { film: FilmDTO; reasons?: string[]; platforms?: Platform[]; index?: number }) {
     return (
         <li className="animate-fade-up" style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}>
-            <Link href={`/film/${film.id}`} className="group block">
+            <Link href={filmPath(film.id, film.title)} className="group block">
                 <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-card ring-1 ring-white/10 transition duration-300 group-hover:-translate-y-1 group-hover:ring-accent/50 group-hover:shadow-glow-accent">
                     {film.posterUrl ? (
                         <Image
