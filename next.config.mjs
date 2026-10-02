@@ -1,14 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     images: {
-        remotePatterns: [
-            {
-                protocol: 'https',
-                hostname: 'image.tmdb.org',
-                port: '',
-                pathname: '/t/p/**',
-            },
-        ],
+        // Görseller Vercel optimizasyonu yerine doğrudan TMDB CDN'inden (ücretsiz plan kotası doluyordu)
+        loader: 'custom',
+        loaderFile: './src/lib/tmdbImageLoader.ts',
     },
 };
 
