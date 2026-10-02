@@ -11,6 +11,7 @@ import idf from "@/data/idf.json";
 import keywordsTr from "@/data/keywords_tr.json";
 import { GENRE_MAP_TR } from "@/lib/tmdb";
 import type { FilmRow, Candidate } from "./types";
+import { collectionLabel } from "./collections";
 
 const CONFIG = {
     weights: {
@@ -132,7 +133,7 @@ function scoreCandidate(seed: FilmRow, cand: Candidate, semanticNorm: number, kw
         weighted,
         penalties,
         signals: {
-            sameCollection: sameCollection ? seed.collection_name : null,
+            sameCollection: sameCollection ? collectionLabel(seed.collection_id, seed.collection_name) : null,
             sameDirector,
             sharedKeywords: kw.shared,
             sharedGenres: gen.shared.map((g) => GENRE_MAP_TR[g] ?? String(g)),

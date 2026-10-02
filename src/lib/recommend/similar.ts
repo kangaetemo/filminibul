@@ -5,6 +5,7 @@ import { supabaseRpc, supabaseSelect } from "@/lib/server/supabase";
 import { getMovieDetails } from "@/lib/server/tmdbServer";
 import { GENRE_MAP_TR } from "@/lib/tmdb";
 import { rerank, explain, explainParts } from "./reranker";
+import { collectionLabel } from "./collections";
 import { getProvidersFor, platform, watchableIds } from "./providers";
 import type { Candidate, FilmDTO, FilmRow, SimilarFilmDTO } from "./types";
 
@@ -42,7 +43,7 @@ export function toFilmDTO(row: FilmRow): FilmDTO {
         backdropUrl: row.backdrop_path ? `${IMG}/w1280${row.backdrop_path}` : null,
         director: row.director,
         cast: row.cast_names ?? [],
-        collectionName: row.collection_name,
+        collectionName: collectionLabel(row.collection_id, row.collection_name),
         inCatalog: true,
     };
 }
@@ -73,7 +74,7 @@ export async function getFilm(id: number): Promise<FilmDTO | null> {
         backdropUrl: d.backdrop_path ? `${IMG}/w1280${d.backdrop_path}` : null,
         director: d.credits?.crew.find((c) => c.job === "Director")?.name ?? null,
         cast: (d.credits?.cast ?? []).sort((a, b) => a.order - b.order).slice(0, 5).map((c) => c.name),
-        collectionName: d.belongs_to_collection?.name ?? null,
+        collectionName: collectionLabel(d.belongs_to_collection?.id, d.belongs_to_collection?.name),
         inCatalog: false,
     };
 }

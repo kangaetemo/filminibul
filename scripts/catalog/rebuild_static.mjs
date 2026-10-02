@@ -4,6 +4,7 @@
 //   src/data/idf.json          keyword/tür doküman frekansları (reranker)
 //   src/data/keywords_tr.json  yeni keyword'lerin Türkçe çevirisi (mevcut çevirilere dokunmaz)
 //   src/data/moods.json        her mod için en yakın filmler (tam cosine, kalite tabanını geçenler arasında)
+//   src/data/collections_tr.json  yeni serilerin Türkçe adları (TMDB; mevcutlara dokunmaz)
 //
 // Kullanım:
 //   node scripts/catalog/rebuild_static.mjs             # üçünü de üret
@@ -14,6 +15,7 @@ import { resolve } from "node:path";
 import { ROOT, requireEnv } from "../export/loadEnv.mjs";
 import { ADULT, LIST_SIZE, MIN_RATING, MIN_VOTES, MOODS } from "../rerank/moodDefs.mjs";
 import { translateBatch } from "../tmdb/translate_keywords.mjs";
+import { updateCollections } from "./collections_tr.mjs";
 import { embedTexts, flag, sb, sbAll, summary } from "./lib.mjs";
 
 const DRY = flag("dry-run");
@@ -114,6 +116,11 @@ async function main() {
     const { dict, added, todo } = await translateNew(films);
     lines.push(`- keywords_tr.json: ${todo} yeni keyword, ${added} çevrildi (toplam ${Object.keys(dict.tr).length})`);
     if (!DRY && added) writeFileSync(DATA("keywords_tr.json"), JSON.stringify(dict));
+
+    if (!DRY) {
+        const c = await updateCollections({ log: () => {} });
+        lines.push(`- collections_tr.json: ${c.total} seri, ${c.turkish} Türkçe ad (${c.fetched} yeni seri soruldu)`);
+    }
 
     if (DRY) {
         lines.push("- moods.json: deneme modunda hesaplanmadı");
