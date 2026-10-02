@@ -91,6 +91,11 @@ export default function SearchBox({ initialQuery = "", autoFocus = true, size = 
         return () => document.removeEventListener("mousedown", onDown);
     }, []);
 
+    // Klavyeyle gezerken seçili satır kaydırılabilir listede görünür kalsın
+    useEffect(() => {
+        if (active >= 0) document.getElementById(`${listId}-${active}`)?.scrollIntoView({ block: "nearest" });
+    }, [active, listId]);
+
     const itemCount = (canDescribe ? 1 : 0) + results.length;
     const goVibe = () => router.push(vibeHref(trimmed));
     const goFilm = (id: number) => router.push(`/film/${id}`);
@@ -171,7 +176,7 @@ export default function SearchBox({ initialQuery = "", autoFocus = true, size = 
                 <ul
                     id={listId}
                     role="listbox"
-                    className="mt-3 divide-y divide-white/5 rounded-2xl bg-card/95 backdrop-blur border border-white/10 overflow-hidden shadow-glow-card animate-fade-up"
+                    className={`mt-3 divide-y divide-white/5 rounded-2xl bg-card/95 backdrop-blur border border-white/10 shadow-glow-card animate-fade-up ${compact ? "max-h-[25rem] overflow-y-auto overscroll-contain" : "overflow-hidden"}`}
                 >
                     {canDescribe && (
                         <li id={`${listId}-0`} role="option" aria-selected={active === 0}>
