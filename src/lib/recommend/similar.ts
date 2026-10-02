@@ -71,15 +71,27 @@ export async function getFilm(id: number): Promise<FilmDTO | null> {
 }
 
 /**
+ * 200 aday: önce önceden hesaplanmış listeden (film_neighbors, haftalık; birkaç yüz ms), yoksa canlı HNSW'den (1–5 sn).
+ * Liste yoksa: film haftalık işten sonra eklenmiş, tablo yenileniyor ya da scripts/sql/neighbors.sql henüz çalıştırılmamış.
+ */
+async function getCandidates(id: number): Promise<Candidate[]> {
+    const args = { seed_movie_id: id, match_limit: CANDIDATE_POOL };
+    try {
+        const precomputed = await supabaseRpc<Candidate[]>("similar_movies_v4", args);
+        if (precomputed.length) return precomputed;
+    } catch (err) {
+        console.error("similar_movies_v4:", err);
+    }
+    return supabaseRpc<Candidate[]>("similar_movies_v3", args);
+}
+
+/**
  * Benzer filmler. `platforms` verilirse sadece bu platformlardan birinde (abonelik/ücretsiz) izlenebilenler:
  * önce 200 adayın tamamı sıralanır, sonra filtrelenir — böylece ilk 20 dışında kalan izlenebilir filmler de gelir.
  * Katalogda olmayan film için boş liste döner (embedding'i yok).
  */
 export async function getSimilarFilms(id: number, limit = 20, debug = false, platforms: number[] = []): Promise<SimilarFilmDTO[]> {
-    const [seed, candidates] = await Promise.all([
-        getFilmRow(id),
-        supabaseRpc<Candidate[]>("similar_movies_v3", { seed_movie_id: id, match_limit: CANDIDATE_POOL }),
-    ]);
+    const [seed, candidates] = await Promise.all([getFilmRow(id), getCandidates(id)]);
     if (!seed || !candidates.length) return [];
 
     const ranked = rerank(seed, candidates, platforms.length ? candidates.length : limit);

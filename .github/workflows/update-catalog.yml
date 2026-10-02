@@ -1,7 +1,8 @@
 # Haftalık katalog güncellemesi:
 #   1. Eksik filmleri ekle (Türkiye'de yeni vizyona girenler + TMDB'de çok oy almış ama katalogda olmayanlar; üst sınırlı)
 #   2. Yeni filmlerin oy/puan/popülerliğini tazele (eski kalırsa reranker "az oylu" diye cezalandırır)
-#   3. Mod listeleri, keyword çevirileri ve IDF'i yeniden üret; değiştiyse commit'le (Vercel yeniden deploy eder)
+#   3. Her filmin en yakın 200 komşusunu yeniden hesapla (film_neighbors; film sayfası buradan okur)
+#   4. Mod listeleri, keyword çevirileri ve IDF'i yeniden üret; değiştiyse commit'le (Vercel yeniden deploy eder)
 # Zamanlanmış: her pazartesi 02:00 UTC (05:00 Türkiye), platform yenilemesinden bir saat önce
 # (yeni eklenen filmler aynı sabah platform taramasına da girer). Elle: Actions → "Kataloğu güncelle" → Run workflow.
 # Gerekli repo secret'ları: TMDB_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, OPENAI_API_KEY
@@ -26,7 +27,7 @@ permissions:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -40,12 +41,23 @@ jobs:
         with:
           node-version: 20
 
+      # Embedding önbelleği (~155 MB): her hafta sadece yeni filmlerin embedding'i Supabase'ten indirilir
+      - name: Embedding önbelleğini geri yükle
+        uses: actions/cache@v4
+        with:
+          path: data/embeddings/v3_live.bin
+          key: embeddings-v3-${{ github.run_id }}
+          restore-keys: embeddings-v3-
+
       # Script'ler bağımlılıksız (sadece fetch), npm install gerekmiyor
       - name: Eksik filmleri ekle
         run: node scripts/catalog/add_missing.mjs --max="$MAX_ADD"
 
       - name: Oy ve puanları tazele
         run: node scripts/tmdb/refresh_stats.mjs
+
+      - name: Benzer film listelerini yeniden hesapla
+        run: node scripts/catalog/build_neighbors.mjs
 
       - name: Statik dosyaları yeniden üret
         run: node scripts/catalog/rebuild_static.mjs

@@ -171,12 +171,13 @@ GitHub'da: kod, `src/data/*.json`, `data/eval/` (golden set, LLM puan önbelleğ
    - İlk çalıştırma admin panelinden yapıldı (2026-10-02): ekleme adımı çalıştı (100 film), sonra kullanıcı işi iptal etti. İkinci elle çalıştırma **uçtan uca başarılı**: 100 film daha eklendi (katalog 25.074) ve iş main'e `2ec09bc` commit'ini attı (yazar: repo sahibi). Vercel deploy'u panelden doğrulanabilir.
    - İlk dolgu yapıldı (yukarıda, Veri gerçekleri).
    - Admin panelinde eklenen filmlerin listesi yok (GitHub Summary'de); istenirse panele taşınır.
-3. **Arama hızı (kenara bırakıldı, sırada):** soğuk film sayfası hâlâ yavaş. Ölçümler (2026-10-01):
-   - Vercel fonksiyon bölgesi NA'daydı, **Frankfurt'a çekildi** (canlıda `fra1` doğrulandı).
-   - Canlıda soğuk film sayfası: ilk bayt 0,5–1,6 sn, tamamı 2,7–4,8 sn; ikinci açılış 0,4 sn. "matrix" aramasının ilk çağrısı 11 sn (soğuk fonksiyon + soğuk katalog taraması), sonrakiler 0,7–0,9 sn.
-   - Asıl darboğaz `similar_movies_v3` soğuk sorgusu: 60 farklı film art arda → ort. 1,8 sn → 0,74 sn → 1,45 sn (medyan 0,97, p90 1,98). Ücretsiz plandaki bellek 22 bin filmlik 1536 boyutlu HNSW index'ini tutmuyor; `pg_prewarm`/ısıtma kalıcı çözüm değil.
-   - **Önerilen çözüm:** her film için en yakın 100–200 komşuyu tabloya önceden hesapla (istek anında HNSW taranmaz, ~100–250 ms). ~15 MB (100 komşu) / ~30 MB (200 komşu) yer tutar; Supabase doluluğu 403/500 MB olduğu için yeni film payı ~1.000–1.500 film azalır. Admin'den eklenen filmin listesi canlı HNSW ile hesaplanıp yazılır; eski filmlerin listelerine girmesi haftalık yenilemeyle (katalog güncelleme işiyle birlikte).
-   - Alternatif/ek: `hnsw.ef_search` 400 → 200 (yaklaşık yarıya iner, `llm_judge.mjs` ile kaliteyi yeniden ölç); tarif aramasında çeviri adımını daha küçük modele geçirmek (kaliteyi `vibe_try.mjs` ile ölç).
+3. **Arama hızı: önceden hesaplanmış komşu tablosu (2026-10-02, kod hazır, SQL bekliyor).**
+   - **Ölçüm (25.074 film, 120 rastgele film):** canlı `similar_movies_v3` medyan **1,8 sn**, p90 3,1 sn, en kötü 5,2 sn (22.900 filmdeyken medyan ~1 sn). **4 eşzamanlı istekte Supabase 8 sn zaman aşımı** → aynı anda birkaç ziyaretçide benzer filmler hiç gelmeyebilir.
+   - **Kalite değişmez:** canlı HNSW, tam aramanın en yakın 200'ünün %99,8'ini, en yakın 20'nin %100'ünü buluyor. Ayrıca `llm_judge.mjs`'in ölçtüğü 0.82 zaten tam aramayla (yerel embedding) ölçülmüştü; tablo tam aramayla hesaplanıyor.
+   - **Yer kısıtı:** DB 444 MB / 500 (film tablosu + index'ler 430 MB). Komşu tablosu ~33 MB (25k × 200 komşu, `integer[]` + `smallint[]` benzerlik ×10000). Yer açmak için HNSW index'i **halfvec**'e çevriliyor (embedding sütunu tam hassasiyette kalır; index tahminen ~yarıya iner).
+   - **Kod (main'de):** `scripts/catalog/embeddings.mjs` (tüm embedding'ler; `data/embeddings/v3_live.bin` önbelleği, sadece yenileri indirir), `scripts/catalog/build_neighbors.mjs` (worker'larla tam top-200; bu bilgisayarda ~2,5 dk, 14 çekirdek; TRUNCATE + yükleme), `similar.ts` önce `similar_movies_v4` (tablo), yoksa `similar_movies_v3` (canlı HNSW). Haftalık işe adım eklendi (+ embedding'ler için `actions/cache`, zaman aşımı 90 dk). Tablo yoksa adım uyarıyla atlanır.
+   - **SQL (kullanıcı çalıştıracak, sırayla):** `scripts/sql/db_sizes.sql` (salt okunur, yer dağılımı + pgvector sürümü) → `scripts/sql/halfvec_index.sql` (3 adım AYRI AYRI) → `scripts/sql/neighbors.sql` → `node scripts/catalog/build_neighbors.mjs`.
+   - Sınır: admin'den eklenen film kendi listesini anında canlı HNSW'den alır; başka filmlerin listelerine pazartesi girer.
 4. **Tasarım turu devam:** yeni tasarım beğenilmeyen yerler olursa elden geçirilecek (ör. afiş görseli 500 px → retina'da yumuşak olabilir, `w780`'e geçilebilir). Admin paneli ayrıca tasarlanmadı. `README.md` ve eski swipe metinleri hâlâ güncellenmedi.
 
 ### Fikir listesi (araştırmadan çıkanlar, sırayla)
@@ -211,7 +212,7 @@ src/lib/server/      supabase.ts · tmdbServer.ts · catalogAdd.ts · adminAuth.
 src/data/            idf.json · keywords_tr.json · moods.json · providers_tr.json
 src/app/             page.tsx · film/[id] · mod/[id] · admin · api/{similar,search-movie,admin}
 scripts/rerank/      reranker.mjs (offline ikiz) · configs.mjs · eval.mjs · llm_judge.mjs · build_*.mjs
-scripts/catalog/     lib.mjs · add_missing.mjs · rebuild_static.mjs (haftalık iş)
+scripts/catalog/     lib.mjs · embeddings.mjs · add_missing.mjs · build_neighbors.mjs · rebuild_static.mjs (haftalık iş)
 scripts/tmdb/        enrich · fetch/upload_providers · translate_keywords · tmdbClient
 scripts/embed/       embed_v3.mjs · upload_v3.mjs
 scripts/export/      supabase/upstash export, inventory, loadEnv
