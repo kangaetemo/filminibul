@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { getDbUsage, getProviderStats, type DbUsage } from "@/lib/server/adminStats";
-import { githubConfigured, listRuns, type WorkflowRun } from "@/lib/server/github";
+import { githubConfigured, listRuns, type WorkflowName, type WorkflowRun } from "@/lib/server/github";
 import RefreshProvidersPanel from "@/components/admin/RefreshProvidersPanel";
 import LogoutButton from "@/components/admin/LogoutButton";
 import CatalogAdder from "@/components/admin/CatalogAdder";
@@ -21,11 +21,9 @@ function daysAgo(iso: string | null) {
 
 export default async function AdminPage() {
     const configured = githubConfigured();
-    const [stats, runs, usage] = await Promise.all([
-        getProviderStats(),
-        configured ? listRuns().catch((err): WorkflowRun[] => (console.error("GitHub runs:", err), [])) : Promise.resolve([]),
-        getDbUsage(),
-    ]);
+    const runsOf = (workflow: WorkflowName) =>
+        configured ? listRuns(workflow).catch((err): WorkflowRun[] => (console.error("GitHub runs:", err), [])) : Promise.resolve([]);
+    const [stats, runs, catalogRuns, usage] = await Promise.all([getProviderStats(), runsOf("providers"), runsOf("catalog"), getDbUsage()]);
     const coverage = stats.catalogFilms ? Math.round((stats.filmsWithProviders / stats.catalogFilms) * 1000) / 10 : 0;
 
     return (
@@ -51,6 +49,20 @@ export default async function AdminPage() {
                     </div>
                     <div className="mt-5">
                         <CatalogAdder />
+                    </div>
+
+                    <h3 className="mt-6 text-sm font-semibold text-white/80">Haftalık otomatik güncelleme</h3>
+                    <p className="mt-1 text-sm text-white/40">
+                        Her pazartesi 05:00&apos;te: Türkiye&apos;de yeni vizyona giren ve katalogda eksik popüler filmler eklenir (en fazla 100), oy/puanlar tazelenir, mod
+                        listeleri ve keyword çevirileri yenilenir. Eklenen filmler çalıştırmanın Log sayfasındaki özette listelenir.
+                    </p>
+                    <div className="mt-3">
+                        <RefreshProvidersPanel
+                            initialRuns={catalogRuns}
+                            configured={configured}
+                            endpoint="/api/admin/update-catalog"
+                            startedMessage="Başlatıldı. GitHub'ın işi sıraya alması birkaç saniye sürer; güncelleme ~5 dakika. Yeni filmler sitede en geç 1 saat içinde görünür."
+                        />
                     </div>
                 </section>
 

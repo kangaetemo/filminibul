@@ -12,6 +12,7 @@
 
 import { existsSync, readFileSync, appendFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { ROOT, requireEnv } from "../export/loadEnv.mjs";
 import { loadCorpus } from "../rerank/data.mjs";
 
@@ -39,16 +40,21 @@ Respond with JSON only: {"r": [["<tr>", <0|1>], ...]} — exactly one entry per 
 
 function readCache() {
     const map = new Map();
-    if (!existsSync(CACHE_PATH)) return map;
-    for (const line of readFileSync(CACHE_PATH, "utf8").split("\n")) {
+    for (const line of existsSync(CACHE_PATH) ? readFileSync(CACHE_PATH, "utf8").split("\n") : []) {
         if (!line.trim()) continue;
         const r = JSON.parse(line);
         map.set(r.en, r);
     }
+    // Uygulamanın sözlüğü baskın: elle düzeltmeler ve haftalık işin (rebuild_static.mjs) eklediği çeviriler kaybolmasın
+    if (existsSync(OUT_PATH)) {
+        const dict = JSON.parse(readFileSync(OUT_PATH, "utf8"));
+        const hidden = new Set(dict.hidden);
+        for (const [en, tr] of Object.entries(dict.tr)) map.set(en, { en, tr, explain: hidden.has(en) ? 0 : 1 });
+    }
     return map;
 }
 
-async function translateBatch(apiKey, keywords, attempt = 1) {
+export async function translateBatch(apiKey, keywords, attempt = 1) {
     let res;
     try {
         res = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -163,7 +169,10 @@ async function main() {
     writeDictionary(cache);
 }
 
-main().catch((err) => {
-    console.error("\n❌", err.message);
-    process.exit(1);
-});
+// Başka script içe aktarınca (translateBatch için) çalışmasın
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+    main().catch((err) => {
+        console.error("\n❌", err.message);
+        process.exit(1);
+    });
+}

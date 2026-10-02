@@ -60,7 +60,7 @@ Kullanıcı ─► Next.js 14 (Vercel) ─► reranker.ts (hafif hybrid) ─► 
 - Keyword'ü olan film %57 (TMDB'de gerçekten yok, çekim eksikliği değil). Seri (collection) bilgisi %14. Türkçe başlık/özet ~%25.
 - Filmlerin yarısından fazlası <10 oy almış. Bunları silmek önerilmedi: az bilinen filmlerin önerilerini besliyorlar (LLM ort. 1.83/3).
 - **Oy/puan verisi eskiyebilir (2026-10-02 bulgusu):** vizyondan önce eklenen filmler `vote_count=0` kalıyor; reranker bunlara `lowVotes` cezası (−0,08) + kalite 0 veriyor ve film top 20'den düşüyor (ör. Marslı → Project Hail Mary: adaylarda 7. sıradaydı ama katalogda 0 oy, TMDB'de 8.078). `scripts/tmdb/refresh_stats.mjs` ile 2021+ filmlerde 2.575 satır tazelendi (2026'da "<20 oy" görünen 671 → 491). Eski değerler: `data/tmdb/stats_backup_2026-10-02_dry.json` (tam liste). **Henüz otomatik değil**, haftalık işe bağlanmalı.
-- **Katalogda eksik popüler filmler var:** ör. *Addams Ailesi (2019)* #481084 (TMDB'de 2.547 oy) yok; film sayfasında "öneri kataloğumuzda yok" yazar. Şimdilik `/admin`'den elle eklenir.
+- **Katalogda çok sayıda popüler film eksik (2026-10-02 taraması):** TMDB'nin en çok oy alan 10.000 filminden **5.154'ü katalogda yok** (≥5.000 oy: 104 · ≥2.000: 807 · ≥1.000: 2.019 · ≥500: 3.953; ör. Transformers, Minions, Hızlı ve Öfkeli 6, Cloverfield, Addams Ailesi 2019). Katalogdaki 22.934 filmin yalnızca 2.906'sı ≥1.000 oylu, yarısından fazlası <10 oylu. Haftalık iş bunları 100'er ekler; **toplu ilk dolgu kararı bekliyor** (yer: 480 MB sınırına kadar ~4.600 film).
 - Supabase doluluk: ~403 MB / 500 MB → tahminen ~5 bin film daha sığar. Admin panelinde göstergesi var.
 
 ---
@@ -100,8 +100,16 @@ Kullanıcı ─► Next.js 14 (Vercel) ─► reranker.ts (hafif hybrid) ─► 
 - **Veritabanı doluluk çubuğu** (`admin_db_usage` SQL fonksiyonu).
 - **Platform bilgisi:** istatistikler, son GitHub Actions çalıştırmaları, **"Şimdi güncelle"** butonu.
 
-### Otomasyon
-`.github/workflows/refresh-providers.yml`: her **pazartesi 03:00 UTC (06:00 TR)** + elle "Run workflow". `fetch_providers.mjs` (>%1 hata varsa durur) → `upload_providers.mjs` (yeni veri tablonun %70'inden azsa silmeden durur; `--force` ile atlanır).
+### Otomasyon (GitHub Actions)
+- **Platform yenileme** — `.github/workflows/refresh-providers.yml`: her **pazartesi 03:00 UTC (06:00 TR)** + elle "Run workflow". `fetch_providers.mjs` (>%1 hata varsa durur) → `upload_providers.mjs` (yeni veri tablonun %70'inden azsa silmeden durur; `--force` ile atlanır).
+- **Katalog güncelleme** — `.github/workflows/update-catalog.yml`: her **pazartesi 02:00 UTC (05:00 TR)**, platform yenilemesinden bir saat önce (yeni filmler aynı sabah platform taramasına girer) + elle "Run workflow" (`max_add` girdisi) + admin panelinde "Şimdi güncelle". Adımlar:
+  1. `scripts/catalog/add_missing.mjs --max=100`: eksik filmleri ekler. Öncelik: (a) Türkiye'de son 60 günde vizyona girenler (TMDB discover `region=TR`, ≥10 oy), (b) TMDB'nin en çok oy alan 10.000 filminden (≥300 oy) katalogda olmayanlar, oy sayısına göre. Ekleme admin'deki "Kataloğa ekle" ile aynı (TMDB detay + TR çeviri → `embeddingDoc.mjs` → OpenAI → `film_embeddings_v3` + `film_providers`). Veritabanı **480 MB**'ı geçerse eklemez. `--dry-run`, `--ids=…`.
+  2. `scripts/tmdb/refresh_stats.mjs`: 2021+ filmlerin oy/puan/popülerliği.
+  3. `scripts/catalog/rebuild_static.mjs`: `idf.json`, `keywords_tr.json` (sadece yeni keyword'ler çevrilir; mevcut/elle düzeltilmiş çevirilere dokunmaz), `moods.json` (kalite tabanını geçen ~4.700 filmin embedding'i Supabase'ten çekilip tam cosine; yerel `build_moods.mjs` ile aynı sonuç). ~30 sn.
+  4. Değişen `src/data/*.json` commit'lenip push'lanır → Vercel deploy. Yazar olarak repodaki son commit'in sahibi kullanılır (Vercel tanımadığı yazarı deploy etmeyebilir).
+  - Eklenen filmlerin listesi çalıştırmanın **Summary** sayfasında. Yeni filmler sitede en geç ~1 saat içinde görünür (Supabase okumaları 1 sa önbellekli).
+  - Script'ler yerel `data/` klasörüne ihtiyaç duymaz (`scripts/catalog/lib.mjs`). Mod tanımları tek kaynak: `scripts/rerank/moodDefs.mjs`.
+  - **Gerekli ek secret:** GitHub'da `OPENAI_API_KEY` (embedding + keyword çevirisi).
 
 ---
 
@@ -111,7 +119,7 @@ Kullanıcı ─► Next.js 14 (Vercel) ─► reranker.ts (hafif hybrid) ─► 
 |---|---|
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | `.env.local`, Vercel, GitHub Secrets |
 | `TMDB_API_KEY` | `.env.local`, Vercel, GitHub Secrets |
-| `OPENAI_API_KEY` | `.env.local`, Vercel. Admin'den film ekleme **ve ziyaretçilerin tarife göre aramasında** (`/ara`) kullanılır; bakiye bitince tarif araması çalışmaz ("Arama şu an yapılamadı"). Benzer film/film adı aramasında OpenAI yok. |
+| `OPENAI_API_KEY` | `.env.local`, Vercel, **GitHub Secrets (haftalık katalog güncellemesi)**. Admin'den film ekleme **ve ziyaretçilerin tarife göre aramasında** (`/ara`) kullanılır; bakiye bitince tarif araması çalışmaz ("Arama şu an yapılamadı"). Benzer film/film adı aramasında OpenAI yok. |
 | `ADMIN_PASSWORD` | Vercel (+ istersen `.env.local`) |
 | `GITHUB_TOKEN` | Vercel: fine-grained, sadece bu repo, **Actions: Read and write** |
 
@@ -132,6 +140,8 @@ node scripts/rerank/compare_emb.mjs 603 26466 # v2/v3 saf semantic karşılaşt�
 # Veri üretimi / yenileme
 node scripts/tmdb/fetch_providers.mjs && node scripts/tmdb/upload_providers.mjs   # (Actions da yapıyor)
 node scripts/tmdb/refresh_stats.mjs            # 2021+ filmlerin oy/puan/popülerliğini TMDB'den tazele (--from=YIL, --dry-run)
+node scripts/catalog/add_missing.mjs --dry-run # katalogda eksik filmleri listele (yazmaz); --max=N, --ids=1,2
+node scripts/catalog/rebuild_static.mjs       # idf + keyword çevirileri + modlar (Supabase'ten; haftalık iş de bunu çalıştırır)
 node scripts/tmdb/translate_keywords.mjs      # yeni keyword'leri Türkçeye çevir (önbellekli)
 node scripts/rerank/build_moods.mjs           # mod listelerini yeniden hesapla
 node scripts/rerank/build_idf.mjs             # keyword ağırlık tablosu
@@ -157,9 +167,10 @@ GitHub'da: kod, `src/data/*.json`, `data/eval/` (golden set, LLM puan önbelleğ
 
 ### Öncelikli
 1. **Upstash token'ını iptal et.** Eski commit'lerde (`upload_to_upstash.py`) açıkta duruyor; dosya silindi ama git geçmişinde kalır.
-2. **Haftalık otomatik katalog güncellemesi (sıradaki iş, başlanmadı):** GitHub Actions ile Türkiye'de vizyona girenler + eksik popüler filmler eklensin (üst sınırlı); aynı işte mod listeleri, yeni keyword çevirileri ve IDF yenilensin ve commit'lenip deploy edilsin. Panelde durum + "şimdi çalıştır" butonu.
-   - Yeni filmler modlara/çevirilere ancak bu iş kurulunca girer (statik dosyalar).
-   - Aynı işe **`refresh_stats.mjs`** de bağlanmalı (yoksa yeni filmler yine 0 oyla kalıp önerilerden düşer) ve eksik popüler filmler (Addams 2019 gibi) taranıp eklenmeli.
+2. **Haftalık katalog güncellemesi kuruldu (2026-10-02)**, ayrıntı: bölüm 3 → Otomasyon. Kalanlar:
+   - GitHub Secrets'a `OPENAI_API_KEY` eklenmeli (yoksa iş ilk adımda durur) ve ilk çalıştırma Actions'tan elle denenmeli.
+   - **İlk dolgu:** 5.154 eksik popüler film için karar (ör. ≥1.000 oylu 2.019 film: ~35 MB, ~0,1 $). `node scripts/catalog/add_missing.mjs --max=2000`.
+   - Admin panelinde eklenen filmlerin listesi yok (GitHub Summary'de); istenirse panele taşınır.
 3. **Arama hızı (kenara bırakıldı, sırada):** soğuk film sayfası hâlâ yavaş. Ölçümler (2026-10-01):
    - Vercel fonksiyon bölgesi NA'daydı, **Frankfurt'a çekildi** (canlıda `fra1` doğrulandı).
    - Canlıda soğuk film sayfası: ilk bayt 0,5–1,6 sn, tamamı 2,7–4,8 sn; ikinci açılış 0,4 sn. "matrix" aramasının ilk çağrısı 11 sn (soğuk fonksiyon + soğuk katalog taraması), sonrakiler 0,7–0,9 sn.
@@ -196,10 +207,11 @@ Yaklaşık 1 $ (tahmini; embedding ~0.30 + LLM hakem ~0.30 + keyword çevirisi ~
 ```
 src/lib/recommend/   reranker.ts · similar.ts · moods.ts · providers.ts · embeddingDoc.mjs · types.ts · vibe.ts · trailer.ts
 src/components/      SiteHeader · Footer · film/{FilmCard,TrailerButton,WatchProviders,PlatformFilter} · search/{SearchBox,MoodChips} · home/PosterWall
-src/lib/server/      supabase.ts · tmdbServer.ts · catalogAdd.ts · adminAuth.ts · adminStats.ts · github.ts
+src/lib/server/      supabase.ts · tmdbServer.ts · catalogAdd.ts · adminAuth.ts · adminStats.ts · github.ts · workflowRoute.ts
 src/data/            idf.json · keywords_tr.json · moods.json · providers_tr.json
 src/app/             page.tsx · film/[id] · mod/[id] · admin · api/{similar,search-movie,admin}
 scripts/rerank/      reranker.mjs (offline ikiz) · configs.mjs · eval.mjs · llm_judge.mjs · build_*.mjs
+scripts/catalog/     lib.mjs · add_missing.mjs · rebuild_static.mjs (haftalık iş)
 scripts/tmdb/        enrich · fetch/upload_providers · translate_keywords · tmdbClient
 scripts/embed/       embed_v3.mjs · upload_v3.mjs
 scripts/export/      supabase/upstash export, inventory, loadEnv

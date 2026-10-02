@@ -25,7 +25,18 @@ function duration(r: WorkflowRun) {
     return sec < 60 ? `${sec} sn` : `${Math.round(sec / 60)} dk`;
 }
 
-export default function RefreshProvidersPanel({ initialRuns, configured }: { initialRuns: WorkflowRun[]; configured: boolean }) {
+// GitHub Actions workflow'u için "şimdi çalıştır" butonu + son çalıştırmalar. Varsayılan: platform yenilemesi.
+export default function RefreshProvidersPanel({
+    initialRuns,
+    configured,
+    endpoint = "/api/admin/refresh-providers",
+    startedMessage = "Başlatıldı. GitHub'ın işi sıraya alması birkaç saniye sürer; tüm tarama ~15 dakika.",
+}: {
+    initialRuns: WorkflowRun[];
+    configured: boolean;
+    endpoint?: string;
+    startedMessage?: string;
+}) {
     const router = useRouter();
     const [runs, setRuns] = useState(initialRuns);
     const [busy, setBusy] = useState(false);
@@ -34,9 +45,9 @@ export default function RefreshProvidersPanel({ initialRuns, configured }: { ini
     const active = runs.some((r) => r.status !== "completed");
 
     const load = useCallback(async () => {
-        const res = await fetch("/api/admin/refresh-providers", { cache: "no-store" });
+        const res = await fetch(endpoint, { cache: "no-store" });
         if (res.ok) setRuns((await res.json()).runs);
-    }, []);
+    }, [endpoint]);
 
     // Çalışan bir yenileme varken 15 sn'de bir durumu yenile; bitince istatistikleri de tazele
     useEffect(() => {
@@ -56,12 +67,12 @@ export default function RefreshProvidersPanel({ initialRuns, configured }: { ini
         setBusy(true);
         setMessage(null);
         try {
-            const res = await fetch("/api/admin/refresh-providers", { method: "POST" });
+            const res = await fetch(endpoint, { method: "POST" });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
                 setMessage(data.error ?? "Başlatılamadı");
             } else {
-                setMessage("Başlatıldı. GitHub'ın işi sıraya alması birkaç saniye sürer; tüm tarama ~15 dakika.");
+                setMessage(startedMessage);
                 // GitHub yeni çalıştırmayı listeye biraz gecikmeyle ekliyor
                 setTimeout(load, 4000);
                 setTimeout(load, 10000);

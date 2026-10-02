@@ -1,8 +1,9 @@
-// GitHub Actions: platform yenileme workflow'unu tetikleme ve son çalıştırmaları listeleme — SADECE sunucu.
+// GitHub Actions: workflow'ları (platform yenileme, katalog güncelleme) tetikleme ve son çalıştırmaları listeleme — SADECE sunucu.
 // GITHUB_TOKEN: fine-grained token, sadece bu repo, "Actions: Read and write" izni yeterli.
 
 const REPO = process.env.GITHUB_REPO ?? "kangaetemo/filminibul";
-const WORKFLOW = "refresh-providers.yml";
+export const WORKFLOWS = { providers: "refresh-providers.yml", catalog: "update-catalog.yml" } as const;
+export type WorkflowName = keyof typeof WORKFLOWS;
 
 export const githubConfigured = () => !!process.env.GITHUB_TOKEN;
 
@@ -24,8 +25,8 @@ export interface WorkflowRun {
     url: string;
 }
 
-export async function listRuns(limit = 5): Promise<WorkflowRun[]> {
-    const res = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOW}/runs?per_page=${limit}`, {
+export async function listRuns(workflow: WorkflowName = "providers", limit = 5): Promise<WorkflowRun[]> {
+    const res = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOWS[workflow]}/runs?per_page=${limit}`, {
         headers: headers(),
         cache: "no-store",
     });
@@ -44,8 +45,8 @@ export async function listRuns(limit = 5): Promise<WorkflowRun[]> {
     );
 }
 
-export async function dispatchRefresh(): Promise<void> {
-    const res = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOW}/dispatches`, {
+export async function dispatchRefresh(workflow: WorkflowName = "providers"): Promise<void> {
+    const res = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOWS[workflow]}/dispatches`, {
         method: "POST",
         headers: { ...headers(), "Content-Type": "application/json" },
         body: JSON.stringify({ ref: "main" }),

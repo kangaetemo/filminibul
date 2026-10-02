@@ -1,0 +1,64 @@
+# Haftalık katalog güncellemesi:
+#   1. Eksik filmleri ekle (Türkiye'de yeni vizyona girenler + TMDB'de çok oy almış ama katalogda olmayanlar; üst sınırlı)
+#   2. Yeni filmlerin oy/puan/popülerliğini tazele (eski kalırsa reranker "az oylu" diye cezalandırır)
+#   3. Mod listeleri, keyword çevirileri ve IDF'i yeniden üret; değiştiyse commit'le (Vercel yeniden deploy eder)
+# Zamanlanmış: her pazartesi 02:00 UTC (05:00 Türkiye), platform yenilemesinden bir saat önce
+# (yeni eklenen filmler aynı sabah platform taramasına da girer). Elle: Actions → "Kataloğu güncelle" → Run workflow.
+# Gerekli repo secret'ları: TMDB_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, OPENAI_API_KEY
+name: Kataloğu güncelle
+
+on:
+  schedule:
+    - cron: "0 2 * * 1"
+  workflow_dispatch:
+    inputs:
+      max_add:
+        description: "En fazla kaç film eklensin"
+        default: "100"
+
+concurrency:
+  group: update-catalog
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      MAX_ADD: ${{ inputs.max_add || '100' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Script'ler bağımlılıksız (sadece fetch), npm install gerekmiyor
+      - name: Eksik filmleri ekle
+        run: node scripts/catalog/add_missing.mjs --max="$MAX_ADD"
+
+      - name: Oy ve puanları tazele
+        run: node scripts/tmdb/refresh_stats.mjs
+
+      - name: Statik dosyaları yeniden üret
+        run: node scripts/catalog/rebuild_static.mjs
+
+      - name: Değişen dosyaları commit'le
+        run: |
+          git add src/data/idf.json src/data/keywords_tr.json src/data/moods.json
+          if git diff --cached --quiet; then
+            echo "Statik dosyalarda değişiklik yok."
+            exit 0
+          fi
+          # Yazar olarak repodaki son commit'in sahibini kullan: Vercel, tanımadığı yazarın commit'ini deploy etmeyebilir
+          git config user.name "$(git log -1 --format=%an)"
+          git config user.email "$(git log -1 --format=%ae)"
+          git commit -m "chore: haftalık katalog güncellemesi (modlar, keyword çevirileri, IDF)"
+          git push
