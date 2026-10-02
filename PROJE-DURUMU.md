@@ -21,7 +21,16 @@ Başlangıçta klasördeki kod eski bir GitHub sürümüydü (Next 14, Upstash, 
    - **Tarife göre arama ("vibe")** (`68b5783`): `/ara?q=…`, `/api/vibe-search`. Türkçe cümle → LLM ile film belgesi formatına → embed → Supabase `vibe_search_v3`. Ayrıntı §3.
    - **Tasarım yenilemesi** (`68b5783`): sıcak sinematik palet (amber), Fraunces serif, film grenı, afiş şeridi, yeni ana sayfa/film/mod sayfaları. Ayrıntı §3.
    - **Fragman** (`5f2b637`): film sayfasında "Fragmanı izle" (TMDB videoları, YouTube nocookie, tıklayınca yüklenir).
-   - **Afiş düzeltmesi** (`47d0425`, merge bekliyor): masaüstünde afiş uzuyordu (flex stretch), `self-start` ile 2:3 oranı korundu.
+   - **Afiş düzeltmesi** (`47d0425`): masaüstünde afiş uzuyordu (flex stretch), `self-start` ile 2:3 oranı korundu.
+7. **2026-10-02 oturumu** (ayrıntılar ilgili bölümlerde):
+   - **Öneri hatası:** yeni filmlerin oy/puanı katalogda 0 kalmıştı → az oylu cezası (Marslı → Project Hail Mary önerilmiyordu). `refresh_stats.mjs` ile tazelendi, haftalık işe bağlandı.
+   - **Haftalık katalog güncellemesi** (GitHub Actions, pazartesi 05:00 TR): eksik film ekleme, oy/puan, komşu tablosu, modlar, çeviriler, IDF, seri adları; admin panelinden de başlatılır. Uçtan uca doğrulandı.
+   - **Katalog 22.934 → 26.575 film:** ≥1.000 oylu eksik popülerler (2.040; ör. Transformers, Minions) + **Türk filmleri 48 → 1.546** (orijinal dili Türkçe, ≥5 oy).
+   - **Hız:** önceden hesaplanmış komşu tablosu (`film_neighbors`), benzer film sorgusu medyan 1,8 sn → ~350 ms, eşzamanlı istekte zaman aşımı bitti. Yer için HNSW index halfvec'e çevrildi (kalite ölçüldü: ilk 20 aynı).
+   - **Site:** üst çubukta arama kutusu (3–4 sonuç, kaydırmalı), okunur film adresleri (`/film/126986-devlet-kusu`), Türk filmlerinde Türkçe başlık, Türkçe seri adları, **iki filmi karıştır** (`/karistir`).
+   - **Görseller** Vercel optimizasyonu yerine doğrudan TMDB CDN'inden (Vercel ücretsiz kotası dolmuş, afişler 402 veriyordu).
+   - **SEO:** site haritası, robots.txt, canonical, paylaşım önizlemeleri (canlıda doğrulandı).
+   - **Temizlik:** kullanılmayan Firebase/dil sistemi/paketler, 79 MB arşiv repodan çıktı, gizlilik sayfası ve README güncel. Upstash token'ları geçersiz (doğrulandı).
 
 ---
 
@@ -173,11 +182,17 @@ GitHub'da: kod, `src/data/*.json`, `data/eval/` (golden set, LLM puan önbelleğ
 ## 7. Yapılacaklar / açık konular
 
 ### Öncelikli
+0. **Kullanıcının yapacakları (2026-10-02 itibarıyla):**
+   - **Google Search Console:** `filminibul.com`'u ekle (alan adı doğrulaması için Vercel'de DNS kaydı), site haritası olarak `https://filminibul.com/sitemap.xml` gönder. 2026-10-02'de `site:filminibul.com` aramasında sonuç yoktu (arama aracı Google değildi, kesin değil). İstenirse Bing Webmaster Tools'a Search Console'dan aktar.
+   - **Vercel → Domains:** `www.filminibul.com` → `filminibul.com` yönlendirmesi şu an **307 (geçici)**; 308 (kalıcı) yapılmalı.
+   - **Vercel → Environment Variables:** `NEXT_PUBLIC_FIREBASE_*` artık gereksiz, silinebilir.
+   - **Gözlem:** Türk filmlerinin önerileri (zayıf/tuhaf örnek olursa söyle), `/karistir` sonuçları, ilk otomatik pazartesi çalıştırması (2026-10-05 05:00 TR).
 1. ~~Upstash token'ını iptal et~~ **Yapıldı (2026-10-02):** git geçmişindeki token'ın adresi 404 (veritabanı silinmiş), `.env.local`'daki token 403 (iptal). `.env.local`'dan Upstash satırları silindi.
 2. **Haftalık katalog güncellemesi kuruldu (2026-10-02)**, ayrıntı: bölüm 3 → Otomasyon. Kalanlar:
    - İlk çalıştırma admin panelinden yapıldı (2026-10-02): ekleme adımı çalıştı (100 film), sonra kullanıcı işi iptal etti. İkinci elle çalıştırma **uçtan uca başarılı**: 100 film daha eklendi (katalog 25.074) ve iş main'e `2ec09bc` commit'ini attı (yazar: repo sahibi). Vercel deploy'u panelden doğrulanabilir.
    - İlk dolgu yapıldı (yukarıda, Veri gerçekleri).
    - Admin panelinde eklenen filmlerin listesi yok (GitHub Summary'de); istenirse panele taşınır.
+   - **`/karistir` küçük işler:** "Yerlerini değiştir" düğmesi işlevsiz (sıralama simetrik, sonuç değişmez; düğme sayfayı yenilemeden sadece afişleri değiştiriyor) → kaldırılması önerildi, kullanıcı kararı bekliyor. Soğuk ilk çağrı 12 sn ölçüldü (Supabase 8 sn sınırına yakın); sık olursa `blend.sql`'de havuz 1000 → 600.
 3. **Arama hızı: önceden hesaplanmış komşu tablosu — KURULDU (2026-10-02).** Sonuç: benzer film sorgusu medyan 1.833 → **352 ms**, en kötü 5,2 → 1,0 sn; 8 eşzamanlı istekte 0 hata (önce 4'te zaman aşımı). İlk 20 öneri canlı HNSW ile %100 aynı. DB 444 → **379 MB** (halfvec index −98 MB, film_neighbors +33 MB). SQL'ler çalıştırıldı (halfvec_index.sql tek seferde çalıştırıldı, sorun çıkmadı); tablo `build_neighbors.mjs` ile dolduruldu (100 sn hesap + 28 sn yükleme).
    - **Ölçüm (25.074 film, 120 rastgele film):** canlı `similar_movies_v3` medyan **1,8 sn**, p90 3,1 sn, en kötü 5,2 sn (22.900 filmdeyken medyan ~1 sn). **4 eşzamanlı istekte Supabase 8 sn zaman aşımı** → aynı anda birkaç ziyaretçide benzer filmler hiç gelmeyebilir.
    - **Kalite değişmez:** canlı HNSW, tam aramanın en yakın 200'ünün %99,8'ini, en yakın 20'nin %100'ünü buluyor. Ayrıca `llm_judge.mjs`'in ölçtüğü 0.82 zaten tam aramayla (yerel embedding) ölçülmüştü; tablo tam aramayla hesaplanıyor.
@@ -193,7 +208,8 @@ GitHub'da: kod, `src/data/*.json`, `data/eval/` (golden set, LLM puan önbelleğ
 - 👍/👎 (hesapsız, tarayıcıda): kişiselleştirme + **gerçek kullanıcı verisi** toplamak
 - ~~"İki filmi karıştır"~~ (yapıldı, min yöntemiyle)
 - ~~SEO: sitemap, paylaşım görseli (OG), "X'e benzer filmler" başlıkları~~ (yapıldı; Search Console'a bildirilmeli)
-- Seri adlarını Türkçeleştirmek ("The Matrix Collection" → "Matrix serisi")
+- ~~Seri adlarını Türkçeleştirmek~~ (yapıldı)
+- Tarif aramasını hızlandırmak (3,7–4,9 sn, çoğu OpenAI)
 - İlk açılış gecikmesi → aşağıdaki "Arama hızı" maddesine bakınız
 
 ### Bilinen sınırlar / teknik borç
@@ -202,11 +218,11 @@ GitHub'da: kod, `src/data/*.json`, `data/eval/` (golden set, LLM puan önbelleğ
 - Yeni bir TV/streaming platformu gelirse adı/logosu için `fetch_providers.mjs`'i **bilgisayarda** çalıştırıp `src/data/providers_tr.json`'ı commit'lemek gerekir (Actions `--no-catalog` ile çalışır).
 - **Temizlendi (2026-10-02):** kullanılmayan Firebase girişi (`AuthContext`, `firebase.ts`), dil sistemi (`LanguageContext`, `translations.ts`), boş reklam kutusu (`AdBanner`), eski TMDB istemcisi (`tmdb.ts`'te sadece `GENRE_MAP_TR` kaldı; `NEXT_PUBLIC_TMDB_API_KEY` referansı yok), paketler `firebase`, `@upstash/vector`, `framer-motion`. `dev_dev_arsiv.json` (79 MB) repodan çıkarıldı → yerelde `data/export/` (git geçmişinde hâlâ duruyor). README yeniden yazıldı. **Gizlilik sayfası gerçeğe göre güncellendi** (eskisi swipe beğenileri/izleme listesi/Google girişinden bahsediyordu; tarif metninin OpenAI'ye gittiği, AdSense, Vercel Analytics eklendi). Vercel'de `NEXT_PUBLIC_FIREBASE_*` değişkenleri artık gereksiz.
 - **Tarif araması bulgusu:** LLM bazen tema listesine olmayan şeyler ekleyebilir; "Setting" satırını yalnızca sorguda açıkça ülke/dil/dönem geçerse yazması için istemde kural var (Türkçe yazıldı diye "Turkish" eklemesin). Sonuçlar kalitesiz görünürse önce `vibe_try.mjs` ile istemi ölç.
-- **Geliştirme ortamı:** Bu bilgisayarda `gh` (GitHub CLI) kurulu ama PATH'te değil (`C:\Program Files\GitHub CLI\gh.exe`) ve giriş yapılmadı (`gh auth login --web --git-protocol https`, kendi PowerShell penceresinde). Ağ zaman zaman takılıyor (github.com / TMDB zaman aşımı), yeniden denemek yeterli. Claude oturumları worktree'de çalışıyor ve **main'e push/merge yapmıyor**: branch push'lanır, `git merge --ff-only origin/<branch>` + `git push origin main` sende.
+- **Geliştirme ortamı:** Bu bilgisayarda `gh` (GitHub CLI) kurulu ama PATH'te değil (`C:\Program Files\GitHub CLI\gh.exe`) ve giriş yapılmadı (`gh auth login --web --git-protocol https`, kendi PowerShell penceresinde). Ağ zaman zaman takılıyor (github.com / TMDB zaman aşımı), yeniden denemek yeterli. **2026-10-02'den beri Claude doğrudan `main`'e push'lar** ve her işi bu dosyaya yazar (kullanıcı isteği).
 - Başsız Chrome (`chrome.exe --headless=new --screenshot`) ile ekran görüntüsü alınabiliyor; 500 px'ten dar pencere açmaz, mobil için iframe sarmalayıcı kullanıldı.
 
 ### Harcama
-Yaklaşık 1 $ (tahmini; embedding ~0.30 + LLM hakem ~0.30 + keyword çevirisi ~0.40). OpenAI bakiyesi ~3 $ ile başlamıştı. Artık **ziyaretçi başına değişken maliyet** var: tarif araması ~$0,0002/yeni arama (1.000 arama ≈ $0,20); bakiyeyi ara sıra kontrol et.
+Yaklaşık 1 $ (tahmini; embedding ~0.30 + LLM hakem ~0.30 + keyword çevirisi ~0.40). OpenAI bakiyesi ~3 $ ile başlamıştı. 2026-10-02 eklemeleri: ~3.700 film embedding'i + 1.907 keyword çevirisi ≈ 0,3–0,4 $ (tahmini). Artık **ziyaretçi başına değişken maliyet** var: tarif araması ~$0,0002/yeni arama (1.000 arama ≈ $0,20); bakiyeyi ara sıra kontrol et.
 
 ---
 
