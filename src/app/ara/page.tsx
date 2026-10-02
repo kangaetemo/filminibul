@@ -28,7 +28,7 @@ export default function VibePage({ searchParams }: Props) {
     return (
         <main className="min-h-screen bg-background">
             <div className="spotlight">
-                <SiteHeader />
+                <SiteHeader search={false} />
                 <section className="mx-auto max-w-6xl px-4 pt-6 pb-10 sm:px-8">
                     <p className="text-xs uppercase tracking-[0.3em] text-accent-glow/80">Tarifine göre</p>
                     <h1 className="mt-3 max-w-4xl font-display text-3xl leading-tight text-white sm:text-5xl">

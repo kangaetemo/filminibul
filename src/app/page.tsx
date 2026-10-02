@@ -44,7 +44,7 @@ export default function HomePage() {
                     <PosterWall />
                 </Suspense>
 
-                <SiteHeader />
+                <SiteHeader search={false} />
 
                 <section className="relative px-4 pt-[9vh] pb-24 sm:pt-[12vh]">
                     <div className="mx-auto max-w-3xl text-center animate-fade-up">

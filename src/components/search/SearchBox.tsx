@@ -25,7 +25,8 @@ const DESCRIBING_WORDS = 4;
 const vibeHref = (q: string) => `/ara?q=${encodeURIComponent(q.trim())}`;
 
 // Tek kutu iki iş yapar: film adı yazınca katalog/TMDB önerileri, tarif yazınca (ya da ilk satırı seçince) /ara.
-export default function SearchBox({ initialQuery = "", autoFocus = true, size = "lg" }: { initialQuery?: string; autoFocus?: boolean; size?: "lg" | "md" }) {
+// `sm`: üst çubuk için kompakt hâl; öneri listesi sayfayı itmeden kutunun altına biner.
+export default function SearchBox({ initialQuery = "", autoFocus = true, size = "lg" }: { initialQuery?: string; autoFocus?: boolean; size?: "lg" | "md" | "sm" }) {
     const router = useRouter();
     const listId = useId();
     const [query, setQuery] = useState(initialQuery);
@@ -122,14 +123,15 @@ export default function SearchBox({ initialQuery = "", autoFocus = true, size = 
     };
 
     const showList = open && trimmed.length >= 2 && (canDescribe || results.length > 0);
-    const pad = size === "lg" ? "py-5 text-lg" : "py-3.5 text-base";
+    const pad = size === "lg" ? "py-5 text-lg" : size === "md" ? "py-3.5 text-base" : "py-2 text-sm";
+    const compact = size === "sm";
 
     return (
-        <div ref={boxRef} className="w-full max-w-2xl mx-auto">
+        <div ref={boxRef} className={`relative w-full ${compact ? "" : "max-w-2xl mx-auto"}`}>
             <form onSubmit={onSubmit} className="relative group" role="search">
                 <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-accent/0 via-accent/40 to-ember/0 opacity-0 group-focus-within:opacity-100 blur-sm transition-opacity" aria-hidden />
                 <div className="relative flex items-center rounded-2xl bg-card/90 border border-white/10 group-focus-within:border-accent/50 shadow-glow-card transition-colors">
-                    <Search className="ml-5 w-5 h-5 shrink-0 text-white/40" aria-hidden />
+                    <Search className={`shrink-0 text-white/40 ${compact ? "ml-3.5 w-4 h-4" : "ml-5 w-5 h-5"}`} aria-hidden />
                     <input
                         autoFocus={autoFocus}
                         value={query}
@@ -148,20 +150,21 @@ export default function SearchBox({ initialQuery = "", autoFocus = true, size = 
                         aria-autocomplete="list"
                         aria-label="Film adı yaz ya da nasıl bir film istediğini anlat"
                         placeholder="Film adı ya da tarif…"
-                        className={`min-w-0 flex-1 bg-transparent px-4 text-white placeholder:text-white/30 focus:outline-none ${pad}`}
+                        className={`min-w-0 flex-1 bg-transparent ${compact ? "px-3" : "px-4"} text-white placeholder:text-white/30 focus:outline-none ${pad}`}
                     />
                     {loading && <Loader2 className="mr-2 w-5 h-5 shrink-0 text-white/40 animate-spin" aria-label="Aranıyor" />}
                     <button
                         type="submit"
                         disabled={!canDescribe}
-                        className="m-2 flex shrink-0 items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-black transition hover:bg-accent-glow disabled:cursor-not-allowed disabled:opacity-30"
+                        className={`flex shrink-0 items-center gap-2 rounded-xl bg-accent text-sm font-semibold text-black transition hover:bg-accent-glow disabled:cursor-not-allowed disabled:opacity-30 ${compact ? "m-1 px-3 py-1.5" : "m-2 px-4 py-2.5"}`}
                     >
-                        <span className="hidden sm:inline">Bul</span>
+                        {!compact && <span className="hidden sm:inline">Bul</span>}
                         <ArrowRight className="w-4 h-4" aria-hidden />
                     </button>
                 </div>
             </form>
 
+            <div className={compact ? "absolute right-0 top-full z-30 w-[min(92vw,30rem)]" : ""}>
             {error && <p className="mt-3 text-sm text-pass-glow">{error}</p>}
 
             {showList && (
@@ -220,6 +223,7 @@ export default function SearchBox({ initialQuery = "", autoFocus = true, size = 
             {open && !loading && !error && trimmed.length >= 2 && !canDescribe && results.length === 0 && (
                 <p className="mt-3 text-sm text-white/40">Sonuç bulunamadı.</p>
             )}
+            </div>
         </div>
     );
 }
