@@ -45,13 +45,14 @@ export default async function FilmPage({ params, searchParams }: Props) {
     if (!film) notFound();
 
     return (
-        <main className="min-h-screen bg-background">
+        <main className="relative min-h-screen bg-background">
+            {/* Üst çubuk kapağın dışında: içinde olursa overflow-hidden arama sonuç listesini keser */}
+            <SiteHeader overlay />
             {/* Kapak: backdrop + yumuşak karartma, üst çubuk görselin üstünde */}
             <div className="relative h-[52vh] min-h-[340px] w-full overflow-hidden">
                 {film.backdropUrl && <Image src={film.backdropUrl} alt="" fill priority sizes="100vw" className="object-cover opacity-45" />}
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-background/30" />
                 <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-transparent to-transparent" />
-                <SiteHeader overlay />
             </div>
 
             {/* Film bilgisi */}

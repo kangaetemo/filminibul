@@ -91,7 +91,7 @@ Kullanıcı ─► Next.js 14 (Vercel) ─► reranker.ts (hafif hybrid) ─► 
 - **Yazı:** başlıklar `font-display` (Fraunces), gövde Inter. **Inter `latin-ext` ile yüklenir** (yoksa ş/ğ/ı/İ sistem fontuna düşüyordu).
 - **Atmosfer:** `body::before` film grenı, `.spotlight` huzmesi, ana sayfada `PosterWall` (moods.json'dan 21 afiş, yavaş akan, karartılmış; veri alınamazsa sessizce gizlenir).
 - **Ortak bileşenler:** `SiteHeader` (`overlay` filmde; **üst çubukta kompakt arama kutusu**, `SearchBox size="sm"`, öneri listesi kutunun altına biner, mobilde ikinci satır; ana sayfa ve `/ara`'da `search={false}`), `Footer` (artık statik), `FilmCard` (`index` ile kademeli giriş animasyonu), `MoodChips` (`tiles` = ana sayfa kutucukları).
-- **Film sayfası:** büyük kapak, `-mt-56` ile bilgi bloğu; afiş `self-start` (flex'te uzamasın diye şart), `lg:w-72`. Benzer filmler `Suspense` içinde (`SimilarList`).
+- **Film sayfası:** `SiteHeader overlay` kapak `div`'inin **dışında**, `main`'in (`relative`) doğrudan çocuğu: kapak `overflow-hidden` olduğu için içindeyken üst arama kutusunun sonuç listesini kesiyordu (2026-10-02 düzeltildi). Büyük kapak, `-mt-56` ile bilgi bloğu; afiş `self-start` (flex'te uzamasın diye şart), `lg:w-72`. Benzer filmler `Suspense` içinde (`SimilarList`).
 - **Fragman:** `src/lib/recommend/trailer.ts` (TMDB `/movie/{id}/videos`, `include_video_language=tr,en`; Trailer > Teaser, resmî, Türkçe > İngilizce, en yeni; 24 sa önbellek) + `TrailerButton` (modal, Esc/dış tık, odak yönetimi, YouTube yalnızca tıklayınca `youtube-nocookie.com`). Gizlilik sayfasına YouTube eklendi.
 
 ### Admin paneli (`/admin`)
