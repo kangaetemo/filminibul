@@ -168,7 +168,7 @@ GitHub'da: kod, `src/data/*.json`, `data/eval/` (golden set, LLM puan önbelleğ
 ### Öncelikli
 1. **Upstash token'ını iptal et.** Eski commit'lerde (`upload_to_upstash.py`) açıkta duruyor; dosya silindi ama git geçmişinde kalır.
 2. **Haftalık katalog güncellemesi kuruldu (2026-10-02)**, ayrıntı: bölüm 3 → Otomasyon. Kalanlar:
-   - İlk çalıştırma admin panelinden yapıldı (2026-10-02): ekleme adımı çalıştı (100 film). **Commit adımı doğrulanmadı**: o çalıştırmadan main'e commit gelmedi; Actions log'unda bakılmalı (push yetkisi `contents: write` var, Vercel'in bot yazarlı commit'i deploy edip etmediği de kontrol edilecek).
+   - İlk çalıştırma admin panelinden yapıldı (2026-10-02): ekleme adımı çalıştı (100 film), sonra kullanıcı işi **iptal etti**; kalan adımlar çalışmadı. **Commit adımı henüz hiç denenmedi**: bir çalıştırmayı sonuna kadar bekleyip main'e "haftalık katalog güncellemesi" commit'i geldiğini ve Vercel'in deploy ettiğini doğrula.
    - İlk dolgu yapıldı (yukarıda, Veri gerçekleri).
    - Admin panelinde eklenen filmlerin listesi yok (GitHub Summary'de); istenirse panele taşınır.
 3. **Arama hızı (kenara bırakıldı, sırada):** soğuk film sayfası hâlâ yavaş. Ölçümler (2026-10-01):
