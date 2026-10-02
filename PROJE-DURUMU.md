@@ -56,7 +56,7 @@ Kullanıcı ─► Next.js 14 (Vercel) ─► reranker.ts (hafif hybrid) ─► 
 - Ağırlık değiştirmeden önce mutlaka `llm_judge.mjs` ile ölç (puanlar önbellekli, tekrar ödeme yok).
 
 ### Veri gerçekleri
-- Katalog: **24.974 film** (2026-10-02). 22.931 orijinal + admin'den 3 film + haftalık işin ilk elle çalıştırması 100 + ilk dolgu 1.940 (TMDB'de ≥1.000 oylu eksik filmler, `add_missing.mjs --max=1940`).
+- Katalog: **25.074 film** (2026-10-02, ikinci haftalık iş çalıştırmasından sonra). 24.974 ara toplam: 22.931 orijinal + admin'den 3 film + haftalık işin ilk elle çalıştırması 100 + ilk dolgu 1.940 (TMDB'de ≥1.000 oylu eksik filmler, `add_missing.mjs --max=1940`).
 - Keyword'ü olan film %57 (TMDB'de gerçekten yok, çekim eksikliği değil). Seri (collection) bilgisi %14. Türkçe başlık/özet ~%25.
 - Filmlerin yarısından fazlası <10 oy almış. Bunları silmek önerilmedi: az bilinen filmlerin önerilerini besliyorlar (LLM ort. 1.83/3).
 - **Oy/puan verisi eskiyebilir (2026-10-02 bulgusu):** vizyondan önce eklenen filmler `vote_count=0` kalıyor; reranker bunlara `lowVotes` cezası (−0,08) + kalite 0 veriyor ve film top 20'den düşüyor (ör. Marslı → Project Hail Mary: adaylarda 7. sıradaydı ama katalogda 0 oy, TMDB'de 8.078). `scripts/tmdb/refresh_stats.mjs` ile 2021+ filmlerde 2.575 satır tazelendi (2026'da "<20 oy" görünen 671 → 491). Eski değerler: `data/tmdb/stats_backup_2026-10-02_dry.json` (tam liste). **Henüz otomatik değil**, haftalık işe bağlanmalı.
@@ -168,7 +168,7 @@ GitHub'da: kod, `src/data/*.json`, `data/eval/` (golden set, LLM puan önbelleğ
 ### Öncelikli
 1. **Upstash token'ını iptal et.** Eski commit'lerde (`upload_to_upstash.py`) açıkta duruyor; dosya silindi ama git geçmişinde kalır.
 2. **Haftalık katalog güncellemesi kuruldu (2026-10-02)**, ayrıntı: bölüm 3 → Otomasyon. Kalanlar:
-   - İlk çalıştırma admin panelinden yapıldı (2026-10-02): ekleme adımı çalıştı (100 film), sonra kullanıcı işi **iptal etti**; kalan adımlar çalışmadı. **Commit adımı henüz hiç denenmedi**: bir çalıştırmayı sonuna kadar bekleyip main'e "haftalık katalog güncellemesi" commit'i geldiğini ve Vercel'in deploy ettiğini doğrula.
+   - İlk çalıştırma admin panelinden yapıldı (2026-10-02): ekleme adımı çalıştı (100 film), sonra kullanıcı işi iptal etti. İkinci elle çalıştırma **uçtan uca başarılı**: 100 film daha eklendi (katalog 25.074) ve iş main'e `2ec09bc` commit'ini attı (yazar: repo sahibi). Vercel deploy'u panelden doğrulanabilir.
    - İlk dolgu yapıldı (yukarıda, Veri gerçekleri).
    - Admin panelinde eklenen filmlerin listesi yok (GitHub Summary'de); istenirse panele taşınır.
 3. **Arama hızı (kenara bırakıldı, sırada):** soğuk film sayfası hâlâ yavaş. Ölçümler (2026-10-01):
