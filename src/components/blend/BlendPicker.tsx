@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useSearchAnalytics } from "@/lib/analytics/useSearchAnalytics";
 import { Loader2, Plus, Search, Shuffle, X } from "lucide-react";
 
 export interface PickedFilm {
@@ -118,6 +119,7 @@ function FilmSearch({ exclude, onPick }: { exclude?: number; onPick: (f: PickedF
     const [active, setActive] = useState(-1);
     const abortRef = useRef<AbortController | null>(null);
 
+    const analytics = useSearchAnalytics(query, "blend");
     const trimmed = query.trim();
     const pickable = results.filter((r) => r.inCatalog && r.id !== exclude);
 
@@ -127,6 +129,7 @@ function FilmSearch({ exclude, onPick }: { exclude?: number; onPick: (f: PickedF
             setResults([]);
             return;
         }
+        abortRef.current?.abort();
         const timer = setTimeout(async () => {
             abortRef.current?.abort();
             const controller = new AbortController();
@@ -135,7 +138,9 @@ function FilmSearch({ exclude, onPick }: { exclude?: number; onPick: (f: PickedF
             try {
                 const res = await fetch(`/api/search-movie?q=${encodeURIComponent(trimmed)}`, { signal: controller.signal });
                 const data = await res.json();
+                if (controller.signal.aborted) return;
                 setResults(res.ok ? data.results : []);
+                if (res.ok) analytics.ready(trimmed, data.results.filter((r: SearchResult) => r.inCatalog && r.id !== exclude).length);
                 setActive(-1);
             } catch (err) {
                 if ((err as Error).name !== "AbortError") setResults([]);
@@ -143,10 +148,10 @@ function FilmSearch({ exclude, onPick }: { exclude?: number; onPick: (f: PickedF
                 if (!controller.signal.aborted) setLoading(false);
             }
         }, 300);
-        return () => clearTimeout(timer);
+        return () => { clearTimeout(timer); abortRef.current?.abort(); };
     }, [trimmed]);
 
-    const pick = (r: SearchResult) => onPick({ id: r.id, title: r.title, year: r.year, posterUrl: r.posterUrl });
+    const pick = (r: SearchResult) => { analytics.commit(); onPick({ id: r.id, title: r.title, year: r.year, posterUrl: r.posterUrl }); };
 
     const onKeyDown = (e: React.KeyboardEvent) => {
         if (!pickable.length) return;

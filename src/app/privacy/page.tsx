@@ -15,7 +15,7 @@ export default function PrivacyPolicy() {
                     <section>
                         <h2 className="text-xl font-semibold text-white mb-3">Hesap ve kişisel veri</h2>
                         <p className="text-white/70 leading-relaxed">
-                            Filminibul&apos;u kullanmak için hesap açman gerekmez. Ad, e-posta gibi kişisel bilgiler istemiyor ve saklamıyoruz.
+                            Filminibul&apos;u kullanmak için hesap açman gerekmez. Ad, e-posta gibi kişisel bilgileri hesap kaydı için istemiyoruz. Arama kutularına kişisel bilgi yazmamanı öneririz.
                         </p>
                     </section>
 
@@ -40,6 +40,23 @@ export default function PrivacyPolicy() {
                     </section>
 
                     <section>
+                        <h2 className="text-xl font-semibold text-white mb-3">Ürün kullanım istatistikleri</h2>
+                        <p className="text-white/70 leading-relaxed">
+                            Etkin olduğunda film açma, arama, öneri kartlarının görünmesi ve seçilmesi, film karıştırma, mod seçimi,
+                            fragman açma ve JustWatch bağlantısı kullanımı gibi işlemleri hizmetimizi geliştirmek için kaydederiz.
+                            Arama metni, sonuç sayısı ve ilgili film numaraları bu kayıtlara dahil olabilir. E-posta, bağlantı veya
+                            telefon numarası gibi görünen arama metinlerini basit bir filtreyle ayıklarız; bu filtre tüm kişisel bilgileri tespit edemeyebilir.
+                        </p>
+                        <p className="text-white/70 leading-relaxed mt-2">
+                            Sekmene ait rastgele bir oturum numarası tarayıcının oturum depolamasında tutulur; 30 dakika hareketsizlikte
+                            veya en fazla 24 saat sonra yenilenir. Bu numara hesabınla ilişkilendirilmez. Ürün istatistiklerimizde IP adresini,
+                            cihaz parmak izini ve tam yönlendirme adresini saklamayız; geliş kaynağını yalnızca Google, sosyal medya gibi kategorilerle tutarız.
+                            Ham kayıtlar son 30 takvim günü, kimlik ve arama metni içermeyen günlük özetler 365 gün saklanır.
+                            Tarayıcının Do Not Track veya Global Privacy Control sinyali açıksa bu ürün istatistikleri gönderilmez.
+                        </p>
+                    </section>
+
+                    <section>
                         <h2 className="text-xl font-semibold text-white mb-3">Üçüncü taraf hizmetler</h2>
                         <ul className="list-disc list-inside text-white/70 space-y-1 mt-2">
                             <li>
@@ -57,6 +74,9 @@ export default function PrivacyPolicy() {
                             </li>
                             <li>
                                 <strong>Vercel</strong>: sitenin barındırılması ve çerez kullanmayan, anonim ziyaret istatistikleri (Vercel Analytics).
+                            </li>
+                            <li>
+                                <strong>Supabase</strong>: ürün kullanım istatistiklerinin veritabanında saklanması.
                             </li>
                             <li>
                                 <strong>Google AdSense</strong>: reklam gösterimi. Google, reklamlar için kendi çerezlerini kullanabilir; ayrıntılar Google&apos;ın

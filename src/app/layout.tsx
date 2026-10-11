@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import PageTracker from "@/components/analytics/PageTracker";
 import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
@@ -35,6 +37,7 @@ export default function RootLayout({
 				strategy="afterInteractive"
 				/>
                 {children}
+                <Suspense fallback={null}><PageTracker /></Suspense>
                 <Analytics />
             </body>
         </html>

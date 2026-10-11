@@ -39,6 +39,8 @@ export default async function AdminPage() {
                     <LogoutButton />
                 </header>
 
+                <Link href="/admin/analytics" className="mt-6 inline-flex rounded-xl bg-accent px-4 py-2 font-semibold text-black">Ürün istatistiklerini aç →</Link>
+
                 <section className="mt-8 p-5 rounded-2xl bg-card border border-white/10">
                     <h2 className="text-lg font-semibold text-white">Katalog</h2>
                     <p className="mt-1 text-sm text-white/40">

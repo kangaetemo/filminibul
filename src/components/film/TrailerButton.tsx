@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { track } from "@/lib/analytics/client";
 import { Play, X } from "lucide-react";
 
 // "Fragmanı izle" düğmesi + video penceresi.
 // YouTube sadece tıklayınca yüklenir (sayfa hızı ve gizlilik: tıklamadan YouTube'a hiç istek gitmez) ve
 // youtube-nocookie.com alan adıyla gömülür.
-export default function TrailerButton({ videoKey, filmTitle }: { videoKey: string; filmTitle: string }) {
+export default function TrailerButton({ videoKey, filmTitle, filmId }: { videoKey: string; filmTitle: string; filmId: number }) {
     const [open, setOpen] = useState(false);
     const openerRef = useRef<HTMLButtonElement>(null);
     const closeRef = useRef<HTMLButtonElement>(null);
@@ -38,7 +39,7 @@ export default function TrailerButton({ videoKey, filmTitle }: { videoKey: strin
             <button
                 ref={openerRef}
                 type="button"
-                onClick={() => setOpen(true)}
+                onClick={() => { track("trailer_clicked", { film_id: filmId }); setOpen(true); }}
                 className="inline-flex items-center gap-2.5 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-black shadow-glow-accent transition hover:bg-accent-glow"
             >
                 <Play className="h-4 w-4 fill-black" aria-hidden />

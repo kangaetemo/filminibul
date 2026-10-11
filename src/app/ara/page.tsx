@@ -1,3 +1,4 @@
+import ResultEvent from "@/components/analytics/ResultEvent";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -84,17 +85,18 @@ async function Results({ q }: { q: string }) {
     }
 
     if (result.films.length === 0) {
-        return <p className="text-white/50">Bu tarife uyan bir film bulamadık. Biraz daha farklı anlatmayı dene.</p>;
+        return <><ResultEvent name="search_performed" data={{ query: q, context: "vibe", result_count: 0 }} /><p className="text-white/50">Bu tarife uyan bir film bulamadık. Biraz daha farklı anlatmayı dene.</p></>;
     }
 
     return (
         <>
+            <ResultEvent name="search_performed" data={{ query: q, context: "vibe", result_count: result.films.length }} />
             <p className="text-sm text-white/40">
                 {result.films.length} film · tarifine en çok uyandan başlayarak
             </p>
             <ul className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 md:grid-cols-4 lg:grid-cols-6">
                 {result.films.map((v, i) => (
-                    <FilmCard key={v.film.id} film={v.film} reasons={v.matched} index={i} />
+                    <FilmCard key={v.film.id} film={v.film} reasons={v.matched} index={i} context="vibe" />
                 ))}
             </ul>
             <p className="mt-10 text-sm text-white/35">
