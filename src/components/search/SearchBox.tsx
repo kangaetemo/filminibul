@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Loader2, Search, Sparkles, Star } from "lucide-react";
+import { track } from "@/lib/analytics/client";
+import { useSearchAnalytics } from "@/lib/analytics/useSearchAnalytics";
 import { filmPath } from "@/lib/filmUrl";
 
 interface SearchResult {
@@ -40,6 +42,7 @@ export default function SearchBox({ initialQuery = "", autoFocus = true, size = 
     const warmedRef = useRef<Set<number>>(new Set());
     const boxRef = useRef<HTMLDivElement>(null);
 
+    const analytics = useSearchAnalytics(query, "search");
     const trimmed = query.trim();
     const canDescribe = trimmed.length >= VIBE_MIN_CHARS;
     const wordCount = trimmed.split(/\s+/).filter(Boolean).length;
@@ -52,6 +55,7 @@ export default function SearchBox({ initialQuery = "", autoFocus = true, size = 
             setError(null);
             return;
         }
+        abortRef.current?.abort();
         const timer = setTimeout(async () => {
             abortRef.current?.abort();
             const controller = new AbortController();
@@ -61,7 +65,9 @@ export default function SearchBox({ initialQuery = "", autoFocus = true, size = 
                 const res = await fetch(`/api/search-movie?q=${encodeURIComponent(q)}`, { signal: controller.signal });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error ?? "Arama başarısız");
+                if (controller.signal.aborted) return;
                 setResults(data.results);
+                analytics.ready(q, data.results.length);
                 setError(null);
                 setActive(-1);
                 // İlk katalog sonuçlarının benzer film sorgusunu önceden ısıt (soğuk HNSW sorgusu 1–4 sn sürüyor);
@@ -79,7 +85,7 @@ export default function SearchBox({ initialQuery = "", autoFocus = true, size = 
                 if (!controller.signal.aborted) setLoading(false);
             }
         }, 300);
-        return () => clearTimeout(timer);
+        return () => { clearTimeout(timer); abortRef.current?.abort(); };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [trimmed]);
 
@@ -99,7 +105,8 @@ export default function SearchBox({ initialQuery = "", autoFocus = true, size = 
 
     const itemCount = (canDescribe ? 1 : 0) + results.length;
     const goVibe = () => router.push(vibeHref(trimmed));
-    const goFilm = (r: SearchResult) => router.push(filmPath(r.id, r.title));
+    const recordFilm = (r: SearchResult) => track("film_clicked", { film_id: r.id, context: "search", search_id: analytics.commit(), rank: results.findIndex((item) => item.id === r.id) + 1 });
+    const goFilm = (r: SearchResult) => { recordFilm(r); router.push(filmPath(r.id, r.title)); };
 
     const activate = (index: number) => {
         if (canDescribe && index === 0) return goVibe();
@@ -200,7 +207,7 @@ export default function SearchBox({ initialQuery = "", autoFocus = true, size = 
                         const index = i + (canDescribe ? 1 : 0);
                         return (
                             <li key={r.id} id={`${listId}-${index}`} role="option" aria-selected={active === index}>
-                                <Link href={filmPath(r.id, r.title)} className={`flex gap-4 p-3 transition-colors ${active === index ? "bg-card-hover" : "hover:bg-card-hover"}`}>
+                                <Link href={filmPath(r.id, r.title)} onClick={() => recordFilm(r)} className={`flex gap-4 p-3 transition-colors ${active === index ? "bg-card-hover" : "hover:bg-card-hover"}`}>
                                     <div className="relative w-12 h-[72px] shrink-0 rounded-md overflow-hidden bg-white/5">
                                         {r.posterUrl && <Image src={r.posterUrl} alt="" fill sizes="48px" className="object-cover" />}
                                     </div>

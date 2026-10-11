@@ -1,4 +1,9 @@
+"use client";
 import Link from "next/link";
+import { useEffect, useRef } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { analyticsEnabled, currentVisit, track } from "@/lib/analytics/client";
+import type { EventData } from "@/lib/analytics/schema";
 import Image from "next/image";
 import { Star } from "lucide-react";
 import type { FilmDTO } from "@/lib/recommend/types";
@@ -8,10 +13,35 @@ import type { Platform } from "@/lib/recommend/providers";
 // Poster kartı: benzer filmler, mod ve tarif sonuçlarında ortak.
 // reasons verilirse "neden önerildi?" satırlarının ilk 2'si gösterilir, tamamı tooltip'te.
 // platforms verilirse Türkiye'de izlenebildiği platformların logoları (en fazla 3).
-export default function FilmCard({ film, reasons, platforms, index = 0 }: { film: FilmDTO; reasons?: string[]; platforms?: Platform[]; index?: number }) {
+export default function FilmCard({ film, reasons, platforms, index = 0, context, sourceFilmId }: { film: FilmDTO; reasons?: string[]; platforms?: Platform[]; index?: number; context?: "similar" | "vibe" | "blend" | "mood"; sourceFilmId?: number }) {
+    const ref = useRef<HTMLLIElement>(null);
+    const pathname = usePathname();
+    const params = useSearchParams();
+    useEffect(() => {
+        if (!analyticsEnabled() || context !== "similar" || !sourceFilmId || !ref.current || !("IntersectionObserver" in window)) return;
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const data: EventData = { film_id: film.id, source_film_id: sourceFilmId, rank: index + 1, context };
+        const visit = currentVisit();
+        const observer = new IntersectionObserver(([entry]) => {
+            if (timer) clearTimeout(timer);
+            if (entry.isIntersecting && entry.intersectionRatio >= 0.5 && document.visibilityState === "visible") {
+                timer = setTimeout(() => {
+                    if (document.visibilityState === "visible" && currentVisit() === visit) track("recommendation_impression", data, `impression:${sourceFilmId}:${film.id}:${index}`);
+                }, 1000);
+            }
+        }, { threshold: [0, 0.5] });
+        const visibility = () => {
+            if (timer) clearTimeout(timer);
+            if (document.visibilityState === "visible" && ref.current) { observer.unobserve(ref.current); observer.observe(ref.current); }
+        };
+        observer.observe(ref.current);
+        document.addEventListener("visibilitychange", visibility);
+        return () => { observer.disconnect(); if (timer) clearTimeout(timer); document.removeEventListener("visibilitychange", visibility); };
+    }, [film.id, sourceFilmId, index, context, pathname, params]);
+    const onClick = () => track(context === "similar" && sourceFilmId ? "recommendation_clicked" : "film_clicked", { film_id: film.id, source_film_id: sourceFilmId, rank: index + 1, context });
     return (
-        <li className="animate-fade-up" style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}>
-            <Link href={filmPath(film.id, film.title)} className="group block">
+        <li ref={ref} className="animate-fade-up" style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}>
+            <Link href={filmPath(film.id, film.title)} className="group block" onClick={onClick}>
                 <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-card ring-1 ring-white/10 transition duration-300 group-hover:-translate-y-1 group-hover:ring-accent/50 group-hover:shadow-glow-accent">
                     {film.posterUrl ? (
                         <Image

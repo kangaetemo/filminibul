@@ -67,7 +67,7 @@ export default async function MoodPage({ params }: Props) {
                 ) : (
                     <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 md:grid-cols-4 lg:grid-cols-5">
                         {films.map((f, i) => (
-                            <FilmCard key={f.id} film={f} index={i} />
+                            <FilmCard key={f.id} film={f} index={i} context="mood" />
                         ))}
                     </ul>
                 )}

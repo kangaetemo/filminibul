@@ -1,3 +1,4 @@
+import ResultEvent from "@/components/analytics/ResultEvent";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -129,14 +130,15 @@ async function Results({ a, b }: { a: number; b: number }) {
         );
     }
     if (!result || result.films.length === 0) {
-        return <p className="text-white/50">Bu iki filme birlikte benzeyen bir film bulamadık. Başka bir ikili dene.</p>;
+        return <><ResultEvent name="blend_completed" data={{ source_film_id: a, second_film_id: b, result_count: 0 }} /><p className="text-white/50">Bu iki filme birlikte benzeyen bir film bulamadık. Başka bir ikili dene.</p></>;
     }
     return (
         <>
+            <ResultEvent name="blend_completed" data={{ source_film_id: a, second_film_id: b, result_count: result.films.length }} />
             <p className="text-sm text-white/40">{result.films.length} film · ikisine de en çok benzeyenden başlayarak</p>
             <ul className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 md:grid-cols-4 lg:grid-cols-6">
                 {result.films.map((f, i) => (
-                    <FilmCard key={f.film.id} film={f.film} reasons={f.reasons} index={i} />
+                    <FilmCard key={f.film.id} film={f.film} reasons={f.reasons} index={i} context="blend" />
                 ))}
             </ul>
         </>

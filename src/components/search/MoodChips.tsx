@@ -1,4 +1,4 @@
-import Link from "next/link";
+import TrackedLink from "@/components/analytics/TrackedLink";
 import { MOODS } from "@/lib/recommend/moods";
 
 // Ruh hâli seçimi. `tiles`: ana sayfada büyük kutucuklar; varsayılan: mod sayfasındaki ince çipler.
@@ -7,7 +7,7 @@ export default function MoodChips({ activeId, tiles = false }: { activeId?: stri
         return (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {MOODS.map((m, i) => (
-                    <Link
+                    <TrackedLink event="mood_selected" data={{ mood: m.id }}
                         key={m.id}
                         href={`/mod/${m.id}`}
                         className="group relative overflow-hidden rounded-2xl border border-white/10 bg-card p-4 pb-5 transition duration-300 hover:-translate-y-0.5 hover:border-accent/50 hover:bg-card-hover animate-fade-up"
@@ -18,7 +18,7 @@ export default function MoodChips({ activeId, tiles = false }: { activeId?: stri
                             {m.emoji}
                         </span>
                         <span className="relative mt-4 block font-display text-lg leading-tight text-white">{m.label}</span>
-                    </Link>
+                    </TrackedLink>
                 ))}
             </div>
         );
@@ -27,7 +27,7 @@ export default function MoodChips({ activeId, tiles = false }: { activeId?: stri
     return (
         <div className="flex flex-wrap gap-2 justify-start">
             {MOODS.map((m) => (
-                <Link
+                <TrackedLink event="mood_selected" data={{ mood: m.id }}
                     key={m.id}
                     href={`/mod/${m.id}`}
                     aria-current={m.id === activeId ? "page" : undefined}
@@ -39,7 +39,7 @@ export default function MoodChips({ activeId, tiles = false }: { activeId?: stri
                 >
                     <span aria-hidden>{m.emoji}</span>
                     {m.label}
-                </Link>
+                </TrackedLink>
             ))}
         </div>
     );

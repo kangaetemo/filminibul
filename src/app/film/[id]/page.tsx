@@ -115,7 +115,7 @@ export default async function FilmPage({ params, searchParams }: Props) {
 
                     {(trailer || film.inCatalog) && (
                         <div className="mt-6 flex flex-wrap items-center gap-3">
-                            {trailer && <TrailerButton videoKey={trailer.key} filmTitle={film.title} />}
+                            {trailer && <TrailerButton videoKey={trailer.key} filmTitle={film.title} filmId={film.id} />}
                             {film.inCatalog && (
                                 <Link
                                     href={`/karistir?a=${film.id}`}
@@ -149,7 +149,7 @@ export default async function FilmPage({ params, searchParams }: Props) {
                         )}
                     </dl>
 
-                    <WatchProviders providers={providers} />
+                    <WatchProviders providers={providers} filmId={film.id} />
                 </div>
             </section>
 
@@ -194,7 +194,7 @@ async function SimilarList({ id, platforms }: { id: number; platforms: number[] 
     return (
         <ul className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 md:grid-cols-4 lg:grid-cols-5">
             {similar.map((s, i) => (
-                <FilmCard key={s.film.id} film={s.film} reasons={s.reasons} platforms={s.platforms} index={i} />
+                <FilmCard key={s.film.id} film={s.film} reasons={s.reasons} platforms={s.platforms} index={i} context="similar" sourceFilmId={id} />
             ))}
         </ul>
     );
