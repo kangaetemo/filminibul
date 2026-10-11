@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { ADMIN_COOKIE, isValidSession } from "@/lib/server/adminAuth";
-import { analyticsRpc } from "@/lib/server/analytics";
+import { analyticsRpc, searchHistoryFilters } from "@/lib/server/analytics";
+import SearchHistory from "./SearchHistory";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Ürün istatistikleri · Filminibul", robots: { index: false, follow: false } };
 type Daily = { day: string; sessions: number; views: number; searches: number; no_results: number; impressions: number; matched_clicks: number; recommendation_clicks: number; blends: number; trailers: number; platforms: number; moods: number };
@@ -32,7 +34,7 @@ function Trend({ daily }: { daily: Daily[] }) {
     const line = (key: "views" | "searches" | "recommendation_clicks") => daily.map((d,i) => `${45 + i / Math.max(1,daily.length - 1) * 710},${185 - d[key]/max*150}`).join(" ");
     return <><div className="flex flex-wrap gap-4 text-xs"><span className="text-slate-700">● Sayfa açma</span><span className="text-teal-700">● Arama</span><span className="text-orange-700">● Öneri tıklama</span></div><svg viewBox="0 0 800 225" role="img" aria-label="Günlük sayfa açma, arama ve öneri tıklama grafiği; kesin değerler aşağıdaki tabloda" className="mt-3 w-full"><line x1="45" y1="185" x2="755" y2="185" stroke="#cbd5e1"/><text x="8" y="40" fontSize="12" fill="#64748b">{max}</text><text x="20" y="188" fontSize="12" fill="#64748b">0</text><polyline points={line("views")} fill="none" stroke="#334155" strokeWidth="2"/><polyline points={line("searches")} fill="none" stroke="#0f766e" strokeWidth="2"/><polyline points={line("recommendation_clicks")} fill="none" stroke="#c2410c" strokeWidth="2"/><text x="45" y="215" fontSize="12" fill="#64748b">{daily[0]?.day}</text><text x="755" y="215" textAnchor="end" fontSize="12" fill="#64748b">{daily[daily.length-1]?.day}</text></svg></>;
 }
-export default async function AnalyticsPage({ searchParams }: { searchParams?: { days?: string } }) {
+export default async function AnalyticsPage({ searchParams }: { searchParams?: Record<string, string | string[] | undefined> }) {
     // Defense in depth: never rely only on middleware for private report reads.
     if (!(await isValidSession(cookies().get(ADMIN_COOKIE)?.value))) redirect("/admin/login");
     const requested = Number(searchParams?.days);
@@ -58,6 +60,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: {
             <Panel title="Geliş kaynağı ve özellik kullanımı"><Table headers={["Kaynak","Oturum","Sayfa","Öneriye geçen oturum","Karıştıran oturum"]} rows={report.sources.map(s => [labels[s.source] ?? s.source,n(s.sessions),n(s.views),`${n(s.recommendation_sessions)} (${pct(s.recommendation_sessions,s.sessions)})`,n(s.blend_sessions)])}/><p className="mt-3 text-xs text-slate-500">Kaynak referrer kategorisinden belirlenir; Google&apos;da yazılan arama kelimesi bu yolla öğrenilemez. Kaynak gizlenmişse doğrudan olarak görünür.</p></Panel>
             <div className="grid gap-6 lg:grid-cols-2"><Panel title="En çok arananlar"><Table headers={["Arama","Tür","Adet","Sonuçsuz","Filme geçiş"]} rows={report.queries.map(q => [q.query,labels[q.context],n(q.searches),n(q.no_results),q.context === "blend" ? "—" : pct(q.clicked,q.searches)])}/></Panel><Panel title="Sonuç bulunamayan aramalar"><Table headers={["Arama","Tür","Sonuçsuz"]} rows={report.no_result_queries.map(q => [q.query,labels[q.context],n(q.no_results)])}/></Panel></div>
             <p className="text-xs text-slate-500">Film adı aramaları sonuç geldikten sonra 1,2 saniye yazma durduğunda veya film seçildiğinde sayılır. Tarif aramaları sonuç sayfası açıldığında sayılır. Karıştırma seçimleri için filme geçiş oranı hesaplanmaz. Hassas görünen sorguların metni saklanmaz; adetleri genel toplamlara dahildir.</p>
+            <Suspense fallback={<Panel title="Tüm aramalar"><p role="status" className="text-sm text-slate-500">Arama kayıtları yükleniyor…</p></Panel>}><SearchHistory rawStart={report.raw_start} days={days} filters={searchHistoryFilters(searchParams)}/></Suspense>
             <div className="grid gap-6 lg:grid-cols-2"><Panel title="Öneri sırasına göre tıklama"><Table headers={["Sıra","Görülen kart","Tıklanan kart","Oran"]} rows={report.ranks.map(r => [r.rank,n(r.impressions),n(r.clicked),pct(r.clicked,r.impressions)])}/></Panel><Panel title="En çok açılan filmler"><Table headers={["Film","Açılma","Öneriden tıklama"]} rows={report.films.map(f => [filmLink(f.film_id,f.title),n(f.opens),n(f.recommendations)])}/></Panel></div>
             <div className="grid gap-6 lg:grid-cols-2"><Panel title="Giriş sayfaları"><Table headers={["İlk sayfa","Oturum","Öneriye geçen"]} rows={report.landings.map(l => [<Link key={l.path} href={l.path} className="text-teal-800 underline">{l.path}</Link>,n(l.sessions),`${n(l.recommendation_sessions)} (${pct(l.recommendation_sessions,l.sessions)})`])}/><p className="mt-3 text-xs text-slate-500">Seçilen ham veri aralığındaki ilk kaydedilmiş sayfa esas alınır.</p></Panel><Panel title="En çok kullanılan film bağlantıları"><Table headers={["Kaynak film","Seçilen film","Tıklama"]} rows={report.pairs.map(p => [filmLink(p.source_film_id),filmLink(p.film_id),n(p.clicks)])}/></Panel></div>
             <Panel title="Olay dökümü"><Table headers={["İşlem","Adet"]} rows={report.events.map(e => [labels[e.name] ?? e.name,n(e.count)])}/></Panel>
