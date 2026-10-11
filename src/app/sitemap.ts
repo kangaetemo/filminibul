@@ -27,6 +27,10 @@ async function allFilms(): Promise<Row[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+    // PR previews do not publish the production catalog to search engines.
+    // They may have no database credentials; do not query Supabase during their build.
+    if (process.env.VERCEL_ENV === "preview") return [];
+
     const films = await allFilms();
     return [
         { url: SITE, changeFrequency: "weekly", priority: 1 },
