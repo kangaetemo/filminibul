@@ -48,6 +48,8 @@ API ön yüklemeleri, Next.js link prefetch'i ve benzer film sorgusunu ısıtma 
 
 **Aramadan filme geçiş:** film adı aramasıyla aynı `search_id` taşıyan kart seçimi; tarif aramasıyla aynı ziyaretteki tarif sonucu seçimi. Karıştırma seçim aramalarında bu oran uygulanmaz. Hassas görünümlü sorguların adetleri kaydedilir, metni listelenmez.
 
+**Tüm aramalar:** en çok aranan 20 metnin özetine ek olarak her arama ayrı satırda, Türkiye saati, türü ve sonuç sayısıyla gösterilir. Son 30 günlük ham kayıtlar 50'şer satır halinde sunucudan okunur; arama metni, tür ve yalnızca sonuçsuz filtreleri tüm kayıtlar üzerinde uygulanır. Tekrar aramalar ayrı satırdır; hassas görünen metinler gizlenir. Seçilen 7 günlük aralık yalnızca 7 günü gösterir; 90/365 günlük seçimlerde ayrıntı listesi yine son 30 günle sınırlıdır. Mevcut SQL kurulumu yeterlidir; ek SQL çalıştırmak gerekmez. Veri ve servis anahtarı yalnızca admin yetki kontrolünden sonra sunucuda okunur.
+
 **Oturum:** kişi veya kalıcı ziyaretçi değildir. Sekmede rastgele kimlik, 30 dakika hareketsizlikte veya en fazla 24 saatte yenilenir. Farklı tarayıcılar birleştirilmez. Yeni sekmeler genellikle ayrı oturumdur; tarayıcının kopyaladığı sekmeler oturum verisini devralabilir. Günlük kartlardaki oturum toplamı günlük tekil oturumların toplamıdır; gece yarısını geçen oturum iki güne sayılabilir. Ayrıntılardaki kaynak oturumları ham veri dönemi içinde tekildir.
 
 **Kaynak:** ilk referrer'dan Google/Bing/sosyal/diğer/doğrudan kategorisi. Tam referrer URL'si saklanmaz. Bu özellik Google'a yazılan sorguyu göstermez; bunun için Search Console gerekir. Referrer gizlendiğinde kaynak bilinmez ve doğrudan sayılır.
@@ -65,7 +67,7 @@ API ön yüklemeleri, Next.js link prefetch'i ve benzer film sorgusunu ısıtma 
 ## Kontrol komutları
 
 ```sh
-node --test scripts/tests/analytics.test.mjs
+node --test scripts/tests/analytics.test.mjs scripts/tests/search-history.test.mjs
 npx tsc --noEmit
 npm run build
 ```
