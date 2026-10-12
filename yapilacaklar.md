@@ -8,7 +8,7 @@ Bu dosya, konuşulan geliştirmeleri ve açık işleri takip eder. Öncelikler i
 
 - [ ] **İÇ-01 — Toplu Türkçeleştirme ve orijinal afiş taramasının sonucunu doğrula.** İlk çalışma: [GitHub Actions #38304738851](https://github.com/kangaetemo/filminibul/actions/runs/38304738851). İlk çalışma kota nedeniyle kısmi tamamlandı: raporda 13.526 çeviri ve 1.903 eksik Türkçe özet var. Afiş sayacı eski kodda yazmadan önce artırıldığı için 8.613 seçimin tamamının kaydedildiği varsayılmıyor. Kalan çeviriler API kotasının açılmasını bekliyor. Çevrilen / temizlenen özet, değişen afiş, kalan özet ve hata sayılarını raporla. Hataları ve kalan kayıtları ele al; sonucu `yapilanlar.md` dosyasına işle.
 
-- [ ] **İÇ-03 — Başarısız içerik işini onar ve doğrula.** Kota / kimlik sorununu tek duraklama nedeni olarak raporla; çeviri hatasında afiş / başlık güncellemesini koru. Yalnızca veritabanına yazılan değişiklikleri say; başarısız çalışmada kontrol önbelleğini sakla. Kalan kayıtları çeviri harcaması yapmadan tekrar kontrol et. Durum: uygulanıyor.
+- [x] **İÇ-03 — Başarısız içerik işini onar ve doğrula.** Kota / kimlik sorununu tek duraklama nedeni olarak raporla; çeviri hatasında afiş / başlık güncellemesini koru. Yalnızca veritabanına yazılan değişiklikleri say; başarısız çalışmada kontrol önbelleğini sakla. Kalan kayıtları çeviri harcaması yapmadan tekrar kontrol et. Doğrulama: [#38311949271](https://github.com/kangaetemo/filminibul/actions/runs/38311949271) başarılı; 1.903 film kontrol edildi, 526 afiş kaydedildi, sıfır hata / çakışma. Rapor ve kontrol önbelleği saklandı; site önbelleği yenilendi. OpenAI çağrısı yapılmadı. İÇ-01 kapsamında kalan 1.903 çeviri kota bekliyor.
 
 ## P0 — Mobil keşif ve bulut listesi
 
