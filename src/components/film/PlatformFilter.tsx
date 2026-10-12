@@ -48,7 +48,7 @@ export default function PlatformFilter({ platforms, selected }: { platforms: Pla
 
     return (
         <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm text-white/50 mr-1">Platformlarım:</span>
+            <span className="text-sm text-muted mr-1">Platformlarım:</span>
             {platforms.map((p) => {
                 const active = selected.includes(p.id);
                 return (
@@ -58,8 +58,8 @@ export default function PlatformFilter({ platforms, selected }: { platforms: Pla
                         onClick={() => toggle(p.id)}
                         aria-pressed={active}
                         title={p.name}
-                        className={`flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full border text-xs transition-colors ${
-                            active ? "bg-accent/25 border-accent/60 text-white" : "bg-card border-white/10 text-white/60 hover:text-white hover:border-accent/40"
+                        className={`flex min-h-11 items-center gap-1.5 pl-2 pr-3 py-1 rounded-lg border text-xs transition-colors ${
+                            active ? "bg-accent/25 border-accent/60 text-ink" : "bg-card border-line text-muted hover:text-ink hover:border-accent/40"
                         }`}
                     >
                         {p.logoUrl && <Image src={p.logoUrl} alt="" width={20} height={20} className="rounded-full" />}
@@ -68,7 +68,7 @@ export default function PlatformFilter({ platforms, selected }: { platforms: Pla
                 );
             })}
             {selected.length > 0 && (
-                <button type="button" onClick={() => apply([])} className="text-xs text-white/40 hover:text-white underline ml-1">
+                <button type="button" onClick={() => apply([])} className="min-h-11 text-xs text-muted hover:text-ink underline ml-1">
                     Tümünü göster
                 </button>
             )}

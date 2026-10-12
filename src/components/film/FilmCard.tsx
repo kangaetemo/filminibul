@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { analyticsEnabled, currentVisit, track } from "@/lib/analytics/client";
 import type { EventData } from "@/lib/analytics/schema";
 import Image from "next/image";
 import { Star } from "lucide-react";
+import SaveButton from "./SaveButton";
 import type { FilmDTO } from "@/lib/recommend/types";
 import { filmPath } from "@/lib/filmUrl";
 import type { Platform } from "@/lib/recommend/providers";
@@ -15,6 +16,7 @@ import type { Platform } from "@/lib/recommend/providers";
 // platforms verilirse Türkiye'de izlenebildiği platformların logoları (en fazla 3).
 export default function FilmCard({ film, reasons, platforms, index = 0, context, sourceFilmId }: { film: FilmDTO; reasons?: string[]; platforms?: Platform[]; index?: number; context?: "similar" | "vibe" | "blend" | "mood"; sourceFilmId?: number }) {
     const ref = useRef<HTMLLIElement>(null);
+    const [failedPoster, setFailedPoster] = useState(false);
     const pathname = usePathname();
     const params = useSearchParams();
     useEffect(() => {
@@ -40,54 +42,21 @@ export default function FilmCard({ film, reasons, platforms, index = 0, context,
     }, [film.id, sourceFilmId, index, context, pathname, params]);
     const onClick = () => track(context === "similar" && sourceFilmId ? "recommendation_clicked" : "film_clicked", { film_id: film.id, source_film_id: sourceFilmId, rank: index + 1, context });
     return (
-        <li ref={ref} className="animate-fade-up" style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}>
-            <Link href={filmPath(film.id, film.title)} className="group block" onClick={onClick}>
-                <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-card ring-1 ring-white/10 transition duration-300 group-hover:-translate-y-1 group-hover:ring-accent/50 group-hover:shadow-glow-accent">
-                    {film.posterUrl ? (
-                        <Image
-                            src={film.posterUrl}
-                            alt={film.title}
-                            fill
-                            sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        />
-                    ) : (
-                        <div className="absolute inset-0 flex items-center justify-center p-3 text-center font-display text-white/40">{film.title}</div>
-                    )}
-                    <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/70 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" aria-hidden />
-                    {film.rating != null && film.rating > 0 && (
-                        <span className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-black/70 backdrop-blur-sm text-xs text-white">
-                            <Star className="w-3 h-3 fill-accent-glow text-accent-glow" aria-hidden />
-                            {film.rating.toFixed(1)}
-                        </span>
-                    )}
-                </div>
-                <h3 className="mt-3 font-display text-[17px] leading-snug text-white transition-colors group-hover:text-accent-glow">{film.title}</h3>
-                <p className="mt-0.5 text-xs text-white/40">{[film.year, film.genres.slice(0, 2).join(", ")].filter(Boolean).join(" · ")}</p>
-                {platforms && platforms.length > 0 && (
-                    <div className="mt-2 flex items-center gap-1" title={platforms.map((p) => p.name).join(", ")}>
-                        {platforms.slice(0, 3).map((p) =>
-                            p.logoUrl ? (
-                                <Image key={p.id} src={p.logoUrl} alt={p.name} width={20} height={20} className="rounded" />
-                            ) : (
-                                <span key={p.id} className="text-[10px] text-white/50">
-                                    {p.name}
-                                </span>
-                            )
-                        )}
-                        {platforms.length > 3 && <span className="text-[10px] text-white/40">+{platforms.length - 3}</span>}
-                    </div>
-                )}
-                {reasons && reasons.length > 0 && (
-                    <ul className="mt-2 space-y-0.5 text-xs text-accent-glow/70" title={reasons.join("\n")}>
-                        {reasons.slice(0, 2).map((r) => (
-                            <li key={r} className="truncate before:content-['—_'] before:text-accent/50">
-                                {r}
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </Link>
+        <li ref={ref} className="min-w-0">
+            <div className="group relative">
+                <Link href={filmPath(film.id, film.title)} onClick={onClick} className="relative block aspect-[2/3] overflow-hidden rounded-lg bg-ink/5 ring-1 ring-ink/10 transition-shadow hover:shadow-glow-card" aria-label={`${film.title} film ayrıntıları`}>
+                    {film.posterUrl && !failedPoster ? <Image src={film.posterUrl} alt={`${film.title} afişi`} fill sizes="(min-width: 1280px) 218px, (min-width: 1024px) 18vw, (min-width: 640px) 30vw, 45vw" className="object-cover transition-transform duration-300 group-hover:scale-[1.025]" onError={() => setFailedPoster(true)} /> : <span className="absolute inset-0 flex items-center justify-center p-5 text-center text-lg font-bold text-muted">{film.title}</span>}
+                </Link>
+                <SaveButton film={film} compact />
+            </div>
+            <Link href={filmPath(film.id, film.title)} onClick={onClick} className="mt-3 block text-ink hover:underline underline-offset-4"><h3 className="text-[15px] font-extrabold leading-snug tracking-tight sm:text-base">{film.title}</h3></Link>
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted">
+                {film.year && <span>{film.year}</span>}
+                {film.rating != null && film.rating > 0 && <span className="inline-flex items-center gap-1" aria-label={`TMDB puanı ${film.rating.toFixed(1)}`}><Star className="h-3 w-3 text-accent-ink" aria-hidden />{film.rating.toFixed(1)} <span className="text-[9px]">TMDB</span></span>}
+            </div>
+            {film.genres.length > 0 && <p className="mt-1 text-[11px] leading-relaxed text-muted">{film.genres.slice(0, 2).join(" · ")}</p>}
+            {platforms && platforms.length > 0 && <div className="mt-2 flex items-center gap-1" title={platforms.map(p => p.name).join(", ")}>{platforms.slice(0, 3).map(p => p.logoUrl ? <Image key={p.id} src={p.logoUrl} alt={p.name} width={20} height={20} className="rounded" /> : <span key={p.id} className="text-[10px] text-muted">{p.name}</span>)}{platforms.length > 3 && <span className="text-[10px] text-muted">+{platforms.length - 3}</span>}</div>}
+            {reasons && reasons.length > 0 && <div className="mt-3 border-t border-line pt-2.5"><p className="mb-1 text-[9px] font-extrabold uppercase tracking-wider text-accent-ink">Neden bu film?</p><ul className="space-y-1 text-[11px] leading-relaxed text-muted">{reasons.slice(0, 2).map(r => <li key={r}>{r}</li>)}</ul></div>}
         </li>
     );
 }

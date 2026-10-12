@@ -70,18 +70,18 @@ export default async function BlendPage({ searchParams }: Props) {
         <main className="min-h-screen bg-background">
             <div className="spotlight">
                 <SiteHeader />
-                <section className="mx-auto max-w-4xl px-4 pb-10 pt-6 sm:px-8">
-                    <p className="text-xs uppercase tracking-[0.3em] text-accent-glow/80">İki filmi karıştır</p>
-                    <h1 className="mt-3 font-display text-3xl leading-tight text-white sm:text-5xl">
+                <section className="mx-auto max-w-4xl px-5 pb-10 pt-6 sm:px-8">
+                    <p className="text-xs uppercase tracking-[0.3em] text-accent-ink/80">İki filmi karıştır</p>
+                    <h1 className="mt-3 font-display text-3xl leading-tight text-ink sm:text-5xl">
                         {a && b ? (
                             <>
-                                {a.title} <span className="text-accent-glow">+</span> {b.title}
+                                {a.title} <span className="text-accent-ink">+</span> {b.title}
                             </>
                         ) : (
                             "İkisine birden benzeyen filmler"
                         )}
                     </h1>
-                    {!(a && b) && <p className="mt-3 max-w-2xl text-white/50">İki film seç; ikisinin de havasını taşıyan, ikisinin arasında kalan filmleri bulalım.</p>}
+                    {!(a && b) && <p className="mt-3 max-w-2xl text-muted">İki film seç; ikisinin de havasını taşıyan, ikisinin arasında kalan filmleri bulalım.</p>}
                     <div className="mt-8">
                         {/* key: adres değişince seçim baştan kurulsun (örnek bağlantılar, geri tuşu) */}
                         <BlendPicker key={`${a?.id}-${b?.id}`} initialA={toPicked(a)} initialB={toPicked(b)} />
@@ -89,20 +89,20 @@ export default async function BlendPage({ searchParams }: Props) {
                 </section>
             </div>
 
-            <section className="mx-auto max-w-6xl px-4 pb-8 sm:px-8">
+            <section className="mx-auto max-w-[1280px] px-5 pb-8 sm:px-8">
                 {a && b ? (
                     <Suspense key={`${a.id}-${b.id}`} fallback={<Skeleton />}>
                         <Results a={a.id} b={b.id} />
                     </Suspense>
                 ) : (
                     <div className="mx-auto max-w-4xl">
-                        <p className="text-white/50">Ya da bir örnekle başla:</p>
+                        <p className="text-muted">Ya da bir örnekle başla:</p>
                         <div className="mt-4 flex flex-wrap gap-2">
                             {EXAMPLES.map(([x, y, label]) => (
                                 <Link
                                     key={label}
                                     href={`/karistir?a=${x}&b=${y}`}
-                                    className="rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-sm text-white/60 transition-colors hover:border-accent/40 hover:text-white"
+                                    className="rounded-full border border-line bg-card px-3.5 py-1.5 text-sm text-muted transition-colors hover:border-accent/40 hover:text-ink"
                                 >
                                     {label}
                                 </Link>
@@ -124,19 +124,19 @@ async function Results({ a, b }: { a: number; b: number }) {
     } catch (err) {
         console.error("karıştır hatası:", err);
         return (
-            <div role="alert" className="rounded-2xl border border-white/10 bg-card p-6 text-white/70">
+            <div role="alert" className="rounded-2xl border border-line bg-card p-6 text-ink/80">
                 Şu an karıştıramadık. Biraz sonra tekrar dene.
             </div>
         );
     }
     if (!result || result.films.length === 0) {
-        return <><ResultEvent name="blend_completed" data={{ source_film_id: a, second_film_id: b, result_count: 0 }} /><p className="text-white/50">Bu iki filme birlikte benzeyen bir film bulamadık. Başka bir ikili dene.</p></>;
+        return <><ResultEvent name="blend_completed" data={{ source_film_id: a, second_film_id: b, result_count: 0 }} /><p className="text-muted">Bu iki filme birlikte benzeyen bir film bulamadık. Başka bir ikili dene.</p></>;
     }
     return (
         <>
             <ResultEvent name="blend_completed" data={{ source_film_id: a, second_film_id: b, result_count: result.films.length }} />
-            <p className="text-sm text-white/40">{result.films.length} film · ikisine de en çok benzeyenden başlayarak</p>
-            <ul className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 md:grid-cols-4 lg:grid-cols-6">
+            <p className="text-sm text-muted">{result.films.length} film · ikisine de en çok benzeyenden başlayarak</p>
+            <ul className="mt-6 movie-grid">
                 {result.films.map((f, i) => (
                     <FilmCard key={f.film.id} film={f.film} reasons={f.reasons} index={i} context="blend" />
                 ))}
@@ -148,10 +148,10 @@ async function Results({ a, b }: { a: number; b: number }) {
 function Skeleton() {
     return (
         <div aria-busy="true" aria-label="Filmler karıştırılıyor">
-            <p className="text-sm text-white/45">İki filmin arasında kalan filmler aranıyor…</p>
-            <ul className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 md:grid-cols-4 lg:grid-cols-6">
+            <p className="text-sm text-muted">İki filmin arasında kalan filmler aranıyor…</p>
+            <ul className="mt-6 movie-grid">
                 {Array.from({ length: 12 }, (_, i) => (
-                    <li key={i} className="aspect-[2/3] animate-pulse rounded-xl bg-white/5" />
+                    <li key={i} className="aspect-[2/3] animate-pulse rounded-xl bg-ink/5" />
                 ))}
             </ul>
         </div>

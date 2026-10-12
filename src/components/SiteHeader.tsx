@@ -1,38 +1,24 @@
 import Link from "next/link";
+import { Bookmark, Clapperboard } from "lucide-react";
 import SearchBox from "@/components/search/SearchBox";
 
-// Ortak üst çubuk. `overlay`: film sayfasında olduğu gibi görselin üstüne biner (arka planı saydam).
-// `search`: ortada arama kutusu (ana sayfa ve /ara kendi büyük kutusunu gösterdiği için orada kapalı).
-export default function SiteHeader({ overlay = false, search = true }: { overlay?: boolean; search?: boolean }) {
+export default function SiteHeader({ search = true }: { search?: boolean }) {
     return (
-        <header className={`z-20 w-full ${overlay ? "absolute top-0 left-0" : "relative"}`}>
-            <div className="max-w-6xl mx-auto flex flex-wrap items-center gap-x-4 gap-y-3 px-4 sm:px-8 py-4 sm:py-5">
-                <Link href="/" className="group flex items-center gap-2.5" aria-label="Filminibul ana sayfa">
-                    {/* Projeksiyon ışığı: küçük amber nokta */}
-                    <span className="relative flex h-2.5 w-2.5">
-                        <span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-60 animate-ping" />
-                        <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent-glow" />
-                    </span>
-                    <span className="font-display text-2xl leading-none tracking-tight text-white">
-                        Filmini<span className="text-accent-glow">bul</span>
-                    </span>
+        <header className="relative z-30 border-b border-line bg-background">
+            <div className="page-width flex min-h-[82px] flex-wrap items-center gap-x-6 gap-y-3 py-4 sm:py-5">
+                <Link href="/" className="flex items-center gap-2 text-ink" aria-label="Filminibul ana sayfa">
+                    <span className="text-[27px] font-extrabold leading-none tracking-[-0.07em]">filminibul</span>
+                    <span className="flex h-7 w-6 items-center justify-center rounded-sm bg-accent"><Clapperboard className="h-4 w-4" aria-hidden /></span>
                 </Link>
-                {search && (
-                    <div className="order-last w-full sm:order-none sm:ml-auto sm:w-72 lg:w-80">
-                        <SearchBox size="sm" autoFocus={false} />
-                    </div>
-                )}
-                <nav className={`flex items-center gap-1 text-sm text-white/60 ${search ? "ml-auto sm:ml-0" : "ml-auto"}`}>
-                    <Link href="/#modlar" className="px-2 sm:px-3 py-2 rounded-lg hover:text-white hover:bg-white/5 transition-colors">
-                        Ruh hâlleri
-                    </Link>
-                    <Link href="/ara" className="px-2 sm:px-3 py-2 rounded-lg hover:text-white hover:bg-white/5 transition-colors">
-                        Tarif et
-                    </Link>
-                    <Link href="/karistir" className="px-2 sm:px-3 py-2 rounded-lg hover:text-white hover:bg-white/5 transition-colors">
-                        Karıştır
-                    </Link>
+                <nav className="order-last flex w-full items-center gap-5 text-[12px] font-bold text-ink sm:order-none sm:w-auto sm:gap-6 lg:ml-5 lg:text-sm" aria-label="Ana menü">
+                    <Link href="/" className="py-1.5 hover:underline underline-offset-4">Keşfet</Link>
+                    <Link href="/#modlar" className="py-1.5 hover:underline underline-offset-4">Ruh hâline göre</Link>
+                    <Link href="/karistir" className="py-1.5 hover:underline underline-offset-4">İki filmi karıştır</Link>
                 </nav>
+                <Link href="/kaydedilenler" className="ml-auto flex min-h-11 min-w-11 items-center justify-center gap-2 text-sm font-semibold text-ink hover:underline underline-offset-4">
+                    <Bookmark className="h-5 w-5" aria-hidden /><span className="hidden lg:inline">Kaydettiklerim</span><span className="sr-only lg:hidden">Kaydettiklerim</span>
+                </Link>
+                {search && <div className="order-last w-full md:order-none md:w-60"><SearchBox size="sm" autoFocus={false} /></div>}
             </div>
         </header>
     );

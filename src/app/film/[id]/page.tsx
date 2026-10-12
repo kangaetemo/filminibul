@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
-import { Blend, Star } from "lucide-react";
+import { ArrowLeft, ArrowDown, ArrowRight, ArrowUpRight, Blend, Star } from "lucide-react";
 import Footer from "@/components/Footer";
 import SiteHeader from "@/components/SiteHeader";
 import { getFilm, getSimilarFilms } from "@/lib/recommend/similar";
 import { Suspense } from "react";
 import FilmCard from "@/components/film/FilmCard";
 import WatchProviders from "@/components/film/WatchProviders";
+import SaveButton from "@/components/film/SaveButton";
 import TrailerButton from "@/components/film/TrailerButton";
 import { getTrailer } from "@/lib/recommend/trailer";
 import PlatformFilter from "@/components/film/PlatformFilter";
@@ -67,148 +68,83 @@ export default async function FilmPage({ params, searchParams }: Props) {
         permanentRedirect(searchParams?.p ? `${canonical}?p=${encodeURIComponent(searchParams.p)}` : canonical);
     }
 
+
     return (
-        <main className="relative min-h-screen bg-background">
-            {/* Üst çubuk kapağın dışında: içinde olursa overflow-hidden arama sonuç listesini keser */}
-            <SiteHeader overlay />
-            {/* Kapak: backdrop + yumuşak karartma, üst çubuk görselin üstünde */}
-            <div className="relative h-[52vh] min-h-[340px] w-full overflow-hidden">
-                {film.backdropUrl && <Image src={film.backdropUrl} alt="" fill priority sizes="100vw" className="object-cover opacity-45" />}
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/55 to-background/30" />
-                <div className="absolute inset-0 bg-gradient-to-r from-background/70 via-transparent to-transparent" />
-            </div>
-
-            {/* Film bilgisi */}
-            <section className="relative -mt-56 mx-auto flex max-w-6xl flex-col gap-6 px-4 sm:-mt-64 sm:flex-row sm:gap-10 sm:px-8">
-                {/* self-start: flex satırında afiş metin sütunu kadar uzamasın, 2:3 oranını korusun */}
-                <div className="relative aspect-[2/3] w-40 shrink-0 self-start overflow-hidden rounded-xl bg-card shadow-glow-card ring-1 ring-white/15 sm:w-60 lg:w-72">
-                    {film.posterUrl && <Image src={film.posterUrl} alt={film.title} fill priority sizes="(min-width: 1024px) 288px, (min-width: 640px) 240px, 160px" className="object-cover" />}
+        <>
+            <SiteHeader />
+            <main className="min-h-screen">
+                <div className="film-backdrop relative h-52 w-full overflow-hidden sm:h-72 lg:h-80">
+                    {film.backdropUrl && <Image src={film.backdropUrl} alt="" fill priority sizes="100vw" className="object-cover object-[center_35%]" />}
+                    <div className="page-width relative z-10 pt-5"><Link href="/" className="inline-flex min-h-11 items-center gap-2 text-xs font-semibold text-white hover:underline"><ArrowLeft className="h-4 w-4" aria-hidden />Keşfe dön</Link></div>
                 </div>
-                <div className="min-w-0 sm:pt-28">
-                    <h1 className="font-display text-4xl leading-[1.05] tracking-tight text-white sm:text-6xl">{film.title}</h1>
-                    <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-white/50">
-                        {film.year && <span className="tabular-nums">{film.year}</span>}
-                        {film.originalTitle && (
-                            <>
-                                <span aria-hidden>·</span>
-                                <span className="italic">{film.originalTitle}</span>
-                            </>
-                        )}
-                    </p>
 
-                    <div className="mt-5 flex flex-wrap items-center gap-2 text-sm">
-                        {film.rating != null && film.rating > 0 && (
-                            <span className="flex items-center gap-1.5 rounded-full bg-accent/15 px-3 py-1 text-accent-glow">
-                                <Star className="h-3.5 w-3.5 fill-accent-glow" aria-hidden />
-                                {film.rating.toFixed(1)}
-                                {film.voteCount != null && <span className="text-white/40">({film.voteCount.toLocaleString("tr-TR")})</span>}
-                            </span>
-                        )}
-                        {film.genres.map((g) => (
-                            <span key={g} className="rounded-full border border-white/10 px-3 py-1 text-white/65">
-                                {g}
-                            </span>
-                        ))}
-                    </div>
-
-                    {film.overview && <p className="mt-6 max-w-3xl text-[17px] leading-relaxed text-white/70">{film.overview}</p>}
-
-                    {(trailer || film.inCatalog) && (
-                        <div className="mt-6 flex flex-wrap items-center gap-3">
-                            {trailer && <TrailerButton videoKey={trailer.key} filmTitle={film.title} filmId={film.id} />}
-                            {film.inCatalog && (
-                                <Link
-                                    href={`/karistir?a=${film.id}`}
-                                    className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-2.5 text-sm font-medium text-white/80 transition hover:border-accent/50 hover:text-white"
-                                >
-                                    <Blend className="h-4 w-4" aria-hidden />
-                                    Başka bir filmle karıştır
-                                </Link>
-                            )}
+                <section className="film-detail page-width grid gap-7 sm:grid-cols-[210px_minmax(0,1fr)] sm:gap-8 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-12" aria-labelledby="film-title">
+                    <aside className="min-w-0">
+                        <div className="relative aspect-[2/3] w-36 overflow-hidden rounded-lg bg-card shadow-glow-card ring-1 ring-ink/10 sm:w-full">
+                            {film.posterUrl ? <Image src={film.posterUrl} alt={`${film.title} afişi`} fill priority sizes="(min-width: 1024px) 250px, (min-width: 640px) 210px, 144px" className="object-cover" /> : <span className="flex h-full items-center justify-center p-4 text-center font-bold text-muted">{film.title}</span>}
                         </div>
-                    )}
-
-                    <dl className="mt-6 grid grid-cols-[auto_1fr] gap-x-6 gap-y-1.5 text-sm">
-                        {film.director && (
-                            <>
-                                <dt className="text-white/35">Yönetmen</dt>
-                                <dd className="text-white/85">{film.director}</dd>
-                            </>
-                        )}
-                        {film.cast.length > 0 && (
-                            <>
-                                <dt className="text-white/35">Oyuncular</dt>
-                                <dd className="text-white/85">{film.cast.slice(0, 5).join(", ")}</dd>
-                            </>
-                        )}
-                        {film.collectionName && (
-                            <>
-                                <dt className="text-white/35">Seri</dt>
-                                <dd className="text-white/85">{film.collectionName}</dd>
-                            </>
-                        )}
-                    </dl>
-
-                    <WatchProviders providers={providers} filmId={film.id} />
-                </div>
-            </section>
-
-            {/* Benzer filmler */}
-            <section className="mx-auto mt-20 max-w-6xl px-4 sm:px-8">
-                <div className="flex flex-wrap items-end justify-between gap-3 border-b border-white/10 pb-4">
-                    <div>
-                        <p className="text-xs uppercase tracking-[0.3em] text-accent-glow/80">Tema · atmosfer · hikâye</p>
-                        <h2 className="mt-2 font-display text-3xl text-white sm:text-4xl">Benzer filmler</h2>
+                        <div className="mt-5 hidden sm:block"><WatchProviders providers={providers} filmId={film.id} /></div>
+                    </aside>
+                    <div className="min-w-0 sm:pt-36">
+                        <p className="eyebrow text-muted">{[film.year, ...film.genres.slice(0, 2)].filter(Boolean).join(" · ")}</p>
+                        <h1 id="film-title" className="mt-3 font-display text-4xl leading-[1.06] text-ink sm:text-5xl lg:text-[56px]">{film.title}</h1>
+                        {film.originalTitle && <p className="mt-3 text-sm text-muted">{film.originalTitle}</p>}
+                        <div className="mt-5 flex flex-wrap items-center gap-2">
+                            {film.rating != null && film.rating > 0 && <span className="inline-flex items-center gap-1.5 rounded-md border border-line bg-card px-3 py-2 text-xs font-bold text-ink"><Star className="h-3.5 w-3.5 text-accent-ink" aria-hidden />{film.rating.toFixed(1)} <span className="text-[10px] font-medium text-muted">TMDB{film.voteCount != null && ` · ${film.voteCount.toLocaleString("tr-TR")} oy`}</span></span>}
+                            {film.genres.map(g => <span key={g} className="rounded-md border border-line px-3 py-2 text-xs text-muted">{g}</span>)}
+                        </div>
+                        {film.overview && <p className="mt-6 max-w-3xl text-[15px] leading-[1.85] text-ink/85">{film.overview}</p>}
+                        <div className="mt-6 flex flex-wrap gap-3">
+                            {trailer && <TrailerButton videoKey={trailer.key} filmTitle={film.title} filmId={film.id} />}
+                            <SaveButton film={film} />
+                            {film.inCatalog && <Link href="#benzer-filmler" className="button-secondary">Benzer filmleri gör <ArrowDown className="h-4 w-4" aria-hidden /></Link>}
+                        </div>
+                        <dl className="mt-7 grid grid-cols-[auto_minmax(0,1fr)] gap-x-5 gap-y-3 border-t border-line pt-6 text-sm leading-relaxed">
+                            {film.director && <><dt className="text-muted">Yönetmen</dt><dd className="font-semibold text-ink">{film.director}</dd></>}
+                            {film.cast.length > 0 && <><dt className="text-muted">Oyuncular</dt><dd className="text-ink">{film.cast.slice(0, 5).join(", ")}</dd></>}
+                            {film.collectionName && <><dt className="text-muted">Film serisi</dt><dd className="text-ink">{film.collectionName}</dd></>}
+                        </dl>
+                        <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1">
+                            <a href={`https://www.themoviedb.org/movie/${film.id}`} target="_blank" rel="noopener noreferrer" className="text-link text-xs">TMDB’de incele <ArrowUpRight className="h-3.5 w-3.5" aria-hidden /></a>
+                            {film.inCatalog && <Link href={`/karistir?a=${film.id}`} className="text-link text-xs"><Blend className="h-4 w-4" aria-hidden />Başka bir filmle karıştır</Link>}
+                        </div>
+                        <div className="mt-5 sm:hidden"><WatchProviders providers={providers} filmId={film.id} /></div>
                     </div>
-                </div>
-                {film.inCatalog && (
-                    <div className="mt-5">
-                        <Suspense>
-                            <PlatformFilter platforms={FEATURED_PLATFORMS} selected={platforms} />
-                        </Suspense>
-                    </div>
-                )}
-                {!film.inCatalog ? (
-                    <p className="mt-6 text-white/50">Bu film henüz öneri kataloğumuzda yok, bu yüzden benzer film öneremiyoruz.</p>
-                ) : (
-                    <Suspense key={`${id}:${platforms.join(",")}`} fallback={<SimilarSkeleton />}>
-                        <SimilarList id={id} platforms={platforms} />
-                    </Suspense>
-                )}
-            </section>
+                </section>
 
+                <section className="page-width mt-12 sm:mt-16" aria-labelledby="trailer-heading">
+                    <div className="grid gap-6 rounded-xl border border-line bg-card p-5 sm:grid-cols-[1fr_1.15fr] sm:items-center sm:p-8">
+                        <div><p className="eyebrow mb-2 text-muted">Karar vermeden önce</p><h2 id="trailer-heading" className="section-heading">Bir sahne yeter.</h2><p className="mt-3 max-w-sm text-sm leading-relaxed text-muted">{trailer ? "Hikâyenin havasına bir göz at. Fragman burada, tek dokunuş uzağında." : "Bu film için şu an bir fragman bulunamadı. Aşağıdan benzer hikâyelere göz atabilirsin."}</p></div>
+                        {trailer ? <TrailerButton videoKey={trailer.key} filmTitle={film.title} filmId={film.id} previewUrl={film.backdropUrl ?? film.posterUrl ?? undefined} /> : <Link href="#benzer-filmler" className="button-secondary justify-self-start">Benzer filmlere geç <ArrowRight className="h-4 w-4" aria-hidden /></Link>}
+                    </div>
+                </section>
+
+                <section id="benzer-filmler" className="page-width mt-14 scroll-mt-8 sm:mt-16" aria-labelledby="similar-heading">
+                    <div className="section-top border-b border-line pb-6">
+                        <div><p className="eyebrow mb-2 text-muted">Tema · Atmosfer · Hikâye</p><h2 id="similar-heading" className="section-heading">Bunu sevdiysen, bir de bunlara bak.</h2><p className="mt-3 text-sm text-muted">{film.title} ile ortak bir şeyler taşıyan filmler.</p></div>
+                    </div>
+                    {film.inCatalog && <Suspense><PlatformFilter platforms={FEATURED_PLATFORMS} selected={platforms} /></Suspense>}
+                    {!film.inCatalog ? <p className="mt-6 text-sm text-muted">Bu film henüz öneri kataloğumuzda yok. Eklendiğinde benzer filmleri burada bulabileceksin.</p> : <Suspense key={`${id}:${platforms.join(",")}`} fallback={<SimilarSkeleton />}><SimilarList id={id} platforms={platforms} collection={film.collectionName} /></Suspense>}
+                </section>
+            </main>
             <Footer />
-        </main>
+        </>
     );
 }
 
-async function SimilarList({ id, platforms }: { id: number; platforms: number[] }) {
-    const similar = await getSimilarFilms(id, 20, false, platforms);
-    if (similar.length === 0) {
-        return (
-            <p className="mt-6 text-white/50">
-                {platforms.length ? "Seçtiğin platformlarda bu filme benzer bir film bulamadık. Platform ekle ya da tümünü göster." : "Bu film için öneri bulunamadı."}
-            </p>
-        );
-    }
-    return (
-        <ul className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 md:grid-cols-4 lg:grid-cols-5">
-            {similar.map((s, i) => (
-                <FilmCard key={s.film.id} film={s.film} reasons={s.reasons} platforms={s.platforms} index={i} context="similar" sourceFilmId={id} />
-            ))}
-        </ul>
-    );
+async function SimilarList({ id, platforms, collection }: { id: number; platforms: number[]; collection: string | null }) {
+    let similar;
+    try { similar = await getSimilarFilms(id, 20, false, platforms); }
+    catch { return <p role="alert" className="mt-6 rounded-lg border border-line p-5 text-sm text-muted">Öneriler şu an yüklenemedi. <a href={`/film/${id}${platforms.length ? `?p=${platforms.join(",")}` : ""}`} className="font-bold text-ink underline">Tekrar dene</a>.</p>; }
+    if (!similar.length) return <p className="mt-6 text-sm text-muted">{platforms.length ? "Seçtiğin platformlarda benzer bir film bulamadık. Başka bir platform ekle ya da tümünü göster." : "Bu film için henüz öneri bulunamadı."}</p>;
+    const discoveries = similar.filter(s => !collection || s.film.collectionName !== collection);
+    const sameSeries = collection ? similar.filter(s => s.film.collectionName === collection) : [];
+    return <>
+        {discoveries.length > 0 && <ul className="movie-grid mt-8">{discoveries.map(s => <FilmCard key={s.film.id} film={s.film} reasons={s.reasons} platforms={s.platforms} index={similar.indexOf(s)} context="similar" sourceFilmId={id} />)}</ul>}
+        {sameSeries.length > 0 && <div className="mt-12 border-t border-line pt-8"><h3 className="font-display text-2xl">Aynı evrende kalmak istersen</h3><p className="mt-2 text-sm text-muted">{collection} serisinden diğer filmler.</p><ul className="movie-grid mt-6">{sameSeries.map(s => <FilmCard key={s.film.id} film={s.film} reasons={s.reasons} platforms={s.platforms} index={similar.indexOf(s)} context="similar" sourceFilmId={id} />)}</ul></div>}
+    </>;
 }
 
 function SimilarSkeleton() {
-    return (
-        <div aria-busy="true" aria-label="Benzer filmler yükleniyor">
-            <p className="mt-6 text-sm text-white/40">Benzer filmler aranıyor…</p>
-            <ul className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 md:grid-cols-4 lg:grid-cols-5">
-                {Array.from({ length: 10 }, (_, i) => (
-                    <li key={i} className="aspect-[2/3] animate-pulse rounded-xl bg-white/5" />
-                ))}
-            </ul>
-        </div>
-    );
+    return <div aria-busy="true" aria-label="Benzer filmler yükleniyor"><p className="mt-6 text-sm text-muted">Benzer hikâyeler aranıyor…</p><ul className="movie-grid mt-4">{Array.from({ length: 10 }, (_, i) => <li key={i} className="aspect-[2/3] animate-pulse rounded-lg bg-ink/10" />)}</ul></div>;
 }

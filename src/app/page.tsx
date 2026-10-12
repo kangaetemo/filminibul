@@ -1,108 +1,82 @@
 import type { Metadata } from "next";
 import { OG_BASE } from "@/lib/seo";
 import Link from "next/link";
+import Image from "next/image";
 import { Suspense } from "react";
-import { MessageSquareText, Search, Lightbulb } from "lucide-react";
-import SearchBox from "@/components/search/SearchBox";
+import { ArrowRight, ArrowUpRight, Plus, Shuffle } from "lucide-react";
+import DiscoverySearch from "@/components/search/DiscoverySearch";
 import MoodChips from "@/components/search/MoodChips";
 import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
-import PosterWall from "@/components/home/PosterWall";
+import FilmCard from "@/components/film/FilmCard";
+import { getFilm, getSimilarFilms } from "@/lib/recommend/similar";
 
-// Kullanıcının aklına gelebilecek, örnek olsun diye tıklanabilir tarifler
-const EXAMPLES = [
-    "zaman döngüsünde sıkışıp kalmış bir karakter",
-    "yağmurlu, melankolik, yalnızlık hissi veren",
-    "sonunda herkesi şaşırtan psikolojik gerilim",
-    "kıyamet sonrası dünyada baba ve oğul",
-    "küçük bir kasabada gizemli kayboluşlar",
-    "gerçeklik algını sorgulatan bir film",
-];
-
-const STEPS = [
-    {
-        icon: Search,
-        title: "Bir film seç",
-        text: "Sevdiğin bir filmin adını yaz; tema, atmosfer ve hikâye yapısı en çok uyanları bulalım.",
-    },
-    {
-        icon: MessageSquareText,
-        title: "Ya da tarif et",
-        text: "Film adı aklına gelmiyorsa anlat: “zaman döngüsünde sıkışmış biri”, “yağmurlu ve melankolik”.",
-    },
-    {
-        icon: Lightbulb,
-        title: "Nedenini gör",
-        text: "Her öneri neden önerildiğini söyler: ortak temalar, aynı yönetmen, aynı seri.",
-    },
-];
-
-// Ana akış: film adı yaz ya da tarif et → sonuçlar; ya da ruh hâline göre seç.
+export const revalidate = 3600;
 export const metadata: Metadata = { alternates: { canonical: "/" }, openGraph: { ...OG_BASE, type: "website", url: "/" } };
 
 export default function HomePage() {
     return (
-        <main className="min-h-screen bg-background">
-            <div className="relative overflow-hidden spotlight">
-                <Suspense>
-                    <PosterWall />
-                </Suspense>
-
-                <SiteHeader search={false} />
-
-                <section className="relative px-4 pt-[9vh] pb-24 sm:pt-[12vh]">
-                    <div className="mx-auto max-w-3xl text-center animate-fade-up">
-                        <p className="text-xs uppercase tracking-[0.3em] text-accent-glow/80">Tema · Atmosfer · Hikâye</p>
-                        <h1 className="mt-5 font-display text-5xl leading-[1.05] tracking-tight text-white sm:text-7xl">
-                            Aklındaki filmi <em className="italic text-accent-glow">tarif et</em>.
-                        </h1>
-                        <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-white/55 sm:text-lg">
-                            Sevdiğin bir film ya da yarım hatırladığın bir his yeter. Konusuna, havasına ve hikâye yapısına göre sana en yakın filmleri bulalım.
-                        </p>
-                    </div>
-
-                    <div className="mt-10">
-                        <SearchBox />
-                    </div>
-
-                    <div className="mx-auto mt-6 flex max-w-3xl flex-wrap justify-center gap-2">
-                        {EXAMPLES.map((e) => (
-                            <Link
-                                key={e}
-                                href={`/ara?q=${encodeURIComponent(e)}`}
-                                className="rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-sm text-white/55 transition-colors hover:border-accent/40 hover:text-white"
-                            >
-                                {e}
-                            </Link>
-                        ))}
+        <>
+            <SiteHeader search={false} />
+            <main>
+                <section className="cinema-hero" aria-labelledby="home-title">
+                    <Image src="https://image.tmdb.org/t/p/w1280/5XNQBqnBwPA9yT0jZ0p3s8bbLh0.jpg" alt="" fill priority sizes="100vw" className="hero-art object-cover" />
+                    <div className="page-width relative pb-14 pt-12 sm:pb-16 sm:pt-16 lg:pb-16 lg:pt-20">
+                        <p className="eyebrow mb-5 text-white/80">Film biter. Keşif devam eder.</p>
+                        <h1 id="home-title" className="hero-title max-w-[790px]">Bir filmi sevdin.<br />Sırada ne var?</h1>
+                        <p className="mb-6 mt-5 max-w-xl text-[15px] leading-relaxed text-white/90 sm:mb-7 sm:text-lg">Sevdiğin filme benzer filmler bul.<br className="sm:hidden" /> Aynı his, bambaşka hikâyeler.</p>
+                        <DiscoverySearch />
+                        <Link href="/film/157336-yildizlararasi" className="mt-8 inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-white/75 hover:text-white lg:absolute lg:bottom-7 lg:right-12 lg:mt-0">Bu kare: Yıldızlararası · 2014 <ArrowUpRight className="h-3.5 w-3.5" aria-hidden /></Link>
                     </div>
                 </section>
-            </div>
 
-            <section id="modlar" className="mx-auto max-w-6xl scroll-mt-8 px-4 py-16 sm:px-8">
-                <h2 className="font-display text-3xl text-white sm:text-4xl">Ya da bugünkü ruh hâline göre</h2>
-                <p className="mt-2 text-white/45">Bir kutucuk seç, seni o havaya sokan filmler gelsin.</p>
-                <div className="mt-8">
+                <section id="modlar" className="page-width scroll-mt-6 pt-12 sm:pt-14" aria-labelledby="mood-heading">
+                    <div className="section-top"><div><p className="eyebrow mb-2 text-muted">Film adı aklında değilse</p><h2 id="mood-heading" className="section-heading">Bugün hangi moddasın?</h2></div><p className="max-w-xs text-sm leading-relaxed text-muted">Nasıl hissetmek istediğini seç.<br className="hidden sm:block" /> O havaya birlikte girelim.</p></div>
                     <MoodChips tiles />
-                </div>
-            </section>
+                </section>
 
-            <section className="mx-auto max-w-6xl px-4 pb-8 sm:px-8">
-                <div className="grid gap-px overflow-hidden rounded-2xl border border-white/10 bg-white/10 sm:grid-cols-3">
-                    {STEPS.map((s, i) => (
-                        <div key={s.title} className="bg-card p-6">
-                            <div className="flex items-center gap-3 text-accent-glow">
-                                <s.icon className="h-5 w-5" aria-hidden />
-                                <span className="text-xs tabular-nums text-white/30">0{i + 1}</span>
-                            </div>
-                            <h3 className="mt-4 font-display text-xl text-white">{s.title}</h3>
-                            <p className="mt-2 text-sm leading-relaxed text-white/50">{s.text}</p>
+                <section className="page-width pt-14 sm:pt-16" aria-labelledby="matrix-heading">
+                    <div className="section-top">
+                        <div><p className="eyebrow mb-2 text-muted">Bir filmden diğerine</p><h2 id="matrix-heading" className="section-heading">Matrix’i sevdiysen</h2><p className="mt-2 text-sm text-muted sm:text-base">Aynı sorular. Başka dünyalar.</p></div>
+                        <Link href="/film/603-matrix#benzer-filmler" className="text-link">Tümünü gör <ArrowRight className="h-4 w-4" aria-hidden /></Link>
+                    </div>
+                    <Suspense fallback={<HomeShelfSkeleton />}><HomeShelf /></Suspense>
+                </section>
+
+                <section className="page-width mt-14 sm:mt-16" aria-labelledby="blend-heading">
+                    <div className="relative grid items-center gap-6 overflow-hidden rounded-xl border border-ink/20 bg-accent px-6 py-8 sm:px-8 lg:grid-cols-[270px_1fr_auto] lg:gap-8 lg:py-10">
+                        <div className="relative flex h-40 items-center justify-center gap-4 lg:h-36" aria-hidden>
+                            <Image src="https://image.tmdb.org/t/p/w342/p96dm7sCMn4VYAStA6siNz30G1r.jpg" alt="" width={110} height={165} sizes="110px" className="-rotate-[9deg] rounded shadow-glow-card" />
+                            <Plus className="h-7 w-7 shrink-0" />
+                            <Image src="https://image.tmdb.org/t/p/w342/nSxDa3M9aMvGVLoItzWTepQ5h5d.jpg" alt="" width={110} height={165} sizes="110px" className="rotate-[8deg] rounded shadow-glow-card" />
                         </div>
-                    ))}
-                </div>
-            </section>
+                        <div><p className="eyebrow mb-2">İki ayrı zevk, aynı kanepe.</p><h2 id="blend-heading" className="font-display text-3xl leading-[1.1] sm:text-4xl">İki filmi karıştır.<br />Yeni bir şey bul.</h2><p className="mt-3 text-sm text-ink/80">Birinin dünyası, diğerinin hissi.</p></div>
+                        <Link href="/karistir" className="inline-flex min-h-12 items-center justify-center gap-3 rounded-lg bg-ink px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-ink/85"><Shuffle className="h-5 w-5" aria-hidden />Karıştırmayı dene<ArrowRight className="h-4 w-4" aria-hidden /></Link>
+                    </div>
+                </section>
 
+                <section className="page-width mt-14 sm:mt-16" aria-label="Nasıl çalışır">
+                    <div className="grid gap-6 border-t border-line pt-8 sm:grid-cols-3 sm:gap-10">
+                        {[["01", "Bir film söyle.", "Sevdiğin bir filmin adını yaz ya da aradığın hikâyeyi kendi cümlenle anlat."], ["02", "Bağlantıyı gör.", "Önerilerde ortak temaları, yönetmenleri ve hikâyeler arasındaki yakınlığı gör."], ["03", "Sıradakini seç.", "Fragmanına bak, nerede izleyebileceğini öğren. Sonraya bırakacaksan kaydet."]].map(([n, title, text]) => <div key={n}><span className="eyebrow text-muted">{n}</span><h3 className="mt-3 text-lg font-extrabold tracking-tight">{title}</h3><p className="mt-2 text-sm leading-relaxed text-muted">{text}</p></div>)}
+                    </div>
+                </section>
+            </main>
             <Footer />
-        </main>
+        </>
     );
+}
+
+async function HomeShelf() {
+    try {
+        const [seed, results] = await Promise.all([getFilm(603), getSimilarFilms(603, 20)]);
+        const films = results.filter(({ film }) => !seed?.collectionName || film.collectionName !== seed.collectionName).slice(0, 5);
+        if (!films.length) return <p className="text-sm text-muted">Matrix sayfasından benzer filmleri keşfet.</p>;
+        return <ul className="movie-grid">{films.map((s, i) => <FilmCard key={s.film.id} film={s.film} reasons={s.reasons} index={i} context="similar" sourceFilmId={603} />)}</ul>;
+    } catch {
+        return <p className="rounded-lg border border-line p-5 text-sm text-muted">Öneriler şu an yüklenemedi. <Link href="/film/603-matrix" className="font-semibold text-ink underline">Matrix sayfasından tekrar dene.</Link></p>;
+    }
+}
+
+function HomeShelfSkeleton() {
+    return <ul className="movie-grid" aria-busy="true" aria-label="Film önerileri yükleniyor">{Array.from({ length: 5 }, (_, i) => <li key={i}><div className="aspect-[2/3] animate-pulse rounded-lg bg-ink/10" /><div className="mt-3 h-4 w-3/4 rounded bg-ink/10" /></li>)}</ul>;
 }

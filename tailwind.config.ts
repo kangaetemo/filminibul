@@ -12,11 +12,15 @@ const config: Config = {
                 // Sıcak, sinematik palet. `white` bilerek hafif krem: text-white/70, border-white/10 gibi
                 // tüm opaklık kullanımları sıcak tonda çıkar.
                 white: "#f6efe4",
-                background: "#0c0a09",
-                card: "#171310",
-                "card-hover": "#221c18",
-                accent: "#e0963a",
-                "accent-glow": "#f5b966",
+                background: "rgb(var(--background-rgb) / <alpha-value>)",
+                card: "rgb(var(--card-rgb) / <alpha-value>)",
+                "card-hover": "rgb(var(--card-hover-rgb) / <alpha-value>)",
+                ink: "#182022",
+                muted: "#626863",
+                line: "#dce0d6",
+                accent: "#d8ed56",
+                "accent-glow": "#e7f58c",
+                "accent-ink": "#526019",
                 ember: "#c2542d",
                 // Admin panelinde kullanılan durum renkleri
                 like: "#22c55e",
@@ -31,8 +35,8 @@ const config: Config = {
             boxShadow: {
                 "glow-like": "0 0 40px rgba(34, 197, 94, 0.4)",
                 "glow-pass": "0 0 40px rgba(239, 68, 68, 0.4)",
-                "glow-card": "0 18px 50px rgba(0, 0, 0, 0.6)",
-                "glow-accent": "0 0 60px rgba(224, 150, 58, 0.25)",
+                "glow-card": "0 12px 36px rgba(24, 32, 34, 0.10)",
+                "glow-accent": "0 8px 24px rgba(24, 32, 34, 0.10)",
             },
             animation: {
                 "pulse-glow": "pulse-glow 2s ease-in-out infinite",

@@ -243,3 +243,12 @@ data/eval/           golden.json · llm_seeds.json · llm_judgments.jsonl · rap
 ```
 
 Not: `scripts/rerank/reranker.mjs` (offline deney) ile `src/lib/recommend/reranker.ts` (canlı) aynı mantığın iki kopyası. Ağırlık değişirse ikisini de güncelle.
+
+## 2026-10-12 — Tasarım paketinin uygulamaya aktarılması
+
+- Kabul edilen açık zeminli, tok başlıklı, limon yeşili vurgulu sinema tasarımı uygulandı. Girişte Yıldızlararası karesi, film adı/tarif seçimi, fotoğraflı ruh hâlleri ve gerçek katalogdan Matrix önerileri var.
+- Film detayları, arama, modlar ve karıştırma ekranları aynı görsel dile taşındı. Film detayında fragman düğmesi ve ayrı fragman alanı, yayın platformları, TMDB puan kaynağı ve öneri nedenleri korunuyor. Aynı serinin filmleri ayrı bir bölümde gösteriliyor.
+- Afişlere ve film sayfasına kaydetme eklendi. `/kaydedilenler` bu tarayıcıdaki izleme listesini gösteriyor (`filminibul:saved:v1`); hesap veya veritabanı değişikliği yok. Gizlilik metni güncellendi.
+- Manrope değişken fontu OFL lisansıyla yerel olarak sunuluyor. Hareketli afiş duvarı ve tam sayfa gren/blur katmanı ana akıştan çıkarıldı. Mobil karıştırma dikey, afiş listeleri iki sütun; azaltılmış hareket tercihi destekleniyor.
+- API/RPC sözleşmeleri, öneri sıralayıcısı, analitik veri akışı, canonical yönlendirmeleri ve sitemap mantığı değiştirilmedi. Admin ekranları ayrı koyu tema kapsamına alındı.
+- Yerel doğrulama: `npx tsc --noEmit`, `VERCEL_ENV=preview npm run build`, mevcut 8 analitik/arama geçmişi testi. Yerel ortamda üretim sırları bulunmadığı için gerçek katalog ve üretim sitemap derlemesi Vercel ortamında doğrulanmalı.
