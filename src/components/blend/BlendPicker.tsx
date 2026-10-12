@@ -1,4 +1,5 @@
 "use client";
+import { T, useLanguage } from "@/components/preferences/Preferences";
 
 import { useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
@@ -63,8 +64,7 @@ export default function BlendPicker({ initialA = null, initialB = null }: { init
                         }}
                         className="flex items-center gap-2 text-xs text-muted hover:text-ink"
                     >
-                        <Shuffle className="h-3.5 w-3.5" aria-hidden /> Yerlerini değiştir
-                    </button>
+                        <Shuffle className="h-3.5 w-3.5" aria-hidden /> <T text={"Yerlerini değiştir"} /> </button>
                 </div>
             )}
         </div>
@@ -105,13 +105,14 @@ function Slot({
     }
     return (
         <div>
-            <p className="mb-2 text-xs uppercase tracking-[0.2em] text-muted">{label}</p>
+            <p className="mb-2 text-xs uppercase tracking-[0.2em] text-muted"><T text={label} /></p>
             <FilmSearch exclude={exclude} onPick={onPick} />
         </div>
     );
 }
 
 function FilmSearch({ exclude, onPick }: { exclude?: number; onPick: (f: PickedFilm) => void }) {
+    const { language, t } = useLanguage();
     const listId = useId();
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<SearchResult[]>([]);
@@ -136,7 +137,7 @@ function FilmSearch({ exclude, onPick }: { exclude?: number; onPick: (f: PickedF
             abortRef.current = controller;
             setLoading(true);
             try {
-                const res = await fetch(`/api/search-movie?q=${encodeURIComponent(trimmed)}`, { signal: controller.signal });
+                const res = await fetch(`/api/search-movie?q=${encodeURIComponent(trimmed)}&lang=${language}`, { signal: controller.signal });
                 const data = await res.json();
                 if (controller.signal.aborted) return;
                 setResults(res.ok ? data.results : []);
@@ -149,7 +150,7 @@ function FilmSearch({ exclude, onPick }: { exclude?: number; onPick: (f: PickedF
             }
         }, 300);
         return () => { clearTimeout(timer); abortRef.current?.abort(); };
-    }, [trimmed]);
+    }, [trimmed, language, exclude]);
 
     const pick = (r: SearchResult) => { analytics.commit(); onPick({ id: r.id, title: r.title, year: r.year, posterUrl: r.posterUrl }); };
 
@@ -183,7 +184,7 @@ function FilmSearch({ exclude, onPick }: { exclude?: number; onPick: (f: PickedF
                 {loading && <Loader2 className="mr-3 h-4 w-4 shrink-0 animate-spin text-muted" aria-label="Aranıyor" />}
             </div>
             {trimmed.length >= 2 && !loading && results.length > 0 && pickable.length === 0 && (
-                <p className="mt-2 text-xs text-muted">Bu filmler henüz kataloğumuzda yok, karıştırılamıyor.</p>
+                <p className="mt-2 text-xs text-muted"><T text={"Bu filmler henüz kataloğumuzda yok, karıştırılamıyor."} /></p>
             )}
             {pickable.length > 0 && (
                 <ul

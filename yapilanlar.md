@@ -1,0 +1,31 @@
+# Filminibul — yapılanlar
+
+## 12 Ekim 2026 · Tema, dil, film içerikleri, üyelik ve yönetim
+
+### Tamamlanan kod değişiklikleri
+
+- **Açık / koyu tema:** üst menüye tema seçicisi eklendi. İlk ziyarette cihaz tercihi kullanılır; elle seçilen tema tarayıcıda hatırlanır. Koyu tema sıcak kömür / amber, açık tema krem / kum tonları kullanır. İlk açılışta tema parlamasını önleyen başlangıç kodu eklendi.
+- **Renk düzenlemesi:** karıştır alanındaki parlak yeşil kaldırıldı; iki temaya uyumlu sakin yüzeyler, amber düğmeler, okunabilir metin ve sınırlar kullanıldı. Favicon paleti de güncellendi.
+- **Türkçe / İngilizce arayüz:** üst menüde TR / EN seçicisi; ana sayfa, arama, modlar, karıştırma, film ayrıntıları, kaydedilenler ve üyelik ekranları. Dil tercihi hatırlanır. Film başlıkları / özetleri ve öneri gerekçeleri için ayrı İngilizce alanlar kullanılır. Türkçe canonical adresler korunur. Seçici, sayfaların ISR önbelleğini bozmadan istemcide çalışır.
+- **Türkçe özetler:** Türkçe boşsa İngilizceyi doğrudan gösteren geri dönüş kaldırıldı. Kaynak İngilizce `overview` ve embedding korunur; Türkçe metin `tr_overview` alanında tutulur. Türkçe metin henüz yoksa arayüz bunu bildirir.
+- **TMDB metin temizliği:** HTML, gereksiz satır / boşluk, görünmez karakter ve HTML entity temizliği; anlamı değiştirmeyen sunum düzeltmeleri.
+- **Toplu içerik bakımı:** `scripts/catalog/refresh_content.mjs` mevcut Türkçe metni temizler; eksik metinde önce TMDB'nin Türkçe çevirisine bakar, yoksa İngilizce kaynağı `gpt-4.1-mini` ile Türkçeleştirir. Mevcut Türkçe metni keyfi biçimde yeniden yazmaz. Aynı anda admin tarafından yapılan düzeltmeler karşılaştırmalı PATCH ile korunur.
+- **Orijinal dilde afiş:** toplu iş, filmin orijinal diline ait TMDB afişlerini seçer; bulunamazsa mevcut afişi korur. Yeni film ekleme ve katalog dışı film ayrıntılarında da aynı tercih uygulanır. Öneri kartları ayrı ayrı TMDB isteği açmaz.
+- **Romantik bölüm:** “Birlikte izleyelim” ifadesi “Romantik bir akşam” olarak düzeltildi. Sonuçlar romantik türü, en az 6,5 puan / 500 oy ile sınırlandırıldı; korku ve belgesel dışlandı.
+- **Üyelik:** `/hesap` ekranı; mevcut Firebase projesi üzerinden Google girişi, e-postayla kayıt / giriş, e-posta doğrulama, şifre sıfırlama, oturumun korunması ve çıkış. Hatalar Türkçe / İngilizce açıklanır. Firebase kodu üyelik sayfasıyla yüklenir; ana sayfaya eklenmez. İzleme listesi bu sürümde tarayıcıda saklanmaya devam eder.
+- **Son bakılan filmler:** `/admin/analytics#recent-films` altında tarih, Türkiye saati ve film adı; 50 kayıtlık sunucu sayfalaması. Mevcut `film_opened` olayları kullanılır; yeni tablo / SQL kurulumu gerekmez. Kişi bilgisi gösterilmez.
+- **Açıklama düzenleyici:** `/admin/content`; film adı / TMDB ID ile bulma, İngilizce kaynağı görme, Türkçe başlık / özet düzeltme, TMDB metnini önce taslağa alma, kaydetme ve katalog önbelleği yenileme. Oturum ve kaynak kontrolü uygulanır.
+- **İçerik işinin yönetimi:** admin içerik ekranından toplu bakım çalıştırılabilir. İlk push tam taramayı başlatır; salı 07.00 Türkiye saati haftalık artımlı bakım yapılır. GitHub Actions raporu ve `docs/content-maintenance-report.json` gerçek sonuçları kaydeder. İş sonunda imzalı istekle katalog önbelleği yenilenir.
+- **Gizlilik metni:** isteğe bağlı üyelik, Firebase, dil / tema depolaması ve hesapların anonim ürün olaylarıyla ilişkilendirilmemesi açıklanır.
+
+### Kontroller
+
+- `npx tsc --noEmit`: başarılı.
+- `node --test scripts/tests/*.test.mjs`: 12 test başarılı. Analitik doğrulama / arama geçmişi testlerine ek olarak metin temizliği, İngilizce geri dönüşün engellenmesi, orijinal afiş seçimi ve örnek katalog üzerinde çeviri / PATCH akışı doğrulandı.
+- `VERCEL_ENV=preview npm run build`: başarılı. Yerelde üretim Supabase anahtarları bulunmadığı için bu derleme gerçek katalog verisiyle yapılmadı; canlı üretim derlemesi Vercel'deki mevcut değişkenleri kullanır.
+- Firebase yapılandırmasında `filminibul.com` ve `www.filminibul.com` izinli alan adları arasında doğrulandı.
+- Yetkisiz admin içerik / bakım uç noktaları ve imzasız önbellek yenileme isteği reddedilir.
+
+### Yayın sonrası sonuçlar
+
+Üretim yayınının ve toplu içerik taramasının sonucu tamamlanınca bu bölüme kaydedilir. Toplu çeviri / afiş sayıları iş bitmeden tamamlanmış kabul edilmez. Google girişi için gerçek hesapla kullanıcı etkileşimi gerekir; hesap seçimi kullanıcıya bırakılır.

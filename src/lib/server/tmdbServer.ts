@@ -8,6 +8,9 @@ export interface TmdbSearchResult {
     id: number;
     title: string;
     original_title: string;
+    original_language?: string;
+    english_title?: string;
+    english_overview?: string;
     overview: string;
     release_date?: string;
     poster_path: string | null;
@@ -63,22 +66,28 @@ export async function tmdbGet<T>(path: string, params: Record<string, string> = 
     return res.json() as Promise<T>;
 }
 
-export async function searchMovies(query: string): Promise<TmdbSearchResult[]> {
+export async function searchMovies(query: string, language: "tr" | "en" = "tr"): Promise<TmdbSearchResult[]> {
     const data = await tmdbGet<{ results: TmdbSearchResult[] }>(
         "/search/movie",
-        { query, language: "tr-TR", include_adult: "false", page: "1" },
+        { query, language: language === "en" ? "en-US" : "tr-TR", include_adult: "false", page: "1" },
         600
     );
     return data?.results ?? [];
 }
 
-/** tr-TR ile detay; Türkçe özet boşsa İngilizce'ye düşer. */
+/** Keep Turkish and English copy separate; prefer posters in the original language. */
 export async function getMovieDetails(id: number): Promise<TmdbMovieDetails | null> {
-    const tr = await tmdbGet<TmdbMovieDetails>(`/movie/${id}`, { language: "tr-TR", append_to_response: "credits" });
+    const [tr, en] = await Promise.all([
+        tmdbGet<TmdbMovieDetails & { images?: { posters: { iso_639_1: string | null; file_path: string; vote_average: number; vote_count: number; width: number }[] } }>(`/movie/${id}`, { language: "tr-TR", append_to_response: "credits" }, 86400),
+        tmdbGet<TmdbMovieDetails>(`/movie/${id}`, { language: "en-US" }, 86400),
+    ]);
     if (!tr) return null;
-    if (!tr.overview) {
-        const en = await tmdbGet<TmdbMovieDetails>(`/movie/${id}`, { language: "en-US" });
-        if (en?.overview) tr.overview = en.overview;
+    tr.english_title = en?.title;
+    tr.english_overview = en?.overview;
+    if (tr.original_language) {
+        const { selectOriginalPoster } = await import("@/lib/filmContent.mjs");
+        const images = await tmdbGet<{ posters: { iso_639_1: string | null; file_path: string; vote_average: number; vote_count: number; width: number }[] }>(`/movie/${id}/images`, { include_image_language: `${tr.original_language},null` }, 604800).catch(() => null);
+        tr.poster_path = selectOriginalPoster(images?.posters, tr.original_language, tr.poster_path);
     }
     return tr;
 }

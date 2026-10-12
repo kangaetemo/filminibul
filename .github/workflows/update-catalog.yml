@@ -18,7 +18,7 @@ on:
         default: "100"
 
 concurrency:
-  group: update-catalog
+  group: catalog-maintenance
   cancel-in-progress: false
 
 permissions:

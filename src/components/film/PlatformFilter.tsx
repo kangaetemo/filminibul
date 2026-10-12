@@ -1,4 +1,5 @@
 "use client";
+import { T } from "@/components/preferences/Preferences";
 
 import { useEffect } from "react";
 import Image from "next/image";
@@ -48,7 +49,7 @@ export default function PlatformFilter({ platforms, selected }: { platforms: Pla
 
     return (
         <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm text-muted mr-1">Platformlarım:</span>
+            <span className="text-sm text-muted mr-1"><T text={"Platformlarım:"} /></span>
             {platforms.map((p) => {
                 const active = selected.includes(p.id);
                 return (
@@ -68,9 +69,7 @@ export default function PlatformFilter({ platforms, selected }: { platforms: Pla
                 );
             })}
             {selected.length > 0 && (
-                <button type="button" onClick={() => apply([])} className="min-h-11 text-xs text-muted hover:text-ink underline ml-1">
-                    Tümünü göster
-                </button>
+                <button type="button" onClick={() => apply([])} className="min-h-11 text-xs text-muted hover:text-ink underline ml-1"> <T text={"Tümünü göster"} /> </button>
             )}
         </div>
     );

@@ -1,0 +1,59 @@
+name: Film açıklamalarını ve afişleri düzenle
+on:
+  push:
+    branches: [main]
+    paths: [scripts/catalog/refresh_content.mjs]
+  workflow_dispatch:
+    inputs:
+      max_films:
+        description: "İşlenecek en fazla film (ilk tam tarama: 30000)"
+        default: "30000"
+  schedule:
+    - cron: "0 4 * * 2"
+concurrency:
+  group: catalog-maintenance
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  content:
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      MAX_FILMS: ${{ inputs.max_films || '30000' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/cache@v4
+        with:
+          path: data/content/checked.json
+          key: content-audit-${{ github.run_id }}
+          restore-keys: content-audit-
+      - name: Türkçe metinleri tamamla ve orijinal afişleri seç
+        run: node scripts/catalog/refresh_content.mjs --max="$MAX_FILMS"
+      - name: Raporu sakla
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-maintenance-report
+          path: docs/content-maintenance-report.json
+      - name: Raporu commit et
+        if: always()
+        run: |
+          if [ ! -f docs/content-maintenance-report.json ]; then exit 0; fi
+          git add docs/content-maintenance-report.json
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name "$(git log -1 --format=%an)"
+          git config user.email "$(git log -1 --format=%ae)"
+          git commit -m "docs: film içerik düzenleme raporu"
+          git pull --rebase origin main
+          git push
+      - name: Katalog önbelleğini yenile
+        if: always()
+        run: node scripts/catalog/revalidate_content.mjs

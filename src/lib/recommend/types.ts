@@ -33,6 +33,9 @@ export interface FilmDTO {
     id: number;
     title: string;
     originalTitle: string | null;
+    titleEn?: string;
+    overviewEn?: string | null;
+    genresEn?: string[];
     overview: string | null;
     year: number | null;
     genres: string[];
@@ -52,6 +55,7 @@ export interface SimilarFilmDTO {
     reason: string;
     // Aynı bilgi satır satır, önem sırasıyla (kartlarda ilk 2'si gösterilir)
     reasons: string[];
+    reasonsEn?: string[];
     // Türkiye'de abonelikle/ücretsiz izlenebildiği platformlar (JustWatch)
     platforms: Platform[];
     score: number;

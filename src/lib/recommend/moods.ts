@@ -31,7 +31,7 @@ export const MOODS: Mood[] = [
     { id: "duygusal", emoji: "😢", label: "Ağlamak istiyorum" },
     { id: "gerilim", emoji: "🤯", label: "Gerilmek istiyorum" },
     { id: "macera", emoji: "🚀", label: "Maceraya atılmak istiyorum" },
-    { id: "romantik", emoji: "💕", label: "Romantik bir şeyler" },
+    { id: "romantik", emoji: "💕", label: "Romantik filmler", filter: { genreIds: [10749], excludeGenreIds: [27, 99], minRating: 6.5, minVotes: 500 } },
     { id: "dusundurucu", emoji: "🔍", label: "Düşünmek istiyorum" },
     { id: "nostalji", emoji: "📜", label: "Nostalji / Eski toprak", filter: { genreIds: [], maxYear: 1999, minRating: 8, minVotes: 2000 } },
 ];

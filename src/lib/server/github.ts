@@ -2,7 +2,7 @@
 // GITHUB_TOKEN: fine-grained token, sadece bu repo, "Actions: Read and write" izni yeterli.
 
 const REPO = process.env.GITHUB_REPO ?? "kangaetemo/filminibul";
-export const WORKFLOWS = { providers: "refresh-providers.yml", catalog: "update-catalog.yml" } as const;
+export const WORKFLOWS = { providers: "refresh-providers.yml", catalog: "update-catalog.yml", content: "refresh-content.yml" } as const;
 export type WorkflowName = keyof typeof WORKFLOWS;
 
 export const githubConfigured = () => !!process.env.GITHUB_TOKEN;

@@ -4,6 +4,7 @@
 // Eklenen film anında aranabilir, kendi benzer filmleri çıkar ve diğer filmlerin önerilerine girer
 // (HNSW index kendiliğinden güncellenir). Mod listeleri/keyword çevirileri/IDF statik dosya: ayrıca yenilenir.
 
+import { cleanOverview, turkishOverview, selectOriginalPoster } from "@/lib/filmContent.mjs";
 import { buildDoc, EMBEDDING_DIMS, EMBEDDING_MODEL } from "@/lib/recommend/embeddingDoc.mjs";
 import { displayTitle } from "@/lib/recommend/similar";
 import { getLiveProviders } from "@/lib/recommend/providers";
@@ -49,7 +50,7 @@ function toRow(d: TmdbFull): FilmRow {
         original_title: d.original_title,
         tr_title: tr.title || null,
         overview: d.overview || null,
-        tr_overview: tr.overview || null,
+        tr_overview: turkishOverview(tr.overview, d.overview, d.original_language),
         year: d.release_date ? Number(d.release_date.slice(0, 4)) : null,
         genres: d.genres,
         keywords: (d.keywords?.keywords ?? []).map((k) => k.name),
@@ -89,6 +90,10 @@ export async function addFilmToCatalog(id: number): Promise<AddResult> {
     if (d.adult) throw new AddFilmError("Yetişkin içerik kataloğa eklenmez");
 
     const row = toRow(d);
+    try {
+        const images = await tmdbGet<{ posters: { iso_639_1: string | null; file_path: string; vote_average: number; vote_count: number; width: number }[] }>(`/movie/${id}/images`, { include_image_language: `${d.original_language},null` }, 86400);
+        row.poster_path = selectOriginalPoster(images?.posters, d.original_language, row.poster_path);
+    } catch { /* Preserve the fallback poster when the image service is unavailable. */ }
     // İngilizce özet yoksa Türkçesi (sadece belge için; Türk filmlerinde sık); scripts/catalog/add_missing.mjs ile aynı
     const doc = buildDoc({ ...row, overview: row.overview || row.tr_overview });
     if (!doc.trim()) throw new AddFilmError("Filmin tür/keyword/özet bilgisi yok, embedding üretilemez");

@@ -15,6 +15,7 @@ type BlendRow = FilmRow & { sim_a: number; sim_b: number };
 export interface BlendFilm {
     film: FilmDTO;
     reasons: string[];
+    reasonsEn: string[];
 }
 
 export interface BlendResult {
@@ -53,7 +54,10 @@ export async function blendFilms(idA: number, idB: number): Promise<BlendResult 
             const reasons = [withA.length ? `${aDto.title}: ${withA.join(", ")}` : null, withB.length ? `${bDto.title}: ${withB.join(", ")}` : null].filter(
                 (x): x is string => !!x
             );
-            return { film: toFilmDTO(r), reasons };
+            const enA = sharedThemes(r.keywords, a.keywords, 2, "en");
+            const enB = sharedThemes(r.keywords, b.keywords, 2, "en");
+            const reasonsEn = [enA.length ? `${a.title}: ${enA.join(", ")}` : null, enB.length ? `${b.title}: ${enB.join(", ")}` : null].filter((x): x is string => !!x);
+            return { film: toFilmDTO(r), reasons, reasonsEn };
         });
     return { a: aDto, b: bDto, films };
 }

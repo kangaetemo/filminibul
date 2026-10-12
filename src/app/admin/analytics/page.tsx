@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { ADMIN_COOKIE, isValidSession } from "@/lib/server/adminAuth";
 import { analyticsRpc, searchHistoryFilters } from "@/lib/server/analytics";
+import RecentFilms from "./RecentFilms";
 import SearchHistory from "./SearchHistory";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Ürün istatistikleri · Filminibul", robots: { index: false, follow: false } };
@@ -41,6 +42,8 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: R
     const days = [7,30,90,365].includes(requested) ? requested : 7;
     let report: Report | null = null;
     try { report = await analyticsRpc<Report>("analytics_report", { p_days: days }); } catch { /* Show setup instructions, never credentials or raw DB errors. */ }
+    const filmPageRaw = Number(searchParams?.film_page);
+    const filmPage = Number.isSafeInteger(filmPageRaw) && filmPageRaw > 0 ? Math.min(filmPageRaw, 3000) : 1;
     const sum = (key: keyof Omit<Daily,"day">) => report?.daily.reduce((total, d) => total + d[key], 0) ?? 0;
     const cards = [
         ["Sayfa açma", n(sum("views"))], ["Günlük oturum toplamı", n(sum("sessions"))],
@@ -55,6 +58,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: R
         {!report ? <Panel title="İstatistikler okunamadı"><p className="text-sm">Supabase SQL Editor&apos;de <code>scripts/sql/analytics.sql</code> ve ardından pg_cron&apos;u etkinleştirerek <code>scripts/sql/analytics_cron.sql</code> dosyasını çalıştır. Supabase sunucu ortam değişkenlerini de kontrol et. Veritabanı bağlantısında geçici hata varsa sayfayı yenile.</p></Panel> : <>
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{cards.map(([label,value]) => <div key={label} className="rounded-2xl border border-slate-200 bg-white p-4"><p className="text-xs text-slate-500">{label}</p><p className="mt-2 text-2xl font-semibold tabular-nums">{value}</p></div>)}</div>
             <p className="text-xs leading-relaxed text-slate-500">Oturum toplamı günlük tekil oturumların toplamıdır; aynı oturum gece yarısını geçerse iki güne sayılır. Kişi sayısı değildir. Öneri oranı: bir ziyarette en az 1 saniye %50 görünür olan kartlardan daha sonra tıklananların payı. Bu oran beğeni veya film izleme başarısı değildir. Bugünkü kayıt bütçesi: {n(report.budget_used)} / 5.000.</p>
+            <Suspense fallback={<p className="text-sm text-slate-500">Son film görüntülemeleri yükleniyor…</p>}><RecentFilms rawStart={report.raw_start} days={days} page={filmPage} /></Suspense>
             <Panel title="Günlük hareketler"><Trend daily={report.daily}/><details><summary className="cursor-pointer text-sm text-teal-800">Günlük değerleri aç</summary><Table headers={["Gün","Oturum","Sayfa","Arama","Öneri tıklama","Karıştırma"]} rows={[...report.daily].reverse().map(d => [d.day,n(d.sessions),n(d.views),n(d.searches),n(d.recommendation_clicks),n(d.blends)])}/></details></Panel>
             <p className="text-sm text-slate-500">Aşağıdaki ayrıntılar {report.raw_start} tarihinden itibaren tutulmuş ham kayıtlardan hesaplanır (en fazla 30 gün). Günlük grafik ve kartlar seçilen dönemin tamamını kapsar.</p>
             <Panel title="Geliş kaynağı ve özellik kullanımı"><Table headers={["Kaynak","Oturum","Sayfa","Öneriye geçen oturum","Karıştıran oturum"]} rows={report.sources.map(s => [labels[s.source] ?? s.source,n(s.sessions),n(s.views),`${n(s.recommendation_sessions)} (${pct(s.recommendation_sessions,s.sessions)})`,n(s.blend_sessions)])}/><p className="mt-3 text-xs text-slate-500">Kaynak referrer kategorisinden belirlenir; Google&apos;da yazılan arama kelimesi bu yolla öğrenilemez. Kaynak gizlenmişse doğrudan olarak görünür.</p></Panel>

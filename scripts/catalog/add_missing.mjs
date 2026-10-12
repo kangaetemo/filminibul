@@ -17,6 +17,7 @@
 //
 // Güvenlik: veritabanı DB_STOP_MB'ı geçtiyse ekleme yapmaz (Supabase ücretsiz plan 500 MB).
 
+import { turkishOverview } from "../../src/lib/filmContent.mjs";
 import { buildDoc } from "../../src/lib/recommend/embeddingDoc.mjs";
 import { tmdb } from "../tmdb/tmdbClient.mjs";
 import { arg, embedTexts, flag, pool, sb, sbAll, sbUpsert, summary } from "./lib.mjs";
@@ -88,7 +89,7 @@ function toRow(d) {
         original_title: d.original_title,
         tr_title: tr.title || null,
         overview: d.overview || null,
-        tr_overview: tr.overview || null,
+        tr_overview: turkishOverview(tr.overview, d.overview, d.original_language),
         year: d.release_date ? Number(d.release_date.slice(0, 4)) : null,
         genres: d.genres,
         keywords: (d.keywords?.keywords ?? []).map((k) => k.name),

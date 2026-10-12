@@ -1,6 +1,7 @@
 // Film detayı + benzer film önerileri (sunucu tarafı).
 // Akış: Supabase similar_movies_v3 (HNSW, 200 aday) → hybrid rerank → Top N + "neden önerildi".
 
+import { cleanOverview, turkishOverview } from "@/lib/filmContent.mjs";
 import { supabaseRpc, supabaseSelect } from "@/lib/server/supabase";
 import { getMovieDetails } from "@/lib/server/tmdbServer";
 import { GENRE_MAP_TR } from "@/lib/tmdb";
@@ -34,7 +35,10 @@ export function toFilmDTO(row: FilmRow): FilmDTO {
         id: row.movie_id,
         title,
         originalTitle: row.original_title && row.original_title !== title ? row.original_title : null,
-        overview: row.tr_overview || row.overview,
+        overview: turkishOverview(row.tr_overview, row.overview, row.language),
+        titleEn: row.title,
+        overviewEn: cleanOverview(row.overview),
+        genresEn: (row.genres ?? []).map(g => g.name),
         year: row.year,
         genres: (row.genres ?? []).map(genreName),
         rating: row.rating,
@@ -56,7 +60,18 @@ export async function getFilmRow(id: number): Promise<FilmRow | null> {
 /** Önce katalog (Supabase), yoksa TMDB. Hiçbirinde yoksa null. */
 export async function getFilm(id: number): Promise<FilmDTO | null> {
     const row = await getFilmRow(id);
-    if (row) return toFilmDTO(row);
+    if (row) {
+        const film = toFilmDTO(row);
+        // Only film detail reads need live enrichment. Recommendation cards use
+        // the maintained catalog and do not fan out into individual TMDB calls.
+        if (!film.overview) {
+            try {
+                const details = await getMovieDetails(id);
+                if (details) film.overview = turkishOverview(details.overview, null, null);
+            } catch { /* Keep the usable catalog entry if TMDB is unavailable. */ }
+        }
+        return film;
+    }
 
     const d = await getMovieDetails(id);
     if (!d) return null;
@@ -65,7 +80,10 @@ export async function getFilm(id: number): Promise<FilmDTO | null> {
         id: d.id,
         title,
         originalTitle: d.original_title && d.original_title !== title ? d.original_title : null,
-        overview: d.overview || null,
+        overview: turkishOverview(d.overview, null, null),
+        titleEn: d.english_title || d.title,
+        overviewEn: cleanOverview(d.english_overview),
+        genresEn: d.genres.map(g => g.name),
         year: d.release_date ? Number(d.release_date.slice(0, 4)) : null,
         genres: d.genres.map(genreName),
         rating: d.vote_average,
@@ -114,6 +132,7 @@ export async function getSimilarFilms(id: number, limit = 20, debug = false, pla
         film: toFilmDTO(s.film),
         reason: explain(s),
         reasons: explainParts(s),
+        reasonsEn: explainParts(s, "en"),
         score: Math.round(s.final * 1000) / 1000,
         platforms: watchableIds(providers.get(s.film.movie_id)).map(platform),
         ...(debug && {

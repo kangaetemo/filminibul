@@ -31,6 +31,7 @@ export interface VibeFilm {
     film: FilmDTO;
     /** Aramanın temalarıyla filmin keyword'lerinin kesişimi (Türkçe), en fazla 3 */
     matched: string[];
+    matchedEn: string[];
     score: number;
 }
 
@@ -125,11 +126,11 @@ function parseThemes(doc: string): Set<string> {
     return new Set((line?.slice(7) ?? "").split(",").map((t) => t.trim().toLowerCase()).filter(Boolean));
 }
 
-function matchedThemes(themes: Set<string>, keywords: string[] | null): string[] {
+function matchedThemes(themes: Set<string>, keywords: string[] | null, language: "tr" | "en" = "tr"): string[] {
     const out: string[] = [];
     for (const k of keywords ?? []) {
         if (HIDDEN.has(k) || !themes.has(k.toLowerCase())) continue;
-        out.push(kwDict.tr[k] ?? k);
+        out.push(language === "en" ? k : kwDict.tr[k] ?? k);
         if (out.length === 3) break;
     }
     return out;
@@ -159,7 +160,7 @@ export async function vibeSearch(rawQuery: string, ip = "unknown"): Promise<Vibe
     const themes = parseThemes(doc);
     const films = rows
         .filter((r) => r.poster_path && !(r.keywords ?? []).some((k) => ADULT.has(k)))
-        .map((r) => ({ film: toFilmDTO(r), matched: matchedThemes(themes, r.keywords), score: Math.round(finalScore(r) * 1000) / 1000 }))
+        .map((r) => ({ film: toFilmDTO(r), matched: matchedThemes(themes, r.keywords), matchedEn: matchedThemes(themes, r.keywords, "en"), score: Math.round(finalScore(r) * 1000) / 1000 }))
         .sort((a, b) => b.score - a.score)
         .slice(0, RESULT_LIMIT);
 

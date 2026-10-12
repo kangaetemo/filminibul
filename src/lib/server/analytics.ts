@@ -64,3 +64,22 @@ export async function analyticsSearchHistory(rawStart: string, filters: SearchHi
     const lastPage = Math.max(1, Math.ceil(result.total / SEARCH_PAGE_SIZE));
     return result.page > lastPage ? read(lastPage) : result;
 }
+
+export type RecentFilmView = { created_at: string; film_id: string; path: string };
+export async function recentFilmViews(rawStart: string, page = 1): Promise<{ rows: RecentFilmView[]; more: boolean }> {
+    const url = process.env.SUPABASE_URL?.replace(/\/+$/, "");
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!url || !key || !/^\d{4}-\d{2}-\d{2}$/.test(rawStart)) throw new Error("Analytics database is not configured");
+    const params = new URLSearchParams({
+        select: "created_at,film_id:data->>film_id,path", name: "eq.film_opened",
+        created_at: `gte.${rawStart}T00:00:00+03:00`, order: "created_at.desc,id.desc",
+        limit: "51", offset: String((page - 1) * 50),
+    });
+    const response = await fetch(`${url}/rest/v1/analytics_events?${params}`, {
+        cache: "no-store", signal: AbortSignal.timeout(8000),
+        headers: { apikey: key, Authorization: `Bearer ${key}` },
+    });
+    if (!response.ok) throw new Error("Recent film views could not be read");
+    const rows = await response.json() as RecentFilmView[];
+    return { rows: rows.slice(0, 50), more: rows.length > 50 };
+}

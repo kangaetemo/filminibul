@@ -1,3 +1,4 @@
+import { PreferencesProvider } from "@/components/preferences/Preferences";
 import { Suspense } from "react";
 import PageTracker from "@/components/analytics/PageTracker";
 import type { Metadata } from "next";
@@ -27,7 +28,8 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="tr">
+        <html lang="tr" suppressHydrationWarning>
+            <head><script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('fb_theme');document.documentElement.dataset.theme=t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'}catch(e){document.documentElement.dataset.theme='light'}})();` }} /></head>
             <body className={`${manrope.variable} font-sans`} style={{ "--font-display": "var(--font-sans)" } as React.CSSProperties}>
 			<Script
 				async
@@ -35,7 +37,7 @@ export default function RootLayout({
 				crossOrigin="anonymous"
 				strategy="afterInteractive"
 				/>
-                {children}
+                <PreferencesProvider>{children}</PreferencesProvider>
                 <Suspense fallback={null}><PageTracker /></Suspense>
                 <Analytics />
             </body>

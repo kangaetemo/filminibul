@@ -41,6 +41,7 @@ export default async function AdminPage() {
 
                 <Link href="/admin/analytics" className="mt-6 inline-flex rounded-xl bg-accent px-4 py-2 font-semibold text-black">Ürün istatistiklerini aç →</Link>
 
+                <div className="mt-4 flex flex-wrap gap-3"><Link href="/admin/analytics#recent-films" className="rounded-lg border border-white/20 px-4 py-3 text-sm text-white">En son bakılan filmler →</Link><Link href="/admin/content" className="rounded-lg border border-white/20 px-4 py-3 text-sm text-white">Film açıklamalarını düzenle →</Link></div>
                 <section className="mt-8 p-5 rounded-2xl bg-card border border-white/10">
                     <h2 className="text-lg font-semibold text-white">Katalog</h2>
                     <p className="mt-1 text-sm text-white/40">

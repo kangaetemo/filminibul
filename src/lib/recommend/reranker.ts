@@ -5,6 +5,7 @@
 // v3 embedding keyword/tür/yönetmeni zaten içerdiği için semantic ana sinyal; diğerleri küçük düzeltme.
 // Keyword aday kanalı ve TMDB öneri bonusu ölçülebilir katkı yapmadığı için burada yok.
 
+import english from "@/lib/i18n/en.json";
 import idf from "@/data/idf.json";
 // Keyword'lerin Türkçe karşılıkları + açıklamada gösterilmeyecekler (scripts/tmdb/translate_keywords.mjs üretir).
 // Sadece gösterim: skorlama İngilizce keyword'lerle yapılır.
@@ -145,26 +146,27 @@ function scoreCandidate(seed: FilmRow, cand: Candidate, semanticNorm: number, kw
  * "Neden önerildi?" satırları, önem sırasıyla (UI ilk 1-2'sini gösterir).
  * Sadece pipeline'daki gerçek sinyallerden üretilir.
  */
-export function explainParts(s: ScoredFilm): string[] {
+export function explainParts(s: ScoredFilm, language: "tr" | "en" = "tr"): string[] {
+    const en = language === "en";
     const { signals, components } = s;
     const parts: string[] = [];
-    if (signals.sameCollection) parts.push(`Seri: ${signals.sameCollection}`);
-    if (signals.sameDirector) parts.push(`Yönetmen: ${s.film.director}`);
-    const themes = displayKeywords(signals.sharedKeywords).slice(0, 3);
-    if (themes.length) parts.push(`Temalar: ${themes.join(", ")}`);
-    if (signals.sharedGenres.length >= 2) parts.push(`Türler: ${signals.sharedGenres.join(", ")}`);
-    if (!parts.length) parts.push(components.semantic > 0.7 ? "Hikâye ve atmosfer benzerliği" : "Genel benzerlik");
+    if (signals.sameCollection) parts.push(en ? `Collection: ${s.film.collection_name || signals.sameCollection}` : `Seri: ${signals.sameCollection}`);
+    if (signals.sameDirector) parts.push(`${en ? "Director" : "Yönetmen"}: ${s.film.director}`);
+    const themes = (en ? signals.sharedKeywords.filter(k => !HIDDEN_KEYWORDS.has(k)) : displayKeywords(signals.sharedKeywords)).slice(0, 3);
+    if (themes.length) parts.push(`${en ? "Themes" : "Temalar"}: ${themes.join(", ")}`);
+    if (signals.sharedGenres.length >= 2) parts.push(`${en ? "Genres" : "Türler"}: ${signals.sharedGenres.map(g => en ? (english as Record<string, string>)[g] || g : g).join(", ")}`);
+    if (!parts.length) parts.push(components.semantic > 0.7 ? (en ? "Similar story and atmosphere" : "Hikâye ve atmosfer benzerliği") : (en ? "General similarity" : "Genel benzerlik"));
     return parts;
 }
 
 export const explain = (s: ScoredFilm) => explainParts(s).join(" · ");
 
 /** İki filmin ortak temaları, en nadirden başlayarak, Türkçe (gösterilmeyen meta keyword'ler hariç). */
-export function sharedThemes(a: string[] | null, b: string[] | null, limit = 2): string[] {
+export function sharedThemes(a: string[] | null, b: string[] | null, limit = 2, language: "tr" | "en" = "tr"): string[] {
     const other = new Set(b ?? []);
     const shared = (a ?? []).filter((k) => other.has(k) && !HIDDEN_KEYWORDS.has(k));
     shared.sort((x, y) => kwIdf(y) - kwIdf(x));
-    return displayKeywords(shared.slice(0, limit));
+    return language === "en" ? shared.slice(0, limit) : displayKeywords(shared.slice(0, limit));
 }
 
 /** Semantic adayları yeniden sıralar; diversity sınırlarıyla Top N döndürür. */

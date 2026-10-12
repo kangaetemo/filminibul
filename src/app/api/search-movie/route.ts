@@ -1,3 +1,4 @@
+import { turkishOverview, cleanOverview } from "@/lib/filmContent.mjs";
 import { NextRequest, NextResponse } from "next/server";
 import { searchMovies } from "@/lib/server/tmdbServer";
 import { catalogIds, searchCatalog, toFilmDTO } from "@/lib/recommend/similar";
@@ -24,23 +25,24 @@ const foldTurkish = (s: string) =>
     s.replace(/ı/g, "i").replace(/İ/g, "I").replace(/ş/gi, "s").replace(/ç/gi, "c").replace(/ğ/gi, "g").replace(/ö/gi, "o").replace(/ü/gi, "u");
 
 export async function GET(request: NextRequest) {
+    const language = request.nextUrl.searchParams.get("lang") === "en" ? "en" : "tr";
     const q = request.nextUrl.searchParams.get("q")?.trim() ?? "";
     if (q.length < 2) return NextResponse.json({ results: [] });
 
     try {
-        const [catalogRows, tmdbFirst] = await Promise.all([searchCatalog(q), searchMovies(q)]);
+        const [catalogRows, tmdbFirst] = await Promise.all([searchCatalog(q), searchMovies(q, language)]);
         const folded = foldTurkish(q);
-        const tmdbResults = tmdbFirst.length === 0 && folded !== q ? await searchMovies(folded) : tmdbFirst;
+        const tmdbResults = tmdbFirst.length === 0 && folded !== q ? await searchMovies(folded, language) : tmdbFirst;
 
         const inCatalog = await catalogIds(tmdbResults.map((m) => m.id));
         const fromCatalog: SearchResult[] = catalogRows.map((row) => {
             const f = toFilmDTO(row);
             return {
                 id: f.id,
-                title: f.title,
+                title: language === "en" ? f.titleEn || f.title : f.title,
                 originalTitle: f.originalTitle,
                 year: f.year,
-                overview: f.overview,
+                overview: language === "en" ? f.overviewEn || null : f.overview,
                 rating: f.rating ?? 0,
                 posterUrl: row.poster_path ? `https://image.tmdb.org/t/p/w185${row.poster_path}` : null,
                 inCatalog: true,
@@ -51,7 +53,7 @@ export async function GET(request: NextRequest) {
             title: m.title || m.original_title,
             originalTitle: m.original_title !== m.title ? m.original_title : null,
             year: m.release_date ? Number(m.release_date.slice(0, 4)) : null,
-            overview: m.overview || null,
+            overview: language === "en" ? cleanOverview(m.overview) : turkishOverview(m.overview, null, null),
             rating: m.vote_average,
             posterUrl: m.poster_path ? `https://image.tmdb.org/t/p/w185${m.poster_path}` : null,
             inCatalog: inCatalog.has(m.id),
@@ -59,7 +61,8 @@ export async function GET(request: NextRequest) {
 
         // TMDB sırası (alaka) önce, sonra katalogdan yarım kelime eşleşmeleri; tekrarları at; katalogdakiler öne
         const seen = new Set<number>();
-        const results = [...fromTmdb, ...fromCatalog]
+        const catalogById = new Map(fromCatalog.map(f => [f.id, f]));
+        const results = [...fromTmdb.map(f => catalogById.get(f.id) || f), ...fromCatalog]
             .filter((r) => !seen.has(r.id) && seen.add(r.id))
             .sort((a, b) => Number(b.inCatalog) - Number(a.inCatalog))
             .slice(0, 12);
