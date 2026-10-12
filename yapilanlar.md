@@ -33,3 +33,11 @@
 Toplu içerik işi: https://github.com/kangaetemo/filminibul/actions/runs/38304738851 · işlem devam ediyor; gerçek sayı raporu bitince eklenir. Toplu çeviri / afiş sayıları iş bitmeden tamamlanmış kabul edilmez. Google girişi için gerçek hesapla kullanıcı etkileşimi gerekir; hesap seçimi kullanıcıya bırakılır. Firebase Google sağlayıcısı etkin, e-posta/parola sağlayıcısı kapalıdır; site üyeliği Google üzerinden sunulur.
 
 Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-onizleme.jpg](docs/koyu-tema-onizleme.jpg).
+
+## 13 Ekim 2026 · Geliştirme takibi
+
+- Kullanıcının isteğiyle `yapilacaklar.md` oluşturuldu. Mobil keşif, bulut listesi, kişisel öneriler, ek modlar, doğal gerekçeler, görsel havuzu, performans, organik trafik, CSV içe aktarma, profil istatistikleri ve platform bildirimleri ayrı maddeler halinde kaydedildi.
+- Tamamlanan işlerin yapılacaklar dosyasında işaretlenip bu dosyaya tarih ve doğrulama sonucuyla eklenmesi kuralı tanımlandı.
+- Aynı takip kuralı, sonraki oturumlarda da okunması için repo kökündeki `AGENTS.md` dosyasına yazıldı.
+- Mevcut toplu çeviri / afiş işi 00.21 Türkiye saati kontrolünde hâlâ devam ediyor; `İÇ-01` açık bırakıldı. Bu kayıtta ürün özellikleri tamamlanmış olarak gösterilmedi.
+- Kontrol: konuşulan geliştirme havuzunun maddelerle eşleşmesi ve Markdown / diff biçimi incelendi. Yalnızca dokümantasyon değiştiği için uygulama testleri tekrar çalıştırılmadı.
