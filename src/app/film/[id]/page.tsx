@@ -1,4 +1,4 @@
-import { T, FilmText } from "@/components/preferences/Preferences";
+import { T, FilmText, FilmVotes } from "@/components/preferences/Preferences";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -87,11 +87,11 @@ export default async function FilmPage({ params, searchParams }: Props) {
                         <div className="mt-5 hidden sm:block"><WatchProviders providers={providers} filmId={film.id} /></div>
                     </aside>
                     <div className="min-w-0 sm:pt-36">
-                        <p className="eyebrow text-muted">{[film.year, ...film.genres.slice(0, 2)].filter(Boolean).join(" · ")}</p>
+                        <p className="eyebrow text-muted">{film.year && <>{film.year} · </>}<FilmText film={film} field="genresShort" /></p>
                         <h1 id="film-title" className="mt-3 font-display text-4xl leading-[1.06] text-ink sm:text-5xl lg:text-[56px]"><FilmText film={film} field="title" /></h1>
                         {film.originalTitle && <p className="mt-3 text-sm text-muted">{film.originalTitle}</p>}
                         <div className="mt-5 flex flex-wrap items-center gap-2">
-                            {film.rating != null && film.rating > 0 && <span className="inline-flex items-center gap-1.5 rounded-md border border-line bg-card px-3 py-2 text-xs font-bold text-ink"><Star className="h-3.5 w-3.5 text-accent-ink" aria-hidden />{film.rating.toFixed(1)} <span className="text-[10px] font-medium text-muted"><T text={"TMDB"} />{film.voteCount != null && ` · ${film.voteCount.toLocaleString("tr-TR")} oy`}</span></span>}
+                            {film.rating != null && film.rating > 0 && <span className="inline-flex items-center gap-1.5 rounded-md border border-line bg-card px-3 py-2 text-xs font-bold text-ink"><Star className="h-3.5 w-3.5 text-accent-ink" aria-hidden />{film.rating.toFixed(1)} <span className="text-[10px] font-medium text-muted"><T text={"TMDB"} />{film.voteCount != null && <FilmVotes count={film.voteCount} />}</span></span>}
                             {film.genres.map(g => <span key={g} className="rounded-md border border-line px-3 py-2 text-xs text-muted"><T text={g} /></span>)}
                         </div>
                         {<p className="mt-6 max-w-3xl text-[15px] leading-[1.85] text-ink/85"><FilmText film={film} field="overview" /></p>}
@@ -122,7 +122,7 @@ export default async function FilmPage({ params, searchParams }: Props) {
 
                 <section id="benzer-filmler" className="page-width mt-14 scroll-mt-8 sm:mt-16" aria-labelledby="similar-heading">
                     <div className="section-top border-b border-line pb-6">
-                        <div><p className="eyebrow mb-2 text-muted"><T text={"Tema · Atmosfer · Hikâye"} /></p><h2 id="similar-heading" className="section-heading"><T text={"Bunu sevdiysen, bir de bunlara bak."} /></h2><p className="mt-3 text-sm text-muted">{film.title} <T text={"ile ortak bir şeyler taşıyan filmler."} /></p></div>
+                        <div><p className="eyebrow mb-2 text-muted"><T text={"Tema · Atmosfer · Hikâye"} /></p><h2 id="similar-heading" className="section-heading"><T text={"Bunu sevdiysen, bir de bunlara bak."} /></h2><p className="mt-3 text-sm text-muted"><FilmText film={film} field="title" /> <T text={"ile ortak bir şeyler taşıyan filmler."} /></p></div>
                     </div>
                     {film.inCatalog && <Suspense><PlatformFilter platforms={FEATURED_PLATFORMS} selected={platforms} /></Suspense>}
                     {!film.inCatalog ? <p className="mt-6 text-sm text-muted"><T text={"Bu film henüz öneri kataloğumuzda yok. Eklendiğinde benzer filmleri burada bulabileceksin."} /></p> : <Suspense key={`${id}:${platforms.join(",")}`} fallback={<SimilarSkeleton />}><SimilarList id={id} platforms={platforms} collection={film.collectionName} /></Suspense>}

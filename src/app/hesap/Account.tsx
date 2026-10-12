@@ -23,6 +23,7 @@ const errors: Record<string, [string, string]> = {
 export default function Account() {
     const { language } = useLanguage();
     const en = language === "en";
+    const emailEnabled = process.env.NEXT_PUBLIC_EMAIL_AUTH_ENABLED === "true";
     const [user, setUser] = useState<User | null>(null);
     const [ready, setReady] = useState(false);
     const [busy, setBusy] = useState(false);
@@ -69,7 +70,7 @@ export default function Account() {
     return <div className="mx-auto max-w-md">
         <p className="eyebrow text-accent-ink">{en ? "Your film corner" : "Senin sinema köşen"}</p>
         <h1 className="mt-3 font-display text-4xl text-ink">{user ? (en ? "Your account" : "Hesabım") : (en ? "Welcome." : "Hoş geldin.")}</h1>
-        <p className="mt-4 text-sm leading-relaxed text-muted">{en ? "Discovery is open to everyone. You can create a free account with Google or your email." : "Film keşfi herkese açık. Google hesabınla ya da e-postanla ücretsiz üye olabilirsin."}</p>
+        <p className="mt-4 text-sm leading-relaxed text-muted">{en ? (emailEnabled ? "Discovery is open to everyone. Create a free account with Google or your email." : "Discovery is open to everyone. Create a free account with Google.") : (emailEnabled ? "Film keşfi herkese açık. Google hesabınla ya da e-postanla ücretsiz üye olabilirsin." : "Film keşfi herkese açık. Google hesabınla ücretsiz üye olabilirsin.")}</p>
         {notice && <p role={failed ? "alert" : "status"} className={`mt-5 rounded-lg border border-line p-4 text-sm ${failed ? "text-red-500" : "text-ink"}`}>{notice}</p>}
         {user ? <section className="mt-6 space-y-5 rounded-xl border border-line bg-card p-6">
             <UserRound className="h-8 w-8 text-accent-ink" aria-hidden />
@@ -80,6 +81,7 @@ export default function Account() {
             <button type="button" disabled={busy} className="button-secondary w-full" onClick={() => void run(() => signOut(memberAuth()))}>{en ? "Sign out" : "Çıkış yap"}</button>
         </section> : <>
             <button type="button" disabled={busy} onClick={() => void run(() => signInWithPopup(memberAuth(), googleProvider()))} className="button-secondary mt-6 w-full"><span className="text-lg font-extrabold" aria-hidden>G</span>{en ? "Continue with Google" : "Google ile devam et"}</button>
+            {emailEnabled && <>
             <div className="my-6 flex items-center gap-4 text-xs text-muted"><span className="h-px flex-1 bg-line" />{en ? "or with email" : "ya da e-postayla"}<span className="h-px flex-1 bg-line" /></div>
             <form onSubmit={submit} className="space-y-4">
                 {mode === "register" && <label className="block text-sm font-semibold text-ink">{en ? "Name" : "Adın"}<input value={name} onChange={e => setName(e.target.value)} autoComplete="name" maxLength={80} className="mt-2 min-h-12 w-full rounded-lg border border-line bg-card px-3" /></label>}
@@ -95,6 +97,7 @@ export default function Account() {
                     setNotice(en ? "If an account exists, you'll receive a password reset email." : "Bu adresle bir hesap varsa şifre sıfırlama e-postası alacaksın.");
                 })}>{en ? "Forgot password?" : "Şifremi unuttum"}</button>}
             </div>
+            </>}
             <p className="mt-6 text-xs leading-relaxed text-muted">{en ? "By creating an account, you agree to the " : "Hesap oluşturduğunda "}<Link href="/privacy" className="underline underline-offset-4">{en ? "privacy policy" : "gizlilik politikasını"}</Link>{en ? "." : " kabul etmiş olursun."}</p>
         </>}
     </div>;
