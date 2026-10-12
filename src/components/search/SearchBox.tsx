@@ -150,7 +150,7 @@ export default function SearchBox({ initialQuery = "", autoFocus = true, size = 
                         placeholder={mode === "film" ? t("Mesela Yıldızlararası…") : mode === "vibe" ? t("Nasıl bir film izlemek istersin?") : t("Film adı ya da tarif…")}
                         className={`min-w-0 flex-1 bg-transparent px-3 text-ink placeholder:text-muted focus:outline-none ${compact ? "py-3 text-sm" : "py-3.5 text-base"}`}
                     />
-                    {loading && <Loader2 className="mr-2 h-4 w-4 shrink-0 animate-spin text-muted" aria-label="Aranıyor" />}
+                    {loading && <Loader2 className="mr-2 h-4 w-4 shrink-0 animate-spin text-muted" aria-label={t("Aranıyor")} />}
                     <button type="submit" aria-label={t(buttonText)} disabled={!canSubmit || loading} className={`flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md bg-accent text-sm font-extrabold text-button-ink transition-colors hover:bg-accent-glow disabled:cursor-not-allowed disabled:opacity-45 ${compact ? "m-1 px-3" : "px-3 sm:px-5"}`}>
                         {!compact && <span className="hidden sm:inline"><T text={buttonText} /></span>}<ArrowRight className="h-5 w-5" aria-hidden />
                     </button>

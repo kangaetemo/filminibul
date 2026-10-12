@@ -1,4 +1,4 @@
-import { T } from "@/components/preferences/Preferences";
+import { T, FilmText } from "@/components/preferences/Preferences";
 import ResultEvent from "@/components/analytics/ResultEvent";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -39,7 +39,7 @@ async function loadPicked(id: number | null): Promise<FilmDTO | null> {
     return film?.inCatalog ? film : null;
 }
 
-const toPicked = (f: FilmDTO | null): PickedFilm | null => (f ? { id: f.id, title: f.title, year: f.year, posterUrl: f.posterUrl } : null);
+const toPicked = (f: FilmDTO | null): PickedFilm | null => (f ? { id: f.id, title: f.title, titleEn: f.titleEn, year: f.year, posterUrl: f.posterUrl } : null);
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
     const [idA, idB] = parsePair(searchParams);
@@ -76,7 +76,7 @@ export default async function BlendPage({ searchParams }: Props) {
                     <h1 className="mt-3 font-display text-3xl leading-tight text-ink sm:text-5xl">
                         {a && b ? (
                             <>
-                                {a.title} <span className="text-accent-ink">+</span> {b.title}
+                                <FilmText film={a} field="title" /> <span className="text-accent-ink">+</span> <FilmText film={b} field="title" />
                             </>
                         ) : (
                             <T text={"İkisine birden benzeyen filmler"} />

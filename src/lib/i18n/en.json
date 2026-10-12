@@ -209,5 +209,8 @@
   "Arama şu an yapılamadı. Biraz sonra tekrar dene.": "Search is unavailable right now. Try again shortly.",
   "Biraz daha ayrıntı yaz.": "Add a little more detail.",
   "Arama şu an kullanılamıyor.": "Search is currently unavailable.",
-  "Bunu bir film aramasına çeviremedim. Nasıl bir film istediğini biraz daha anlat.": "Describe the kind of film you want in a little more detail."
+  "Bunu bir film aramasına çeviremedim. Nasıl bir film istediğini biraz daha anlat.": "Describe the kind of film you want in a little more detail.",
+  "Film adı yaz": "Enter a film title",
+  "Film adı…": "Film title…",
+  "Arama yöntemi": "Search method"
 }

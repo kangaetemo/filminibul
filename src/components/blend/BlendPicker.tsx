@@ -10,6 +10,7 @@ import { Loader2, Plus, Search, Shuffle, X } from "lucide-react";
 export interface PickedFilm {
     id: number;
     title: string;
+    titleEn?: string;
     year: number | null;
     posterUrl: string | null;
 }
@@ -84,6 +85,8 @@ function Slot({
     onPick: (f: PickedFilm) => void;
     onClear: () => void;
 }) {
+    const { language } = useLanguage();
+    const title = film ? (language === "en" ? film.titleEn || film.title : film.title) : "";
     if (film) {
         return (
             <div className="flex flex-col items-center text-center">
@@ -98,7 +101,7 @@ function Slot({
                         <X className="h-4 w-4" />
                     </button>
                 </div>
-                <p className="mt-3 font-display text-lg leading-tight text-ink">{film.title}</p>
+                <p className="mt-3 font-display text-lg leading-tight text-ink">{title}</p>
                 {film.year && <p className="text-sm text-muted">{film.year}</p>}
             </div>
         );
@@ -177,11 +180,11 @@ function FilmSearch({ exclude, onPick }: { exclude?: number; onPick: (f: PickedF
                     aria-expanded={pickable.length > 0}
                     aria-controls={listId}
                     aria-activedescendant={active >= 0 ? `${listId}-${active}` : undefined}
-                    aria-label="Film adı yaz"
-                    placeholder="Film adı…"
+                    aria-label={t("Film adı yaz")}
+                    placeholder={t("Film adı…")}
                     className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm text-ink placeholder:text-muted focus:outline-none"
                 />
-                {loading && <Loader2 className="mr-3 h-4 w-4 shrink-0 animate-spin text-muted" aria-label="Aranıyor" />}
+                {loading && <Loader2 className="mr-3 h-4 w-4 shrink-0 animate-spin text-muted" aria-label={t("Aranıyor")} />}
             </div>
             {trimmed.length >= 2 && !loading && results.length > 0 && pickable.length === 0 && (
                 <p className="mt-2 text-xs text-muted"><T text={"Bu filmler henüz kataloğumuzda yok, karıştırılamıyor."} /></p>

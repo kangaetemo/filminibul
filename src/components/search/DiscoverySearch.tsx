@@ -1,16 +1,17 @@
 "use client";
-import { T } from "@/components/preferences/Preferences";
+import { T, useLanguage } from "@/components/preferences/Preferences";
 
 import { useId, useState } from "react";
 import Link from "next/link";
 import SearchBox from "./SearchBox";
 
 export default function DiscoverySearch() {
+    const { t } = useLanguage();
     const [mode, setMode] = useState<"film" | "vibe">("film");
     const panelId = useId();
     return (
         <div className="hero-search max-w-[650px]">
-            <div className="mb-4 flex gap-6" role="group" aria-label="Arama yöntemi">
+            <div className="mb-4 flex gap-6" role="group" aria-label={t("Arama yöntemi")}>
                 <button type="button" aria-pressed={mode === "film"} aria-controls={panelId} onClick={() => setMode("film")} className={`min-h-11 border-b-[3px] pb-2 text-sm font-bold transition-colors ${mode === "film" ? "border-accent text-white" : "border-transparent text-white/70 hover:text-white"}`}><T text={"Sevdiğin bir filmden başla"} /></button>
                 <button type="button" aria-pressed={mode === "vibe"} aria-controls={panelId} onClick={() => setMode("vibe")} className={`min-h-11 border-b-[3px] pb-2 text-sm font-bold transition-colors ${mode === "vibe" ? "border-accent text-white" : "border-transparent text-white/70 hover:text-white"}`}><T text={"Biraz tarif et"} /></button>
             </div>

@@ -28,6 +28,8 @@
 
 ### Yayın sonrası sonuçlar
 
-Üretim yayını `4195e43` commit’i için Vercel’de READY oldu; `filminibul.com` alan adına bağlandı. Koyu tema ve İngilizce arayüz, film sayfasında İngilizce özet / öneri gerekçeleri ve gezinirken tercihlerin korunması canlıda doğrulandı. Google sağlayıcısı Firebase `createAuthUri` isteğine başarılı Google giriş adresi döndürdü. Yetkisiz admin uç noktaları ve imzasız katalog yenileme isteği canlıda 401 döndü.
+Üretim yayını `dc61b43` commit’i için Vercel’de READY oldu; `filminibul.com` alan adına bağlandı. Koyu tema ve İngilizce arayüz, film sayfasında İngilizce özet / öneri gerekçeleri ve gezinirken tercihlerin korunması canlıda doğrulandı. Google sağlayıcısı Firebase `createAuthUri` isteğine başarılı Google giriş adresi döndürdü. Yetkisiz admin uç noktaları ve imzasız katalog yenileme isteği canlıda 401 döndü.
 
-Toplu içerik işi: https://github.com/kangaetemo/filminibul/actions/runs/38304738851 · işlem devam ediyor; gerçek sayı raporu bitince eklenir. Toplu çeviri / afiş sayıları iş bitmeden tamamlanmış kabul edilmez. Google girişi için gerçek hesapla kullanıcı etkileşimi gerekir; hesap seçimi kullanıcıya bırakılır.
+Toplu içerik işi: https://github.com/kangaetemo/filminibul/actions/runs/38304738851 · işlem devam ediyor; gerçek sayı raporu bitince eklenir. Toplu çeviri / afiş sayıları iş bitmeden tamamlanmış kabul edilmez. Google girişi için gerçek hesapla kullanıcı etkileşimi gerekir; hesap seçimi kullanıcıya bırakılır. Firebase Google sağlayıcısı etkin, e-posta/parola sağlayıcısı kapalıdır; site üyeliği Google üzerinden sunulur.
+
+Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-onizleme.jpg](docs/koyu-tema-onizleme.jpg).
