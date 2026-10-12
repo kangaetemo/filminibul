@@ -41,3 +41,14 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Aynı takip kuralı, sonraki oturumlarda da okunması için repo kökündeki `AGENTS.md` dosyasına yazıldı.
 - Mevcut toplu çeviri / afiş işi 00.21 Türkiye saati kontrolünde hâlâ devam ediyor; `İÇ-01` açık bırakıldı. Bu kayıtta ürün özellikleri tamamlanmış olarak gösterilmedi.
 - Kontrol: konuşulan geliştirme havuzunun maddelerle eşleşmesi ve Markdown / diff biçimi incelendi. Yalnızca dokümantasyon değiştiği için uygulama testleri tekrar çalıştırılmadı.
+
+## 13 Ekim 2026 · İçerik işi hatasının onarımı (İÇ-01 / İÇ-03)
+
+- İlk çalışma [#38304738851](https://github.com/kangaetemo/filminibul/actions/runs/38304738851) `insufficient_quota` nedeniyle başarısız sonuçlandı. Tarama: 26.775 film; rapor: 13.526 çeviri, 874 metin temizliği, 11 TMDB Türkçe özet, 1.903 eksik özet. İlk iki hata çeviri doğrulaması; sonraki 1.901 kayıt kota / durmuş çeviri servisi nedeniyle tamamlanmadı. Yapılmış veritabanı değişiklikleri geri alınmadı. Rapor commit'i `0b17d70`; katalog önbelleği yenileme adımı başarılı.
+- İlk rapordaki 8.613 afiş sayısı seçimleri sayıyordu; çeviri hatasında aynı filmdeki afiş PATCH'i de atlandığından bu değer tamamı kaydedilmiş afiş olarak sunulmuyor. İlk rapor `docs/content-maintenance-initial-report.json` içinde korundu.
+- Çeviri ile afiş / Türkçe başlık yazmaları ayrıldı. Kota / yetkilendirme sorunu tek duraklama nedeni ve bekleyen kayıt listesiyle raporlanıyor; gerçek TMDB / veritabanı / doğrulama hataları başarısız sonucu üretmeye devam ediyor. Kısmi sonuçlar açık uyarıyla belirtiliyor.
+- Bozuk çeviri çıktısında sınırlı yeniden deneme eklendi; boş / İngilizce / aşırı uzun metin kabul edilmiyor. İngilizce kaynak ve embedding değiştirilmez.
+- Afiş, başlık ve özet ayrı karşılaştırmalı yazmalarla eşzamanlı düzenlemeleri korur. Sayaçlar yalnızca veritabanının gerçekten güncellediği kayıtlarla artırılır. Kontrol önbelleği metadata yazıldıktan sonra tutulur ve hata durumunda da GitHub cache'e kaydedilir.
+- `--skip-translation` ve `--retry-failed` seçenekleri eklendi. Kod push'u kalan kayıtları OpenAI çağrısı yapmadan kontrol eder; elle çalıştırmada iki seçenek ayrı seçilebilir. Önceki rapordaki eksik kayıtlar ve bu taramada işlenmeyen / çakışan kayıtlar devam listesinde korunur.
+- Doğrulama: `node --test scripts/tests/*.test.mjs` — 19 test başarılı; kota duraklaması, son denemede kota hatası, çıktı doğrulama tekrarı, kimlik hataları, çevirisiz hedefli tarama, afişin çeviri hatasından bağımsız kaydı ve eşzamanlı düzenleme sayaçları test edildi. `git diff --check` başarılı. Uygulama arayüzü değişmediği için uygulama derlemesi tekrarlanmadı.
+- GitHub push'u ve çevirisiz bakım sonucu doğrulama aşamasında. İÇ-03 henüz açık; İÇ-01 kalan Türkçe özetler tamamlanana kadar açık kalır. Kalan çevirilerin sürmesi OpenAI API kotasının açılmasına bağlıdır.

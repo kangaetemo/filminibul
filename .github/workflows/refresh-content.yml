@@ -2,12 +2,20 @@ name: Film açıklamalarını ve afişleri düzenle
 on:
   push:
     branches: [main]
-    paths: [scripts/catalog/refresh_content.mjs]
+    paths: [scripts/catalog/refresh_content.mjs, scripts/catalog/translate_overview.mjs]
   workflow_dispatch:
     inputs:
       max_films:
         description: "İşlenecek en fazla film (ilk tam tarama: 30000)"
         default: "30000"
+      skip_translation:
+        description: "OpenAI çağrısı yapmadan yalnızca metin temizliği / afiş bakımı"
+        type: boolean
+        default: false
+      retry_failed:
+        description: "Yalnızca önceki rapordaki eksik / hatalı filmler"
+        type: boolean
+        default: false
   schedule:
     - cron: "0 4 * * 2"
 concurrency:
@@ -30,13 +38,26 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - uses: actions/cache@v4
+      - uses: actions/cache/restore@v4
         with:
           path: data/content/checked.json
-          key: content-audit-${{ github.run_id }}
+          key: content-audit-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: content-audit-
       - name: Türkçe metinleri tamamla ve orijinal afişleri seç
-        run: node scripts/catalog/refresh_content.mjs --max="$MAX_FILMS"
+        env:
+          METADATA_ONLY: ${{ github.event_name == 'push' || inputs.skip_translation == true }}
+          RETRY_FAILED: ${{ github.event_name == 'push' || inputs.retry_failed == true }}
+        run: |
+          args=(--max="$MAX_FILMS")
+          if [ "$METADATA_ONLY" = "true" ]; then args+=(--skip-translation); fi
+          if [ "$RETRY_FAILED" = "true" ]; then args+=(--retry-failed); fi
+          node scripts/catalog/refresh_content.mjs "${args[@]}"
+      - name: Kontrol önbelleğini hata durumunda da sakla
+        if: always() && hashFiles('data/content/checked.json') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: data/content/checked.json
+          key: content-audit-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Raporu sakla
         if: always()
         uses: actions/upload-artifact@v4
