@@ -12,19 +12,19 @@ Bu dosya, konuşulan geliştirmeleri ve açık işleri takip eder. Öncelikler i
 
 ## P0 — Mobil keşif ve bulut listesi
 
-13 Ekim 2026 kararı: MB-01–MB-06 mobil keşif paketi uygulanıyor. İlk paket ana sayfanın üç keşif girişini, film tanıtımının sıkıştırılmasını, açılabilir özeti ve önerilerin fragman / ayrıntıların önüne alınmasını kapsar. Bulut listesi ve kişisel öneriler bu paketten sonra ele alınır. Çeviri işi beklemede kalır. İÇ-02 özet mesajı aynı özet bileşeninde ele alınır; kaynak metne isteğe bağlı erişim sunulur. Yerel tür kontrolü / derleme başarılı; canlı kontrol ve MB-06 cihaz doğrulaması bekleniyor.
+13 Ekim 2026 kararı: MB-01–MB-06 mobil keşif paketi uygulanıyor. İlk paket ana sayfanın üç keşif girişini, film tanıtımının sıkıştırılmasını, açılabilir özeti ve önerilerin fragman / ayrıntıların önüne alınmasını kapsar. Bulut listesi ve kişisel öneriler bu paketten sonra ele alınır. Çeviri işi beklemede kalır. İÇ-02 özet mesajı aynı özet bileşeninde ele alınır; kaynak metne isteğe bağlı erişim sunulur. İlk paket GitHub'a pushlandı ve canlı üretim yayını doğrulandı; mobil yayın platformu panelinin son düzenlemesi yayın aşamasında. MB-06 cihaz doğrulaması bekleniyor.
 
-- [ ] **MB-01 — Mod sayfasındaki düğmeyi yeniden adlandır.** “Karıştır” yerine “Başka filmler göster” kullan; yeni seçki geldiğini açıkça anlat. İngilizce karşılığını da ekle.
-- [ ] **MB-02 — Mobil film sayfasında önerileri öne al.** Küçük afiş ve başlığı yan yana yerleştir; uzun tanıtımın önerileri aşağı itmesini azalt.
-- [ ] **MB-03 — Mobil özeti kısaltılabilir yap.** İlk birkaç satırı göster, “Devamını oku” ile aç; tam açıklama erişilebilir kalsın.
-- [ ] **MB-04 — Film sayfasının bölüm sırasını düzenle.** Kısa film tanıtımından sonra benzer filmler gelsin. Oyuncular ve ayrıntılı bilgiler aşağıdaki açılabilir alanlarda olsun. Üst tanıtımda fragman düğmesi, önerilerden sonra büyük fragman bölümü bulunsun.
-- [ ] **MB-05 — Ana sayfada karıştırmayı ilk ekranda keşfedilebilir yap.** Üst alanda “Benzerini bul”, “Tarif et”, “İki filmi karıştır” girişlerini açıkça sun. Büyük karıştır tanıtımı aşağıda ayrıca bulunabilir.
-- [ ] **MB-06 — Mobil görünürlüğü ve kaydırma performansını doğrula.** Dar ekranlarda taşma, bölüm uzunluğu, dokunma hedefleri ve film önerilerine ulaşma adımlarını kontrol et.
+- [x] **MB-01 — Mod sayfasındaki düğmeyi yeniden adlandır.** “Karıştır” yerine “Başka filmler göster” kullan; yeni seçki geldiğini açıkça anlat. İngilizce karşılığını da ekle.
+- [x] **MB-02 — Mobil film sayfasında önerileri öne al.** Küçük afiş ve başlığı yan yana yerleştir; uzun tanıtımın önerileri aşağı itmesini azalt.
+- [x] **MB-03 — Mobil özeti kısaltılabilir yap.** İlk birkaç satırı göster, “Devamını oku” ile aç; tam açıklama erişilebilir kalsın.
+- [x] **MB-04 — Film sayfasının bölüm sırasını düzenle.** Kısa film tanıtımından sonra benzer filmler gelsin. Oyuncular ve ayrıntılı bilgiler aşağıdaki açılabilir alanlarda olsun. Üst tanıtımda fragman düğmesi, önerilerden sonra büyük fragman bölümü bulunsun.
+- [x] **MB-05 — Ana sayfada karıştırmayı ilk ekranda keşfedilebilir yap.** Üst alanda “Benzerini bul”, “Tarif et”, “İki filmi karıştır” girişlerini açıkça sun. Büyük karıştır tanıtımı aşağıda ayrıca bulunabilir.
+- [ ] **MB-06 — Mobil görünürlüğü ve kaydırma performansını doğrula.** Gerçek telefon / dar ekran görsel ve özet açma-kapama kontrolü bekliyor; test tarayıcısı telefon emülasyonu sunmadığı için madde açık bırakıldı. Dar ekranlarda taşma, bölüm uzunluğu, dokunma hedefleri ve film önerilerine ulaşma adımlarını kontrol et.
 - [ ] **BL-01 — Kaydedilen filmleri hesaba bağlı bulut listesine taşı.** Mevcut Google / Firebase kimliği ile veritabanı bağlantısını kur; her kullanıcı yalnızca kendi listesine erişebilsin.
 - [ ] **BL-02 — Tarayıcıdaki eski listeyi hesaba aktarma akışı ekle.** İlk girişte birleştirmeyi sun; aynı film iki kez oluşmasın ve eski kayıtlar kaybolmasın.
 - [ ] **BL-03 — Cihazlar arasında listeyi eşitle.** Kaydetme / kaldırma işlemleri telefonda ve bilgisayarda aynı hesabın listesine yansısın; bekleme ve hata durumları anlaşılır olsun.
 - [ ] **BL-04 — Oturum ve liste sınırlarını düzenle.** Hesapsız kullanım, giriş, çıkış ve farklı hesaplara geçişte doğru listeyi göster; tarayıcı önbelleğini kullanıcıya göre ayır.
-- [ ] **İÇ-02 — Özet yok mesajını gerçek durumla uyumlu yap.** Film bazında çeviri durumu izlenmediği sürece “Türkçe özet hazırlanıyor” yerine “Türkçe özet henüz bulunmuyor” kullan. Kaynak metin varsa “Orijinal özeti göster” seçeneği ekle.
+- [x] **İÇ-02 — Özet yok mesajını gerçek durumla uyumlu yap.** Film bazında çeviri durumu izlenmediği sürece “Türkçe özet hazırlanıyor” yerine “Türkçe özet henüz bulunmuyor” kullan. Kaynak metin varsa “Orijinal özeti göster” seçeneği ekle.
 
 ## P1 — Kişisel öneriler, modlar ve açıklamalar
 

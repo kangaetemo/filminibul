@@ -90,7 +90,7 @@ export default async function FilmPage({ params, searchParams }: Props) {
                     <div className="min-w-0 sm:pt-36">
                         <p className="eyebrow text-muted">{film.year && <>{film.year} · </>}<FilmText film={film} field="genresShort" /></p>
                         <h1 id="film-title" className="mt-2 break-words font-display text-[26px] leading-[1.06] text-ink sm:text-5xl lg:text-[56px]"><FilmText film={film} field="title" /></h1>
-                        {film.originalTitle && <p className="mt-2 text-xs text-muted sm:text-sm">{film.originalTitle}</p>}
+                        {film.originalTitle && <p className="mt-2 line-clamp-2 text-xs text-muted sm:line-clamp-none sm:text-sm">{film.originalTitle}</p>}
                         <div className="mt-3 flex flex-wrap items-center gap-2">
                             {film.rating != null && film.rating > 0 && <span className="inline-flex items-center gap-1.5 rounded-md border border-line bg-card px-3 py-2 text-xs font-bold text-ink"><Star className="h-3.5 w-3.5 text-accent-ink" aria-hidden />{film.rating.toFixed(1)} <span className="text-[10px] font-medium text-muted"><T text={"TMDB"} />{film.voteCount != null && <FilmVotes count={film.voteCount} />}</span></span>}
                             {film.genres.map(g => <span key={g} className="hidden rounded-md border border-line px-3 py-2 text-xs text-muted sm:inline"><T text={g} /></span>)}
@@ -104,6 +104,10 @@ export default async function FilmPage({ params, searchParams }: Props) {
                             {film.inCatalog && <Link href="#benzer-filmler" className="button-secondary hidden sm:inline-flex"><T text={"Benzer filmleri gör"} /> <ArrowDown className="h-4 w-4" aria-hidden /></Link>}
                         </div>
                     </div>
+                    <details className="group col-span-2 -mt-1 border-t border-line sm:hidden">
+                        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 py-2 text-sm font-bold [&::-webkit-details-marker]:hidden"><T text={"Nerede izlenir?"} /><ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden /></summary>
+                        <div className="pb-3"><WatchProviders providers={providers} filmId={film.id} /></div>
+                    </details>
                 </section>
 
                 <section id="benzer-filmler" className="page-width mt-8 scroll-mt-6 sm:mt-16" aria-labelledby="similar-heading">
@@ -126,7 +130,6 @@ export default async function FilmPage({ params, searchParams }: Props) {
                             <a href={`https://www.themoviedb.org/movie/${film.id}`} target="_blank" rel="noopener noreferrer" className="text-link text-xs"><T text={"TMDB’de incele"} /> <ArrowUpRight className="h-3.5 w-3.5" aria-hidden /></a>
                             {film.inCatalog && <Link href={`/karistir?a=${film.id}`} className="text-link text-xs"><Blend className="h-4 w-4" aria-hidden /><T text={"Başka bir filmle karıştır"} /></Link>}
                         </div>
-                        <div className="sm:hidden"><WatchProviders providers={providers} filmId={film.id} /></div>
                         </div>
                     </details>
                 </section>
