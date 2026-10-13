@@ -61,7 +61,7 @@ Kullanıcı gizlilik politikasının tamamlanmasını önceliklendirdi ve yayım
 
 ## P0 — Tarif aramasında bakiye / kota hatası
 
-- [ ] **AR-01 — Bakiye bittiğinde tarif aramasını doğru karşıla.** Kullanıcı “Arama şu an yapılamadı” bildirdi; 13 Ekim 14:36 canlı /ara logu OpenAI chat 429 / no credits remaining gösterdi. Quota hatasında gereksiz yeniden denemeyi durdur, kısa devreyle yinelenen başarısız çağrıları azalt. Geçici yoğunluk ile kota ayrımını koru; film adı ve ruh hâli keşfine çalışan bağlantılar sun. TR / EN, test ve canlı doğrulama birlikte ele alınır. Bakiye yükleme, model değiştirme veya yeni API anahtarı bu işin kapsamı değil.
+- [x] **AR-01 — Bakiye bittiğinde tarif aramasını doğru karşıla.** Kullanıcı “Arama şu an yapılamadı” bildirdi; 13 Ekim 14:36 canlı /ara logu OpenAI chat 429 / no credits remaining gösterdi. Quota hatasında gereksiz yeniden denemeyi durdur, kısa devreyle yinelenen başarısız çağrıları azalt. Geçici yoğunluk ile kota ayrımını koru; film adı ve ruh hâli keşfine çalışan bağlantılar sun. TR / EN, test ve canlı doğrulama birlikte ele alınır. Bakiye yükleme, model değiştirme veya yeni API anahtarı bu işin kapsamı değil. 3e2b47b yayını READY; 59 test ve derleme başarılı; canlı TR / EN mesaj, API 503 / güvenli kod ve alternatif kutudan Matrix film sayfasına geçiş doğrulandı. Tarif sonuçlarının yeniden üretilmesi sağlayıcı kredilerinin düzelmesine bağlı.
 
 ## P1 — Kişisel öneriler, modlar ve açıklamalar
 
