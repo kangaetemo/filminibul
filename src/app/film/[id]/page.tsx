@@ -103,11 +103,11 @@ export default async function FilmPage({ params, searchParams }: Props) {
                     </div>
                     <div className="col-span-2 min-w-0 sm:col-span-1">
                         <FilmSynopsis overview={film.overview} overviewEn={film.overviewEn} />
-                        <div className="mt-4 flex flex-wrap gap-2 sm:mt-6 sm:gap-3">
+                        <div className="film-actions mt-4 grid grid-cols-2 gap-2 sm:mt-6 sm:grid-cols-4 sm:gap-3">
                             {trailer && <TrailerButton videoKey={trailer.key} filmTitle={film.title} filmId={film.id} />}
                             <SaveButton film={film} />
-                            <ShareButton key={canonical} path={canonical} title={film.title} titleEn={film.titleEn} />
-                            {film.inCatalog && <Link href="#benzer-filmler" className="button-secondary hidden sm:inline-flex"><T text={"Benzer filmleri gör"} /> <ArrowDown className="h-4 w-4" aria-hidden /></Link>}
+                            <ShareButton key={canonical} path={canonical} />
+                            {film.inCatalog && <Link href="#benzer-filmler" className="button-secondary"><T text={"Benzer filmleri gör"} /> <ArrowDown className="h-4 w-4" aria-hidden /></Link>}
                         </div>
                         <FilmFeedback film={film} />
                         <p className="mt-2 max-w-md text-xs leading-relaxed text-muted"><T text="Kaydettiklerin ve beğendiklerin yeni önerilere yol göstersin." /></p>

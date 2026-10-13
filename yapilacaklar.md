@@ -96,6 +96,9 @@ Kullanıcı gizlilik politikasının tamamlanmasını önceliklendirdi ve yayım
 
 - [ ] **PF-04 — Karıştır sorgusundaki veritabanı zaman aşımını gider.** 13 Ekim 22:14:15 Türkiye saatiyle Matrix + Amelie canlı /karistir kontrolünde Supabase RPC blend_movies 500 / 57014 / statement timeout görüldü. Yeni paylaşım URL’si, dil ve çift seçimi çalışıyor; öneri üretiminin bu sorunu çözülmüş sayılmaz. Sorgu / indeks / aday havuzunu incele; kaliteli sonuç ve yanıt süresiyle doğrula. OpenAI bakiye hatası değildir; bu pakette blend sorgusu değiştirilmedi.
 
+- [ ] **PY-03 — Paylaş düğmesini doğrudan bağlantı kopyalamaya dönüştür.** Kullanıcı “Paylaşıldı” görmesine rağmen panoda bağlantı olmadığını bildirdi. Sistem paylaşımının başarı dönüşünü kopyalama sayma; Paylaş doğrudan await Clipboard.writeText kullansın. Başarı / hata bildirimi buton ölçüsünü değiştirmesin; başarısızsa seçilebilir adres göster. Önceki PY-01 / PY-02 sistem paylaşımı tercihinin bu kullanıcı düzeltmesiyle yerini doğrudan kopyalama alır. TR / EN ve gerçek panodan geri okuma kontrolüyle doğrula.
+- [ ] **UI-01 — Film aksiyonlarının boyutlarını eşitle.** Kullanıcının ekran görüntüsünde Fragmanı izle / Kaydet / Paylaş / Benzer filmleri gör farklı yükseklikte. Aynı 48px yükseklik, yazı / ikon ölçüsü ve satırda eşit genişlik kullan; izleme / beğeni düğmelerini de aynı ölçü sistemine al. Paylaş bildirimini grid boyutuna katma. Dar ekran metin sarması ve TR / EN ölçülerini doğrula.
+
 ## Takip kuralı
 
 1. Yeni istek veya karar ilgili maddelere eklenir; kapsam değişirse açıklama güncellenir.

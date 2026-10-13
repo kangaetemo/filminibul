@@ -22,6 +22,6 @@ export default function SaveButton({ film, compact = false }: { film: SavedFilm;
         }} className={compact ? `absolute right-2 top-2 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/30 shadow-sm transition-colors disabled:opacity-50 ${saved ? "bg-accent text-button-ink" : "bg-black/60 text-white hover:bg-black/80"}` : `button-secondary disabled:opacity-50 ${saved ? "border-accent-ink/40 bg-accent/30" : ""}`}>
             {failed ? <CloudOff className="h-5 w-5" aria-hidden /> : pending ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden /> : saved ? <Check className="h-5 w-5" aria-hidden /> : <Bookmark className="h-5 w-5" aria-hidden />}{!compact && label}
         </button>
-        <span role="status" className={!compact && failed ? "mt-2 block max-w-sm text-xs text-muted" : "saved-status"}>{message}</span>
+        <span role="status" className={!compact && failed ? "col-span-full mt-2 block max-w-sm text-xs text-muted" : "saved-status"}>{message}</span>
     </>;
 }

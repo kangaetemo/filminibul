@@ -10,9 +10,9 @@ export default function FilmFeedback({ film }: { film: SavedFilm }) {
     const signal = records.find(r => r.id === film.id);
     const watched = !!signal?.watched, reaction = signal?.reaction || null;
     const pending = pendingIds.includes(film.id);
-    const style = (active: boolean) => `inline-flex min-h-11 items-center gap-2 rounded-lg border px-3 py-2 text-xs transition-colors disabled:opacity-50 ${active ? "border-accent-ink/40 bg-accent/20 text-ink" : "border-line text-muted hover:text-ink"}`;
+    const style = (active: boolean) => `button-secondary w-full disabled:opacity-50 ${active ? "border-accent-ink/40 bg-accent/20 text-ink" : "border-line text-muted hover:text-ink"}`;
     return <div className="mt-4">
-        <div className="flex flex-wrap gap-2" aria-label={t("Filmle ilgili tercihlerin")}>
+        <div className="film-actions grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3" aria-label={t("Filmle ilgili tercihlerin")}>
             <button type="button" disabled={!ready || !member || phase === "loading"} aria-pressed={watched} className={style(watched)} onClick={() => set({ id: film.id, field: "watched", value: !watched }, film)}><Eye className="h-4 w-4" aria-hidden /><T text="İzledim" /></button>
             <button type="button" disabled={!ready || !member || phase === "loading"} aria-pressed={reaction === "liked"} className={style(reaction === "liked")} onClick={() => set({ id: film.id, field: "reaction", value: reaction === "liked" ? null : "liked" }, film)}><ThumbsUp className="h-4 w-4" aria-hidden /><T text="Beğendim" /></button>
             <button type="button" disabled={!ready || !member || phase === "loading"} aria-pressed={reaction === "disliked"} className={style(reaction === "disliked")} onClick={() => set({ id: film.id, field: "reaction", value: reaction === "disliked" ? null : "disliked" }, film)}><ThumbsDown className="h-4 w-4" aria-hidden /><T text="Bana göre değildi" /></button>
