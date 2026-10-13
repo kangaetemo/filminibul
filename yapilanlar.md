@@ -87,7 +87,7 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Kontrol: `VERCEL_ENV=preview npm run build` (lint / tür kontrolü dahil) ve `git diff --check` başarılı. Yerel üretim Supabase anahtarları bulunmadığı için katalog yanıtı canlıda kontrol edilecek. Düzeltme [13e71dc](https://github.com/kangaetemo/filminibul/commit/13e71dc6e218d8919eded98f0a213083ff8c271a) ile pushlandı. Vercel `dpl_8xvevCZY2Zi7nJ3NkBDDYa3Kux8A` üretim yayını READY oldu. Canlı Matrix DOM'unda panel özeti tek başlık, panel içi `h2` sayısı 0, masaüstü bağımsız `h2` sayısı 1; fazladan `mt-6` boşluğu yok. Abonelik / kiralama / satın alma grupları ve kaynak atfı mevcut. MB-07 tamamlandı; bu kontrol telefon performans ölçümü değildir. KYN-01 kaynak satırı sadeleştirmesi bu düzeltmeden ayrı açık kalır; MB-06 gerçek cihaz performans kontrolü de açık kalır.
 
 
-## 13 Ekim 2026 · BL-01–BL-04 bulut listesi — yayın doğrulaması sürüyor
+## 13 Ekim 2026 · BL-01–BL-04 bulut listesi — yayınlandı
 
 - Google / Firebase oturumu sunucuda Firebase Admin SDK ile imza, proje, süre ve kullanıcı kimliği bakımından doğrulanır. Üye API'si yalnızca doğrulanan hesabın özel Supabase Storage yolunu kullanır; istemciden gelen kullanıcı / bucket alanları sahipliği değiştiremez. Özel yanıtlar önbelleğe alınmaz.
 - Filmler ayrı kayıtlar halinde saklanır; farklı cihazların eklediği filmler tüm listenin üzerine yazılmaz. Var olan kaydı tekrar eklemek çoğaltmaz. Listede en fazla 1.000 film desteklenir; toplu aktarım 50 kayıtlık parçalarla yapılır.
@@ -113,3 +113,12 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - [Depolama kontrolü #38362043331](https://github.com/kangaetemo/filminibul/actions/runs/38362043331) başarılı. Gerçek özel bucket, yazma / okuma, aynı filmi tekrar kaydedince tek kayıt, bağımsız istemciden okuma, hesap ayrımı, public indirme engeli ve sentetik kayıt temizliği doğrulandı. Rapor [d41920e](https://github.com/kangaetemo/filminibul/commit/d41920e5782eb50ca8789895026e5d93ca7e007c) içinde saklandı.
 - İlk üretim derlemesi başarılı, fakat canlı `/api/member/watchlist` isteği 500 döndü. Vercel logu `ERR_REQUIRE_ESM`: `firebase-admin@14.5.0 → jwks-rsa@4.1.0 → jose@6` zinciri sunucu modülünü yükleyemiyor. Yerel Node 24 varsayılanı bunu gizlemişti; gerçek imza doğrulama testleri tek başına bu runtime sınırını kapsamıyordu.
 - Firebase Admin SDK, CJS uyumlu bağımlılık zincirini kullanan kesin `13.9.0` sürümüne sabitlendi; kimlik doğrulama kontrolleri gevşetilmedi. `--no-experimental-require-module` ile SDK'yı ayrı süreçte yükleyen bir regresyon testi eklendi. Düzeltme sonrası `NODE_OPTIONS=--no-experimental-require-module node --test scripts/tests/*.test.mjs`: 37 test başarılı. `VERCEL_ENV=preview npm run build` lint / tür kontrolü dahil başarılı; yerel üretim veritabanı akışı bu derlemede sınanmış sayılmaz. Yeni canlı API sonucu ayrıca kaydedilecek.
+
+
+### Son yayın ve canlı sonuç
+
+- SDK uyumluluk düzeltmesi [989d8fd](https://github.com/kangaetemo/filminibul/commit/989d8fdb926d7b671acaed03a3f3dfbe0bf15141) olarak gönderildi. Vercel `dpl_G46QKgKtfnqbcQcsJ3b3rwEtXxqo` üretim yayını READY; `filminibul.com` ve `www.filminibul.com` bu yayına bağlı. Üretim derlemesi başarılı.
+- Canlı `GET /api/member/watchlist`: oturumsuz ve geçersiz `Bearer invalid` isteği 401 / `sign_in_required` döndürüyor; `Cache-Control: private, no-store, max-age=0`. Önceki 500 / modül yükleme hatası giderildi. Yeni yayında bu uç nokta için runtime hata kaydı görülmedi.
+- Canlı tarayıcı: `/kaydedilenler` yükleniyor; misafir listesinin cihazda tutulduğu ve giriş / aktarım bağlantısı doğru gösteriliyor. TR / EN liste açıklamaları ve boş liste durumu doğrulandı; `/hesap` Google giriş düğmesini yapılandırma hatası olmadan gösteriyor. Tarayıcı eklentisine ait hata site hatası sayılmadı.
+- BL-01–BL-04 uygulama, test, gerçek özel depolama ve üretim yayını bakımından tamamlandı. Bu tarayıcıda kişisel Google oturumu açık olmadığı için başarılı gerçek kullanıcı girişi / aktarımı ve iki gerçek cihaz kontrolü yapılmış gibi kaydedilmez; BL-05 açık eklendi. 37 otomatik test ve özel Storage bağımsız istemci kontrolü bu sınırlamanın yerine kullanıcı oturumu testi sayılmaz.
+- Kalan toplu çeviri / OpenAI çağrısı başlatılmadı; 1.903 özet beklemeye devam eder.
