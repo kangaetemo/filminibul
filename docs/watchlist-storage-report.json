@@ -1,10 +1,15 @@
 {
-  "checkedAt": "2026-10-13T07:20:35.477Z",
+  "checkedAt": "2026-10-13T19:11:09.925Z",
   "status": "passed",
   "privateBucket": true,
   "writeRead": true,
   "independentClientRead": true,
   "ownerIsolation": true,
   "publicDownloadBlocked": true,
+  "signalsWriteRead": true,
+  "signalsIndependentFields": true,
+  "signalsReset": true,
+  "signalsOwnerIsolation": true,
+  "signalsPublicDownloadBlocked": true,
   "cleanup": true
 }
