@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-10-13T07:20:35.477Z",
+  "status": "passed",
+  "privateBucket": true,
+  "writeRead": true,
+  "independentClientRead": true,
+  "ownerIsolation": true,
+  "publicDownloadBlocked": true,
+  "cleanup": true
+}
