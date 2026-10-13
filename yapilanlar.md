@@ -105,3 +105,11 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Vercel'de son READY üretim yayını hâlâ `927611e922aef9f3ce7655b5e5915aad6d5d11dc`; bulut listesi canlıya alınmış olarak kaydedilmez. Push / özel depolama workflow'u / gerçek Google oturumu kontrolü bekler; BL-01–BL-04 açık kalır.
 
 - 13 Ekim 2026, 10:16 Türkiye saati: kullanıcı ‘canlıya alalım’ talimatıyla özel depolama workflow'u dahil hazırlanan paketin GitHub'a pushlanmasını ve üretime alınmasını onayladı. Yayın ve depolama sonuçları ayrıca doğrulanacak.
+
+
+### Üretim depolaması ve SDK uyumluluk düzeltmesi
+
+- Paket GitHub bağlantısıyla [18a43a9](https://github.com/kangaetemo/filminibul/commit/18a43a9c159ac482c3e6c86d1256b31acdf66a6c) olarak `main` dalına gönderildi. Terminal push'u kimlik doğrulama hatası verdi; API yoluyla gönderilen Git tree, yerel commit tree'siyle birebir aynı doğrulandı.
+- [Depolama kontrolü #38362043331](https://github.com/kangaetemo/filminibul/actions/runs/38362043331) başarılı. Gerçek özel bucket, yazma / okuma, aynı filmi tekrar kaydedince tek kayıt, bağımsız istemciden okuma, hesap ayrımı, public indirme engeli ve sentetik kayıt temizliği doğrulandı. Rapor [d41920e](https://github.com/kangaetemo/filminibul/commit/d41920e5782eb50ca8789895026e5d93ca7e007c) içinde saklandı.
+- İlk üretim derlemesi başarılı, fakat canlı `/api/member/watchlist` isteği 500 döndü. Vercel logu `ERR_REQUIRE_ESM`: `firebase-admin@14.5.0 → jwks-rsa@4.1.0 → jose@6` zinciri sunucu modülünü yükleyemiyor. Yerel Node 24 varsayılanı bunu gizlemişti; gerçek imza doğrulama testleri tek başına bu runtime sınırını kapsamıyordu.
+- Firebase Admin SDK, CJS uyumlu bağımlılık zincirini kullanan kesin `13.9.0` sürümüne sabitlendi; kimlik doğrulama kontrolleri gevşetilmedi. `--no-experimental-require-module` ile SDK'yı ayrı süreçte yükleyen bir regresyon testi eklendi. Düzeltme sonrası `NODE_OPTIONS=--no-experimental-require-module node --test scripts/tests/*.test.mjs`: 37 test başarılı. `VERCEL_ENV=preview npm run build` lint / tür kontrolü dahil başarılı; yerel üretim veritabanı akışı bu derlemede sınanmış sayılmaz. Yeni canlı API sonucu ayrıca kaydedilecek.

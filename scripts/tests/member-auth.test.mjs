@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPairSync, createSign } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { memberAdminAuth, verifyMember } from '../../src/lib/server/memberAuth.mjs';
 process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID='watchlist-test-project';
 const {privateKey,publicKey}=generateKeyPairSync('rsa',{modulusLength:2048});
@@ -22,4 +23,8 @@ test('real signature and audience checks reject tampering, other projects and in
 });
 test('an accidental Firebase emulator environment never bypasses signature verification',async()=>{
     process.env.FIREBASE_AUTH_EMULATOR_HOST='localhost:9099';try{await assert.rejects(()=>verifyMember(token()),{code:'member_not_configured',status:503});}finally{delete process.env.FIREBASE_AUTH_EMULATOR_HOST;}
+});
+
+test('server auth loads when the runtime disables require(ESM), as on Vercel',()=>{
+    assert.doesNotThrow(()=>execFileSync(process.execPath,['--no-experimental-require-module','-e',"require('firebase-admin/auth')"],{stdio:'pipe'}));
 });
