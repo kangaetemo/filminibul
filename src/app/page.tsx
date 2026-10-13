@@ -10,6 +10,7 @@ import MoodChips from "@/components/search/MoodChips";
 import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import FilmCard from "@/components/film/FilmCard";
+import PersonalFilms from "@/components/film/PersonalFilms";
 import { getFilm, getSimilarFilms } from "@/lib/recommend/similar";
 
 export const revalidate = 3600;
@@ -34,6 +35,11 @@ export default function HomePage() {
                 <section id="modlar" className="page-width scroll-mt-6 pt-12 sm:pt-14" aria-labelledby="mood-heading">
                     <div className="section-top"><div><p className="eyebrow mb-2 text-muted"><T text={"Film adı aklında değilse"} /></p><h2 id="mood-heading" className="section-heading"><T text={"Bugün hangi moddasın?"} /></h2></div><p className="max-w-xs text-sm leading-relaxed text-muted"><T text={"Nasıl hissetmek istediğini seç."} /><br className="hidden sm:block" /> <T text={"O havaya birlikte girelim."} /></p></div>
                     <MoodChips tiles />
+                </section>
+
+                <section className="page-width pt-14 sm:pt-16" aria-labelledby="personal-heading">
+                    <div className="section-top"><div><p className="eyebrow mb-2 text-muted"><T text="Listenden yola çıkarak" /></p><h2 id="personal-heading" className="section-heading"><T text="Senin için" /></h2><p className="mt-2 text-sm text-muted"><T text="Kaydettiklerinden yeni hikâyelere." /></p></div><Link href="/senin-icin" className="text-link"><T text="Tümünü gör" /><ArrowRight className="ml-2 h-4 w-4" aria-hidden /></Link></div>
+                    <Suspense fallback={<HomeShelfSkeleton />}><PersonalFilms preview /></Suspense>
                 </section>
 
                 <section className="page-width pt-14 sm:pt-16" aria-labelledby="matrix-heading">

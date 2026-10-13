@@ -19,6 +19,7 @@ export default function SavedFilms() {
     if (!ready) return <p role="status" className="py-8 text-muted"><T text="Listen yükleniyor…" /></p>;
     return <>
         <div className="mb-6 space-y-3">
+            {member && films.length > 0 && <Link href="/senin-icin" className="text-link inline-flex min-h-11 items-center"><T text="Listemden yeni film önerileri bul" /><ArrowRight className="ml-2 h-4 w-4" aria-hidden /></Link>}
             {member ? <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-card p-4 text-sm">
                 <p role="status">{phase === "error" ? t(error === "watchlist_limit" ? "Listende en fazla 1.000 film olabilir." : "Buluta bağlanamadık. Değişikliklerin bu cihazda bekliyor; yeniden deneyebilirsin.") : phase === "syncing" || pendingIds.length ? t("Listen eşitleniyor…") : t("Listen hesabına kaydedildi. Aynı hesapla diğer cihazlarından da ulaşabilirsin.")}</p>
                 <button type="button" className="button-secondary shrink-0" disabled={phase === "syncing" || importing} onClick={() => void refresh()}><RefreshCw className="h-4 w-4" aria-hidden /><T text={phase === "error" ? "Tekrar dene" : "Listeyi yenile"} /></button>

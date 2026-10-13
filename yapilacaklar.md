@@ -33,7 +33,7 @@ Kaynak / koşul kontrolü (13 Ekim 2026): [TMDB atıf kuralları](https://develo
 Kullanıcı gizlilik politikasının tamamlanmasını önceliklendirdi ve yayımlanacak iletişim adresini `admin@filminibul.com` olarak belirledi. Diğer özelliklerden önce bu paket ele alınır.
 
 - [x] **GZ-01 — Gizlilik politikasını gerçek veri akışıyla tamamla.** Google'dan alınan temel profil / kimlik, kullanım amacı ve paylaşım sınırlarını, Firebase / Supabase ayrımını, hesap ve liste saklama süresini, teknik kayıtları ve e-postayla silme / erişim taleplerini TR / EN açıkla. Mevcut ürün istatistiği sürelerini ve üçüncü taraf ayrımını koru. İletişim adresi `admin@filminibul.com`. Doğrulama: 833215f üretim yayını READY; canlı /privacy giriş gerektirmeden açıldı, 11 bölüm ve mailto bağlantıları TR / EN doğrulandı. Otomatik hesap silme arayüzü veya yeni Google erişim yetkisi eklenmedi.
-- [ ] **GZ-02 — Güncel sayfayla Google incelemesini sürdür.** Kullanıcının ekranında ana sayfa şartı geçmiş, gizlilik içeriği yetersiz bulunmuş; son inceleme 12 Ağustos 2026. Yeni metnin o tarihte değerlendirilmiş olduğunu varsayma. Yayından sonra Google'ın mevcut Trust & Safety yazışması üzerinden yeniden inceleme istenir; inceleme sonucu ve marka yayını doğrulanana kadar ÜY-01 açık kalır. Bu oturum e-posta gönderimini içermez.
+- [ ] **GZ-02 — Güncel sayfayla Google incelemesini sürdür.** Kullanıcının ekranında ana sayfa şartı geçmiş, gizlilik içeriği yetersiz bulunmuş; son inceleme 12 Ağustos 2026. Yeni metnin o tarihte değerlendirilmiş olduğunu varsayma. Yayından sonra Google'ın mevcut Trust & Safety yazışması üzerinden yeniden inceleme istenir; inceleme sonucu ve marka yayını doğrulanana kadar ÜY-01 açık kalır. Kullanıcı 13 Ekim 2026 saat 13:24 öncesinde güncel gizlilik sayfasıyla mevcut Google yazışmasına yanıt gönderdiğini bildirdi. Bu kullanıcı bildirimi; ajan e-posta göndermedi. Yeniden inceleme / marka onayı bekleniyor.
 
 ## P0 — Mobil keşif ve bulut listesi
 
@@ -60,11 +60,12 @@ Kullanıcı gizlilik politikasının tamamlanmasını önceliklendirdi ve yayım
 
 ## P1 — Kişisel öneriler, modlar ve açıklamalar
 
-- [ ] **KŞ-01 — “Senin için” kişisel öneri alanı ekle.** Kaydedilen filmlerdeki ortak tema ve tercihlerden yeni filmler öner. İlk aşamada mevcut öneri altyapısını kullan.
+- [ ] **KŞ-01 — “Senin için” kişisel öneri alanı ekle.** Kaydedilen filmlerdeki ortak tema ve tercihlerden yeni filmler öner. İlk aşamada mevcut öneri altyapısını kullan. 13 Ekim 2026 kullanıcı onayıyla uygulanıyor: ana sayfa rafı ve /senin-icin, doğrulanmış hesabın bulut listesinden en fazla 8 temsili film, kaydedilenleri dışlama, gerçek kaynak filmlerle TR / EN gerekçe; ek OpenAI çağrısı yok.
 - [ ] **KŞ-02 — İlgi, izleme ve beğeni sinyallerini ayrı tut.** Kaydetmek ilgi sinyalidir. “İzledim”, “Beğendim” ve “Bana göre değildi” durumlarını destekle; kaydedilen her filmi beğenilmiş sayma.
 - [ ] **KŞ-03 — Öneri isabeti geri bildirimi topla.** “Bu öneri uydu / uymadı” sinyalini film beğenisinden ayrı kaydet; ilgiyi, izlemeyi ve öneri alakasını birbirine karıştırma.
-- [ ] **KŞ-04 — Kişisel önerilerde tekrarları ve tekdüzeliği azalt.** Kaydedilmiş / izlenmiş / reddedilmiş filmleri uygun şekilde dışla; farklı yönetmen ve serilere yer ver.
+- [ ] **KŞ-04 — Kişisel önerilerde tekrarları ve tekdüzeliği azalt.** Kaydedilmiş / izlenmiş / reddedilmiş filmleri uygun şekilde dışla; farklı yönetmen ve serilere yer ver. İlk sürümde kayıtlı bütün filmler dışlanıyor, seri başına 2 / yönetmen başına 3 üst sınırı var. İzledim / reddettim sinyalleri KŞ-02 ile birlikte ileride uygulanacak.
 - [ ] **KŞ-05 — Kişiselleştirmenin gerekçesini göster.** Örneğin “Matrix ve İsyan’ı kaydettiğin için”. Listesi boş kullanıcıya başlangıç seçimi veya genel keşif sun.
+- [ ] **KŞ-06 — Kişisel önerileri gerçek hesapta doğrula.** Otomatik güvenlik / katalog / sıralama akışı testleri ayrı kaydedilir. Gerçek Google hesabında sonuç, kaydetme sonrası yenilenme, iki cihaz ve hesap değişimi ayrıca kullanıcıyla doğrulanır; bu oturumdaki misafir tarayıcı kontrolü bunların yerine sayılmaz.
 - [ ] **MD-01 — Ek modları kesinleştir ve ekle.** Adaylar: “İçimi ısıtsın”, “Kafamı dinlendireyim”, “Ters köşe olsun”, “Sürükleyip götürsün”. Her modun ayrı aday havuzu ve uygun filtresi olsun.
 - [ ] **MD-02 — Gizli cevher keşfini güçlendir.** Az bilinen ama güçlü filmler için ayrı keşif alanı / mod tasarla; düşük oy sayısını tek başına kalite sayma.
 - [ ] **GK-01 — Etiketleri doğal öneri gerekçelerine dönüştür.** Ortak temayı, yönetmeni veya diğer doğrulanmış sinyalleri okunabilir cümlelerle anlat; filmde bulunmayan olay veya ilişki uydurma.

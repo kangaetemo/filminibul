@@ -101,7 +101,7 @@ export async function getFilm(id: number): Promise<FilmDTO | null> {
  * 200 aday: önce önceden hesaplanmış listeden (film_neighbors, haftalık; birkaç yüz ms), yoksa canlı HNSW'den (1–5 sn).
  * Liste yoksa: film haftalık işten sonra eklenmiş, tablo yenileniyor ya da scripts/sql/neighbors.sql henüz çalıştırılmamış.
  */
-async function getCandidates(id: number): Promise<Candidate[]> {
+export async function getCandidates(id: number): Promise<Candidate[]> {
     const args = { seed_movie_id: id, match_limit: CANDIDATE_POOL };
     try {
         const precomputed = await supabaseRpc<Candidate[]>("similar_movies_v4", args);

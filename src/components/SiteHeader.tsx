@@ -12,10 +12,11 @@ export default function SiteHeader({ search = true }: { search?: boolean }) {
                     <span className="text-[22px] sm:text-[27px] font-extrabold leading-none tracking-[-0.07em]"><T text={"filminibul"} /></span>
                     <span className="hidden sm:flex h-7 w-6 items-center justify-center rounded-sm bg-accent text-button-ink"><Clapperboard className="h-4 w-4" aria-hidden /></span>
                 </Link>
-                <nav className="order-last flex w-full items-center gap-4 text-[12px] font-bold text-ink sm:order-none sm:w-auto sm:gap-6 lg:ml-5 lg:text-sm" aria-label="Ana menü">
+                <nav className="order-last flex w-full flex-wrap items-center gap-x-4 gap-y-1 text-[12px] font-bold text-ink sm:order-none sm:w-auto sm:gap-x-6 lg:ml-5 lg:text-sm" aria-label="Ana menü">
                     <Link href="/" className="py-1.5 hover:underline underline-offset-4"><T text={"Keşfet"} /></Link>
                     <Link href="/#modlar" className="py-1.5 hover:underline underline-offset-4"><T text={"Ruh hâline göre"} /></Link>
                     <Link href="/karistir" className="py-1.5 hover:underline underline-offset-4"><T text={"İki filmi karıştır"} /></Link>
+                    <Link href="/senin-icin" className="py-1.5 hover:underline underline-offset-4"><T text="Senin için" /></Link>
                 </nav>
                 <Link href="/kaydedilenler" className="ml-auto flex min-h-11 min-w-11 items-center justify-center gap-2 text-sm font-semibold text-ink hover:underline underline-offset-4">
                     <Bookmark className="h-5 w-5" aria-hidden /><span className="hidden lg:inline"><T text={"Kaydettiklerim"} /></span><span className="sr-only lg:hidden"><T text={"Kaydettiklerim"} /></span>
