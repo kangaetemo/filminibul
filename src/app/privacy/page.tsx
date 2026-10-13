@@ -29,7 +29,12 @@ export default function PrivacyPolicy() {
 
                     <section>
                         <h2 className="text-xl font-semibold text-ink mb-3"><T text={"Tarayıcında saklananlar"} /></h2>
-                        <p className="text-ink/80 leading-relaxed"> <T text={"\"Nerede izlenir?\" filtresinde seçtiğin platformlar, bir dahaki ziyaretinde hatırlanması için tarayıcının yerel depolamasında tutulur. Kaydettiğin filmler de yalnızca kullandığın tarayıcıda saklanır. Tema ve dil tercihin de tarayıcında saklanır. Bu tercihleri tarayıcı verilerini silerek kaldırabilirsin."} /> </p>
+                        <p className="text-ink/80 leading-relaxed"> <T text={"\"Nerede izlenir?\" filtresinde seçtiğin platformlar, bir dahaki ziyaretinde hatırlanması için tarayıcının yerel depolamasında tutulur. Giriş yapmadan kaydettiğin filmler yalnızca kullandığın tarayıcıda saklanır. Hesabına ait listenin önbelleği ve henüz eşitlenmemiş değişiklikler de cihazında hesaba göre ayrı tutulur. Tema ve dil tercihin de tarayıcında saklanır. Bu tercihleri tarayıcı verilerini silerek kaldırabilirsin."} /> </p>
+                    </section>
+
+                    <section>
+                        <h2 className="text-xl font-semibold text-ink mb-3"><T text="Hesabındaki film listesi" /></h2>
+                        <p className="text-ink/80 leading-relaxed"><T text="Giriş yaptıktan sonra kaydettiğin filmler, aynı hesapla diğer cihazlarından erişebilmen için Supabase üzerinde özel bir alanda saklanır. Sunucu Firebase oturumunu doğrular ve yalnızca o hesaba ait listeye erişim verir. Film numarası ve temel gösterim bilgileri saklanır; üyelik kimliğin anonim kullanım istatistiklerine eklenmez. Eski tarayıcı listesini hesabına aktarmak isteğe bağlıdır. Listenden film kaldırdığında bulut kaydı da bağlantı kurulduğunda silinir. Paylaşılan cihazlarda çıkış yaptıktan sonra tarayıcı verilerini silerek yerel önbelleği kaldırabilirsin." /></p>
                     </section>
 
                     <section>
@@ -52,7 +57,7 @@ export default function PrivacyPolicy() {
                             <li>
                                 <strong><T text={"Vercel"} /></strong><T text={": sitenin barındırılması ve çerez kullanmayan, anonim ziyaret istatistikleri (Vercel Analytics)."} /> </li>
                             <li>
-                                <strong><T text={"Supabase"} /></strong><T text={": ürün kullanım istatistiklerinin veritabanında saklanması."} /> </li>
+                                <strong><T text={"Supabase"} /></strong><T text={": film kataloğu, ürün kullanım istatistikleri ve hesaba bağlı özel film listelerinin saklanması."} /> </li>
                             <li>
                                 <strong><T text={"Google AdSense"} /></strong><T text={": reklam gösterimi. Google, reklamlar için kendi çerezlerini kullanabilir; ayrıntılar Google'ın gizlilik politikasındadır."} /> </li>
                         </ul>

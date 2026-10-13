@@ -85,3 +85,23 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Kullanıcının ekran görüntüsündeki iki “Nerede izlenir?” başlığı, açılır panel ve paylaşılan `WatchProviders` bileşeninin başlıklarının birlikte görünmesinden kaynaklanıyordu.
 - Bileşene varsayılan olarak açık `showHeading` seçeneği eklendi. Açılır panel içindeki kullanım başlığı ve 24 px üst boşluğu kapatır; masaüstündeki bağımsız bölüm başlığını korur. Kiralama / satın alma grupları ayrı kaldığından aynı platform iki grupta görünebilir.
 - Kontrol: `VERCEL_ENV=preview npm run build` (lint / tür kontrolü dahil) ve `git diff --check` başarılı. Yerel üretim Supabase anahtarları bulunmadığı için katalog yanıtı canlıda kontrol edilecek. Düzeltme [13e71dc](https://github.com/kangaetemo/filminibul/commit/13e71dc6e218d8919eded98f0a213083ff8c271a) ile pushlandı. Vercel `dpl_8xvevCZY2Zi7nJ3NkBDDYa3Kux8A` üretim yayını READY oldu. Canlı Matrix DOM'unda panel özeti tek başlık, panel içi `h2` sayısı 0, masaüstü bağımsız `h2` sayısı 1; fazladan `mt-6` boşluğu yok. Abonelik / kiralama / satın alma grupları ve kaynak atfı mevcut. MB-07 tamamlandı; bu kontrol telefon performans ölçümü değildir. KYN-01 kaynak satırı sadeleştirmesi bu düzeltmeden ayrı açık kalır; MB-06 gerçek cihaz performans kontrolü de açık kalır.
+
+
+## 13 Ekim 2026 · BL-01–BL-04 bulut listesi — yayın doğrulaması sürüyor
+
+- Google / Firebase oturumu sunucuda Firebase Admin SDK ile imza, proje, süre ve kullanıcı kimliği bakımından doğrulanır. Üye API'si yalnızca doğrulanan hesabın özel Supabase Storage yolunu kullanır; istemciden gelen kullanıcı / bucket alanları sahipliği değiştiremez. Özel yanıtlar önbelleğe alınmaz.
+- Filmler ayrı kayıtlar halinde saklanır; farklı cihazların eklediği filmler tüm listenin üzerine yazılmaz. Var olan kaydı tekrar eklemek çoğaltmaz. Listede en fazla 1.000 film desteklenir; toplu aktarım 50 kayıtlık parçalarla yapılır.
+- Eski tarayıcı listesini hesaba aktarmak isteğe bağlıdır. Yalnızca sunucunun başarılı olduğunu onayladığı filmler yerel eski listeden kaldırılır; başarısız aktarımlar korunur.
+- Hesap önbelleği ve bağlantı bekleyen kaydetme / kaldırma işlemleri kullanıcıya göre ayrılır. Hesap değişiminde eski isteğin sonucu yeni hesabın ekranına karışmaz. Çevrimdışı işlemler bağlantı gelince yeniden gönderilir; odak dönüşünde, bağlantı dönüşünde ve liste ekranında periyodik olarak yenilenir.
+- Kaydetme / eşitleme / hata / aktarım durumları ve depolama kullanılamadığında uyarı, Türkçe / İngilizce olarak eklendi. Üyelik açıklaması ve gizlilik metni bulut listesini anlatacak şekilde güncellendi.
+- Doğrulama: 36 test başarılı, `npx tsc --noEmit` başarılı. Gerçek Admin SDK ile sahte imza / yanlış proje / geçersiz süre ve emulator ortamı reddi test edildi. Hesap geçişi, hızlı karşıt kaydetme işlemleri, yarım aktarım, iki istemcinin bağımsız eklemeleri ve engellenmiş tarayıcı depolaması senaryoları başarılı.
+- Yerel `npm run build`: kod derlemesi ve tür kontrolü başarılı; üretim Supabase anahtarları yerelde bulunmadığından sitemap ön üretimi başarısız. Üretim derlemesi Vercel'de ayrıca kontrol edilecek.
+- Gerçek özel depolama, yazma / tekrar yazma, bağımsız istemciden okuma, hesap ayrımı, public indirme engeli ve sentetik kaydın temizlenmesi için `prepare-watchlists` workflow'u eklendi. Rapor `docs/watchlist-storage-report.json` dosyasında tutulacak. **Workflow ve canlı yayın sonucu henüz doğrulanmadı; BL maddeleri açık kalır.** Gerçek Google oturumuyla iki cihazlı kullanıcı kontrolü de ayrıca kaydedilecek.
+
+### Yayın engeli ve korunmuş durum
+
+- Yerel uygulama commit'i: `3f36321` (`feat: kaydedilen filmleri hesaba bağlı özel bulut listesine taşı`). Kod ve takip kayıtları bu commit'te korundu.
+- Otomatik onay incelemesi `git push origin main` işlemini reddetti. Gerekçe: yeni workflow servis rolü anahtarını kullanıyor ve önemli değişiklikler doğrudan ana dala yayımlanıyor; mevcut devam talimatı inceleme tarafından yeterli açık yayın yetkisi sayılmadı. Aynı işlem farklı bir araçla denenmedi.
+- Vercel'de son READY üretim yayını hâlâ `927611e922aef9f3ce7655b5e5915aad6d5d11dc`; bulut listesi canlıya alınmış olarak kaydedilmez. Push / özel depolama workflow'u / gerçek Google oturumu kontrolü bekler; BL-01–BL-04 açık kalır.
+
+- 13 Ekim 2026, 10:16 Türkiye saati: kullanıcı ‘canlıya alalım’ talimatıyla özel depolama workflow'u dahil hazırlanan paketin GitHub'a pushlanmasını ve üretime alınmasını onayladı. Yayın ve depolama sonuçları ayrıca doğrulanacak.

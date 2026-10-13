@@ -76,7 +76,7 @@ export default function Account() {
             <UserRound className="h-8 w-8 text-accent-ink" aria-hidden />
             <div><p className="font-bold text-ink">{user.displayName || (en ? "Film lover" : "Sinema sever")}</p><p className="mt-1 break-all text-sm text-muted">{user.email}</p></div>
             <Link href="/kaydedilenler" className="button-secondary w-full"><Bookmark className="h-4 w-4" aria-hidden />{en ? "Open watchlist" : "Kaydettiklerimi aç"}</Link>
-            <p className="text-xs leading-relaxed text-muted">{en ? "Your watchlist is currently stored in this browser." : "İzleme listen şu an kullandığın tarayıcıda saklanır."}</p>
+            <p className="text-xs leading-relaxed text-muted">{en ? "Your watchlist is saved to your account. Sign in with the same account on another device to access it." : "İzleme listen hesabına kaydedilir. Diğer cihazlarında aynı hesapla giriş yaparak ulaşabilirsin."}</p>
             {!user.emailVerified && <button type="button" className="text-link" disabled={busy} onClick={() => void run(async () => { await sendEmailVerification(user); setNotice(en ? "Verification email sent." : "Doğrulama e-postası gönderildi."); })}>{en ? "Send verification email" : "Doğrulama e-postası gönder"}</button>}
             <button type="button" disabled={busy} className="button-secondary w-full" onClick={() => void run(() => signOut(memberAuth()))}>{en ? "Sign out" : "Çıkış yap"}</button>
         </section> : <>

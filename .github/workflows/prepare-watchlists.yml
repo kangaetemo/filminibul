@@ -1,0 +1,46 @@
+name: Bulut film listesi depolamasını doğrula
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/prepare-watchlists.yml
+      - scripts/catalog/prepare_watchlists.mjs
+      - src/lib/server/watchlistStorage.mjs
+      - src/lib/watchlistModel.mjs
+  workflow_dispatch:
+concurrency:
+  group: member-watchlist-storage
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  storage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - name: Özel depolama ve sentetik kayıt kontrolü
+        run: node scripts/catalog/prepare_watchlists.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - name: Raporu sakla
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: watchlist-storage-report
+          path: docs/watchlist-storage-report.json
+      - name: Raporu commit et
+        if: always()
+        run: |
+          if [ ! -f docs/watchlist-storage-report.json ]; then exit 0; fi
+          git add docs/watchlist-storage-report.json
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name "$(git log -1 --format=%an)"
+          git config user.email "$(git log -1 --format=%ae)"
+          git commit -m "docs: bulut film listesi depolama kontrolü"
+          git pull --rebase origin main
+          git push
