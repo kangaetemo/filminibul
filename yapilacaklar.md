@@ -101,6 +101,11 @@ Kullanıcı gizlilik politikasının tamamlanmasını önceliklendirdi ve yayım
 
 - [x] **PY-04 — Sosyal paylaşım seçenekleri ekle.** Kullanıcı X / Instagram ve diğer uygulama seçeneklerini istedi. Paylaş, X / WhatsApp / Telegram bağlantıları, Instagram için gerçek bağlantı kopyalama ve yapıştırma yönlendirmesi, ayrı Bağlantıyı kopyala ve destekleniyorsa Diğer uygulamalar menüsünü açsın. Native paylaşım dönüşünü gönderildi / kopyalandı sayma; otomatik gönderim yapma. Eşit ana düğme boyutları, canonical film / çift / dil / platform URL, TR / EN, Escape / odak ve panodan geri okuma kontrolü doğrulandı; 4c4083a üretim yayını READY. Cloud tarayıcıda navigator.share yok; gerçek telefonun native paneli ve sosyal platformda son gönderim ajan tarafından test edilmiş sayılmaz.
 
+## 13 Ekim 2026 — Girişsiz film düğmeleri ve metin düzeltmesi
+
+- [ ] **ÜY-02 — Girişsiz film işlemlerini girişe yönlendir.** Kullanıcı, giriş yapmadan Kaydet'e basınca “Kaydedildi” görünmesini düzelttirmek istiyor. Kaydet (film sayfası ve kartlar), İzledim, Beğendim ve Bana göre değil düğmeleri, kimlik kontrolü tamamlanmış ve oturumu olmayan kullanıcıda `/hesap` giriş akışına yönlendirsin. Girişsiz tıklama yeni yerel / bulut kayıt veya tercih oluşturmasın; yanlış “Kaydedildi” / başarılı kayıt mesajı göstermesin. Tercih düğmeleri girişsiz durumda tıklanamaz bırakılmak yerine girişe götürsün. Oturum kontrolü sürerken yanlış yönlendirme yapma. Eski tarayıcı listelerini silme; isteğe bağlı hesaba aktarım korunur. Başarılı girişten sonra ilgili film sayfasına güvenli geri dönüşü değerlendir. TR / EN, film / kart tıklaması, oturum yüklenmesi ve mevcut üye kaydetme / geri alma davranışını doğrula. Bu, önceki misafir tarayıcıya Kaydet davranışının yeni kullanıcı isteğiyle değiştirilmesi; henüz uygulanmadı.
+- [ ] **KŞ-08 — Olumsuz tercih metnini “Bana göre değil” yap.** Film sayfası ve tercih geçmişindeki “Bana göre değildi” düğmesini “Bana göre değil” olarak değiştir. TR / EN ve erişilebilirlik metinlerini birlikte kontrol et; `disliked` veri değeri / mevcut hesap tercihleri korunur. Girişsiz tıklama ÜY-02 kapsamında giriş akışına gider. Henüz uygulanmadı.
+
 ## Takip kuralı
 
 1. Yeni istek veya karar ilgili maddelere eklenir; kapsam değişirse açıklama güncellenir.
