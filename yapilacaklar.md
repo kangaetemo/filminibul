@@ -12,7 +12,7 @@ Bu dosya, konuşulan geliştirmeleri ve açık işleri takip eder. Öncelikler i
 
 ## P0 — Mobil keşif ve bulut listesi
 
-13 Ekim 2026 kararı: MB-01–MB-06 mobil keşif paketi uygulanıyor. İlk paket ana sayfanın üç keşif girişini, film tanıtımının sıkıştırılmasını, açılabilir özeti ve önerilerin fragman / ayrıntıların önüne alınmasını kapsar. Bulut listesi ve kişisel öneriler bu paketten sonra ele alınır. Çeviri işi beklemede kalır. İÇ-02 özet mesajı aynı özet bileşeninde ele alınır; kaynak metne isteğe bağlı erişim sunulur. İlk paket GitHub'a pushlandı ve canlı üretim yayını doğrulandı; mobil yayın platformu panelinin son düzenlemesi yayın aşamasında. MB-06 cihaz doğrulaması bekleniyor.
+13 Ekim 2026 kararı: MB-01–MB-05 mobil keşif düzenlemeleri ve İÇ-02 mesajı uygulandı / yayınlandı; MB-06 cihaz doğrulaması açık. İlk paket ana sayfanın üç keşif girişini, film tanıtımının sıkıştırılmasını, açılabilir özeti ve önerilerin fragman / ayrıntıların önüne alınmasını kapsar. Bulut listesi ve kişisel öneriler bu paketten sonra ele alınır. Çeviri işi beklemede kalır. İÇ-02 özet mesajı aynı özet bileşeninde ele alınır; kaynak metne isteğe bağlı erişim sunulur. İlk paket GitHub'a pushlandı ve canlı üretim yayını doğrulandı; mobil yayın platformu panelinin son düzenlemesi de 3df0800 üretim yayınında READY oldu. MB-06 cihaz doğrulaması bekleniyor.
 
 - [x] **MB-01 — Mod sayfasındaki düğmeyi yeniden adlandır.** “Karıştır” yerine “Başka filmler göster” kullan; yeni seçki geldiğini açıkça anlat. İngilizce karşılığını da ekle.
 - [x] **MB-02 — Mobil film sayfasında önerileri öne al.** Küçük afiş ve başlığı yan yana yerleştir; uzun tanıtımın önerileri aşağı itmesini azalt.
