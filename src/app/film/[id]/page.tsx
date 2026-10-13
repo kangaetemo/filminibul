@@ -103,6 +103,7 @@ export default async function FilmPage({ params, searchParams }: Props) {
                             <SaveButton film={film} />
                             {film.inCatalog && <Link href="#benzer-filmler" className="button-secondary hidden sm:inline-flex"><T text={"Benzer filmleri gör"} /> <ArrowDown className="h-4 w-4" aria-hidden /></Link>}
                         </div>
+                        <p className="mt-2 max-w-md text-xs leading-relaxed text-muted"><T text="Kaydettiklerine göre sana özel film önerileri sunacağız." /></p>
                     </div>
                     <details className="group col-span-2 -mt-1 border-t border-line sm:hidden">
                         <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 py-2 text-sm font-bold [&::-webkit-details-marker]:hidden"><T text={"Nerede izlenir?"} /><ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden /></summary>

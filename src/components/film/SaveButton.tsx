@@ -13,10 +13,10 @@ export default function SaveButton({ film, compact = false }: { film: SavedFilm;
     const pending = pendingIds.includes(film.id);
     const [action, setAction] = useState<{ member: string | null; saved: boolean } | null>(null);
     const failed = pending && phase === "error";
-    const label = pending ? t(failed ? "Eşitleme bekliyor" : "Eşitleniyor…") : t(saved ? "Kaydedildi" : "Sonra izle");
+    const label = pending ? t(failed ? "Eşitleme bekliyor" : "Eşitleniyor…") : t(saved ? "Kaydedildi" : "Kaydet");
     const message = action && action.member === member ? (!persistent ? t("Tarayıcı depolaması kullanılamıyor. Henüz buluta ulaşmayan değişiklikler bu oturum kapandığında kaybolabilir.") : pending ? t(failed ? "Buluta bağlanamadık. Değişikliklerin bu cihazda bekliyor; yeniden deneyebilirsin." : "Listen eşitleniyor…") : member ? t("Değişikliğin hesabına kaydedildi.") : t(action.saved ? "Film bu tarayıcıdaki listene kaydedildi." : "Film bu tarayıcıdaki listenden çıkarıldı.")) : "";
     return <>
-        <button type="button" disabled={!ready} aria-pressed={saved} aria-label={`${title}: ${t(saved ? "Kaydedilenlerden çıkar" : "Sonra izlemek için kaydet")}${pending ? ` · ${label}` : ""}`} title={pending ? label : t(saved ? "Kaydedilenlerden çıkar" : "Sonra izlemek için kaydet")} onClick={() => {
+        <button type="button" disabled={!ready} aria-pressed={saved} aria-label={`${title}: ${t(saved ? "Kaydedilenlerden çıkar" : "Kaydet")}${pending ? ` · ${label}` : ""}`} title={pending ? label : t(saved ? "Kaydedilenlerden çıkar" : "Kaydet")} onClick={() => {
             const result = toggle(film);
             if (!result.blocked) setAction({ member, saved: result.saved });
         }} className={compact ? `absolute right-2 top-2 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/30 shadow-sm transition-colors disabled:opacity-50 ${saved ? "bg-accent text-button-ink" : "bg-black/60 text-white hover:bg-black/80"}` : `button-secondary disabled:opacity-50 ${saved ? "border-accent-ink/40 bg-accent/30" : ""}`}>

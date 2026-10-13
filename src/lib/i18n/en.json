@@ -140,10 +140,8 @@
   "Bu film için şu an bir fragman bulunamadı. Aşağıdan benzer hikâyelere göz atabilirsin.": "No trailer is currently available. Explore similar stories below.",
   "Seçtiğin platformlarda benzer bir film bulamadık. Başka bir platform ekle ya da tümünü göster.": "No similar films on your selected platforms. Add another platform or show all.",
   "Bu film için henüz öneri bulunamadı.": "No recommendations for this film yet.",
-  "Sonra izle": "Watch later",
   "Kaydedildi": "Saved",
   "Kaydedilenlerden çıkar": "Remove from watchlist",
-  "Sonra izlemek için kaydet": "Save for later",
   "Benzerlerini bul": "Find similar films",
   "Filmimi bul": "Find my film",
   "Bul": "Find",
@@ -247,5 +245,7 @@
   "Hesabındaki film listesi": "Your account watchlist",
   "Giriş yaptıktan sonra kaydettiğin filmler, aynı hesapla diğer cihazlarından erişebilmen için Supabase üzerinde özel bir alanda saklanır. Sunucu Firebase oturumunu doğrular ve yalnızca o hesaba ait listeye erişim verir. Film numarası ve temel gösterim bilgileri saklanır; üyelik kimliğin anonim kullanım istatistiklerine eklenmez. Eski tarayıcı listesini hesabına aktarmak isteğe bağlıdır. Listenden film kaldırdığında bulut kaydı da bağlantı kurulduğunda silinir. Paylaşılan cihazlarda çıkış yaptıktan sonra tarayıcı verilerini silerek yerel önbelleği kaldırabilirsin.": "Films saved while signed in are stored privately in Supabase so you can access them on other devices with the same account. The server verifies your Firebase session and permits access only to that account’s list. Film IDs and basic display details are stored; your account identity is not added to anonymous usage analytics. Importing your old browser list is optional. Removing a film also deletes its cloud record when connected. On shared devices, clear browser data after signing out to remove the local cache.",
   "\"Nerede izlenir?\" filtresinde seçtiğin platformlar, bir dahaki ziyaretinde hatırlanması için tarayıcının yerel depolamasında tutulur. Giriş yapmadan kaydettiğin filmler yalnızca kullandığın tarayıcıda saklanır. Hesabına ait listenin önbelleği ve henüz eşitlenmemiş değişiklikler de cihazında hesaba göre ayrı tutulur. Tema ve dil tercihin de tarayıcında saklanır. Bu tercihleri tarayıcı verilerini silerek kaldırabilirsin.": "The streaming platforms you select are stored locally so they can be remembered on your next visit. Films saved without signing in stay in this browser. Your account list cache and pending changes are also stored separately for each account on this device. Your theme and language preferences are stored locally. Clear browser data to remove this information.",
-  ": film kataloğu, ürün kullanım istatistikleri ve hesaba bağlı özel film listelerinin saklanması.": ": storage for the film catalog, product usage statistics and private account watchlists."
+  ": film kataloğu, ürün kullanım istatistikleri ve hesaba bağlı özel film listelerinin saklanması.": ": storage for the film catalog, product usage statistics and private account watchlists.",
+  "Kaydet": "Save",
+  "Kaydettiklerine göre sana özel film önerileri sunacağız.": "We'll use your saved films to bring you personalized recommendations."
 }
