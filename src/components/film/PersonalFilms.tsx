@@ -22,6 +22,13 @@ export default function PersonalFilms({ preview = false }: { preview?: boolean }
     const requestKey = `${key}:${attempt}`;
 
     useEffect(() => {
+        if (!member) return;
+        void refresh();
+        const timer = window.setInterval(() => { if (document.visibilityState === "visible") void refresh(); }, 60000);
+        return () => window.clearInterval(timer);
+    }, [member, refresh]);
+
+    useEffect(() => {
         if (!member) { completed.current = ""; return; }
         if (!loadable || completed.current === requestKey) return;
         const controller = new AbortController();
