@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { selectPersonalSeeds, rankPersonalCandidates } from '../../src/lib/recommend/personalModel.mjs';
-import { createPersonalHandler } from '../../src/lib/server/personalHandler.mjs';
+import { createPersonalHandler, safePersonalFailure } from '../../src/lib/server/personalHandler.mjs';
 
 const film = (movie_id, extra = {}) => ({ movie_id, title: `Film ${movie_id}`, genres: [], director: null, collection_id: null, ...extra });
 const scored = row => ({ film: row, final: .8, signals: { sharedGenres: [], sharedKeywords: [], sameCollection: null, sameDirector: false } });
@@ -44,15 +44,15 @@ test('final results cap franchises and directors across all seed pools', () => {
 });
 
 function fixture({ storageError, recommendError } = {}) {
-    const calls = [];
+    const calls = [], failures = [];
     let clock = 100000;
-    const handle = createPersonalHandler({ now: () => clock,
+    const handle = createPersonalHandler({ now: () => clock, logFailure: details => failures.push(details),
         verify: async auth => { if (!['Bearer A', 'Bearer B'].includes(auth)) throw Object.assign(Error('private token'), { code: 'sign_in_required', status: 401 }); return auth.slice(7); },
         storage: { list: async uid => { calls.push(['list', uid]); if (storageError) throw storageError; return uid === 'A' ? [{ id: 1 }, { id: 1 }, { id: 2 }] : []; } },
         recommend: async ids => { calls.push(['recommend', ids]); if (recommendError) throw recommendError; return { recommendations: [], savedCount: ids.length, status: ids.length ? 'no_matches' : 'empty' }; }
     });
     const request = (uid = 'A') => new Request('https://filminibul.com/api/member/recommendations?uid=B&ids=999', { headers: { authorization: uid ? `Bearer ${uid}` : '' } });
-    return { handle, request, calls, advance: () => { clock += 60001; } };
+    return { handle, request, calls, failures, advance: () => { clock += 60001; } };
 }
 
 test('requires verified membership before reading data; private results never cache at the CDN', async () => {
@@ -86,4 +86,14 @@ test('storage and recommendation failures return safe errors, never a generic or
     const f = fixture({ recommendError: Error('private SQL detail') });
     const failure = await f.handle(f.request());
     assert.equal(failure.status, 503); assert.deepEqual(await failure.json(), { error: 'recommendations_unavailable' });
+    assert.equal(f.failures[0].stage, 'recommendations');
+    assert.ok(!JSON.stringify(f.failures).includes('private SQL detail'));
+});
+
+test('diagnostics disclose only safe stage/status/schema codes, not raw errors or user records', () => {
+    const error = Object.assign(Error('Supabase 400: {"code":"42703","message":"column film_embeddings_v3.example does not exist","details":"member-A token-secret 603 19995"}'), { stage: 'catalog' });
+    const details = safePersonalFailure(error, 'recommendations');
+    assert.equal(details.stage, 'catalog'); assert.equal(details.httpStatus, '400'); assert.equal(details.databaseCode, '42703');
+    assert.equal(details.column, 'film_embeddings_v3.example');
+    for (const secret of ['member-A', 'token-secret', '603', '19995']) assert.ok(!JSON.stringify(details).includes(secret));
 });

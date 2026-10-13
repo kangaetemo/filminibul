@@ -16,9 +16,11 @@ export async function getPersonalRecommendations(ids: number[]): Promise<Persona
     const base = { recommendations: [] as SimilarFilmDTO[], savedCount: ids.length, seedCount: 0, partial: false };
     if (!ids.length) return { ...base, status: "empty" };
     const rows: FilmRow[] = [];
-    for (let offset = 0; offset < ids.length; offset += 200) {
-        rows.push(...await supabaseSelect<FilmRow[]>(`film_embeddings_v3?select=${FILM_COLUMNS}&movie_id=in.(${ids.slice(offset, offset + 200).join(",")})&limit=200`));
-    }
+    try {
+        for (let offset = 0; offset < ids.length; offset += 200) {
+            rows.push(...await supabaseSelect<FilmRow[]>(`film_embeddings_v3?select=${FILM_COLUMNS}&movie_id=in.(${ids.slice(offset, offset + 200).join(",")})&limit=200`));
+        }
+    } catch (error) { throw Object.assign(error instanceof Error ? error : new Error("recommendations_unavailable"), { stage: "catalog" }); }
     const seeds = selectPersonalSeeds(rows, ids) as FilmRow[];
     if (!seeds.length) return { ...base, status: "uncatalogued" };
     // Bound concurrent database work; use maintained neighbors + existing reranker.

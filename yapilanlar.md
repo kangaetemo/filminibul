@@ -155,3 +155,11 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Google incelemesi: kullanıcı 13 Ekim saat 13:24 öncesinde mevcut doğrulama yazışmasına yanıt gönderdiğini bildirdi; GZ-02 ve ÜY-01 onay bekliyor. Ajan e-posta göndermedi.
 
 - Son ek: kişisel öneri bileşeni açılırken ve görünür sekmede 60 saniyede bir bulut listesini yeniler; değişmeyen liste için yeniden öneri isteği yapmaz. Böylece diğer cihazda yapılan kayıtlar açık öneri sayfasına da gelir. Son TSX değişikliği sonrası üretim derlemesi tekrar başarılı; ek [4200468](https://github.com/kangaetemo/filminibul/commit/4200468abe790e871443cc95473f5071926f482c) olarak main dalına gönderildi. Vercel `dpl_9MEEqiJRFQYwPCa8CN54MzvCWzck` üretim yayını READY ve filminibul.com’a bağlı; 13 October 2026 13:46 Türkiye saatiyle canlı /senin-icin yeniden yüklenip başlık doğrulandı. Gerçek cihazlar arası kişisel sonuç kontrolü KŞ-06 kapsamında açık kalır.
+
+
+## 13 Ekim 2026 · KŞ-01 gerçek hesap hata incelemesi
+
+- Kullanıcı saat 13:48’de genel öneri hatasını bildirdi, Kaydettiklerim listesinin normal açıldığını doğruladı. KŞ-01 yeniden açıldı; KŞ-06 açık.
+- İlk runtime sorguları hata ayrıntısı vermedi: kişisel API beklenmeyen hataları genel 503 yanıtına dönüştürüyor, özel hata kaydı üretmiyordu. Nedenin çözülmüş olduğu iddia edilmez. Üretim ortamında gerekli değişkenlerin kapsamı kontrol edildi; secret değerleri araçtan okunamıyor, yerel dosyaya veya repoya kopyalanmadı.
+- API’ye güvenli aşama / HTTP / veritabanı hata kodu kaydı eklendi. UID, token, liste kimlikleri, başlıklar veya ham hata metni loga yazılmaz. Arayüz ortak bulut liste hatasını ve oturum hatasını öneri hesaplama hatasından ayrı anlatır. Bu gözlemlenebilirlik düzeltmesi; asıl hata canlı yanıtla belirlenecek.
+- Gözlemlenebilirlik değişikliği için 13 kişisel öneri testi ve lint / tür kontrolü dahil üretim derlemesi başarılı; güvenli hata kaydının ham kullanıcı / token metnini içermediği sınandı. Canlı tanı yayını bekliyor.
