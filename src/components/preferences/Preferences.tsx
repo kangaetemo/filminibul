@@ -53,7 +53,7 @@ export function FilmText({ film, field }: { film: FilmDTO; field: "title" | "ove
     const text = field === "title" ? (language === "en" ? film.titleEn || film.title : film.title)
         : field === "overview" ? (language === "en" ? film.overviewEn || null : film.overview)
         : (field === "genresShort" ? film.genres.slice(0, 2) : film.genres).map(t).join(" · ");
-    if (!text && field === "overview") return <span className="text-muted">{language === "en" ? "A synopsis isn't available yet." : "Türkçe özet hazırlanıyor."}</span>;
+    if (!text && field === "overview") return <span className="text-muted">{language === "en" ? "A synopsis isn't available yet." : "Türkçe özet henüz bulunmuyor."}</span>;
     return <>{text}</>;
 }
 

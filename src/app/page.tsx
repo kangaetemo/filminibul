@@ -22,12 +22,12 @@ export default function HomePage() {
             <main>
                 <section className="cinema-hero" aria-labelledby="home-title">
                     <Image src="https://image.tmdb.org/t/p/w1280/5XNQBqnBwPA9yT0jZ0p3s8bbLh0.jpg" alt="" fill priority sizes="100vw" className="hero-art object-cover" />
-                    <div className="page-width relative pb-14 pt-12 sm:pb-16 sm:pt-16 lg:pb-16 lg:pt-20">
-                        <p className="eyebrow mb-5 text-white/80"><T text={"Film biter. Keşif devam eder."} /></p>
+                    <div className="page-width relative pb-7 pt-7 sm:pb-16 sm:pt-16 lg:pb-16 lg:pt-20">
+                        <p className="eyebrow mb-4 text-white/80"><T text={"Film biter. Keşif devam eder."} /></p>
                         <h1 id="home-title" className="hero-title max-w-[790px]"><T text={"Bir filmi sevdin."} /><br /><T text={"Sırada ne var?"} /></h1>
-                        <p className="mb-6 mt-5 max-w-xl text-[15px] leading-relaxed text-white/90 sm:mb-7 sm:text-lg"><T text={"Sevdiğin filme benzer filmler bul."} /><br className="sm:hidden" /> <T text={"Aynı his, bambaşka hikâyeler."} /></p>
+                        <p className="mb-5 mt-4 max-w-xl text-sm leading-relaxed text-white/90 sm:mb-7 sm:mt-5 sm:text-lg"><T text={"Sevdiğin filme benzer filmler bul."} /><br className="sm:hidden" /> <T text={"Aynı his, bambaşka hikâyeler."} /></p>
                         <DiscoverySearch />
-                        <Link href="/film/157336-yildizlararasi" className="mt-8 inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-white/75 hover:text-white lg:absolute lg:bottom-7 lg:right-12 lg:mt-0"><T text={"Bu kare: Yıldızlararası · 2014"} /> <ArrowUpRight className="h-3.5 w-3.5" aria-hidden /></Link>
+                        <Link href="/film/157336-yildizlararasi" className="mt-5 inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-white/75 hover:text-white lg:absolute lg:bottom-7 lg:right-12 lg:mt-0"><T text={"Bu kare: Yıldızlararası · 2014"} /> <ArrowUpRight className="h-3.5 w-3.5" aria-hidden /></Link>
                     </div>
                 </section>
 

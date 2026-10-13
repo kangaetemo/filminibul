@@ -2,7 +2,7 @@ import { T } from "@/components/preferences/Preferences";
 import type { Metadata } from "next";
 import { OG_BASE } from "@/lib/seo";
 import { notFound } from "next/navigation";
-import { Shuffle } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import Footer from "@/components/Footer";
 import SiteHeader from "@/components/SiteHeader";
 import FilmCard from "@/components/film/FilmCard";
@@ -48,9 +48,9 @@ export default async function MoodPage({ params }: Props) {
                         {/* Düz <a>: aynı sayfayı yeniden yükler, sunucu yeni rastgele seçim yapar */}
                         <a
                             href={`/mod/${mood.id}`}
-                            className="flex items-center gap-2 rounded-full border border-accent/40 bg-accent/15 px-5 py-2.5 text-sm text-ink transition-colors hover:bg-accent/25"
+                            className="flex min-h-11 items-center gap-2 rounded-full border border-accent/40 bg-accent/15 px-5 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-accent/25"
                         >
-                            <Shuffle className="h-4 w-4" aria-hidden /> <T text={"Karıştır"} /> </a>
+                            <RefreshCw className="h-4 w-4" aria-hidden /> <T text={"Başka filmler göster"} /> </a>
                     </div>
                     <p className="mt-3 text-muted"><T text={"Bir filme tıkla, ona benzeyen filmleri gör."} /></p>
 
