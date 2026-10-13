@@ -73,7 +73,7 @@ test('list ownership is controlled only by the verified UID, and empty accounts 
 test('rate limiting is per account, rejects work early and expires', async () => {
     const f = fixture();
     for (let i = 0; i < 8; i++) assert.equal((await f.handle(f.request())).status, 200);
-    assert.equal((await f.handle(f.request())).status, 429); assert.equal(f.calls.length, 16);
+    const before = f.calls.length; assert.equal((await f.handle(f.request())).status, 429); assert.equal(f.calls.length, before);
     assert.equal((await f.handle(f.request('B'))).status, 200);
     f.advance(); assert.equal((await f.handle(f.request())).status, 200);
 });
@@ -96,4 +96,45 @@ test('diagnostics disclose only safe stage/status/schema codes, not raw errors o
     assert.equal(details.stage, 'catalog'); assert.equal(details.httpStatus, '400'); assert.equal(details.databaseCode, '42703');
     assert.equal(details.column, 'film_embeddings_v3.example');
     for (const secret of ['member-A', 'token-secret', '603', '19995']) assert.ok(!JSON.stringify(details).includes(secret));
+});
+
+
+test('cache hits require fresh auth and list reads; another UID, list change and TTL do not reuse a result', async () => {
+    const lists = new Map([['A', [1]], ['B', [1]]]), calls = [], verified = [];
+    let clock = 1000;
+    const handler = createPersonalHandler({ now: () => clock,
+        verify: async value => { verified.push(value); if (!['A', 'B'].includes(value)) throw Object.assign(Error(), { code: 'sign_in_required', status: 401 }); return value; },
+        storage: { list: async uid => { calls.push(['list', uid]); return lists.get(uid).map(id => ({ id })); } },
+        recommend: async ids => { calls.push(['recommend', ids]); return { recommendations: [], ids, partial: false }; }
+    });
+    const req = uid => new Request('https://filminibul.com/api/member/recommendations', { headers: { authorization: uid } });
+    await handler(req('A')); await handler(req('A'));
+    assert.equal(calls.filter(call => call[0] === 'recommend').length, 1);
+    assert.equal(calls.filter(call => call[0] === 'list').length, 2); assert.equal(verified.length, 2);
+    assert.equal((await handler(req('invalid'))).status, 401);
+    await handler(req('B')); assert.equal(calls.filter(call => call[0] === 'recommend').length, 2);
+    lists.set('A', [2]); assert.deepEqual((await (await handler(req('A'))).json()).ids, [2]);
+    assert.equal(calls.filter(call => call[0] === 'recommend').length, 3);
+    clock += 120001; await handler(req('A')); assert.equal(calls.filter(call => call[0] === 'recommend').length, 4);
+});
+
+test('concurrent requests for one account/list share work, and partial results are retried', async () => {
+    let calls = 0, finish;
+    const pending = new Promise(resolve => { finish = resolve; });
+    const handler = createPersonalHandler({ verify: async () => 'A', storage: { list: async () => [{ id: 1 }] }, recommend: async () => { calls++; if (calls === 1) return pending; return { recommendations: [], partial: false }; } });
+    const request = () => new Request('https://filminibul.com/api/member/recommendations');
+    const first = handler(request()), second = handler(request());
+    await new Promise(resolve => setImmediate(resolve)); assert.equal(calls, 1);
+    finish({ recommendations: [], partial: true });
+    assert.equal((await first).status, 200); assert.equal((await second).status, 200);
+    await handler(request()); assert.equal(calls, 2);
+    await handler(request()); assert.equal(calls, 2);
+});
+
+test('memory cache is bounded and evicts old results without mixing accounts', async () => {
+    let calls = 0;
+    const handler = createPersonalHandler({ maxCacheEntries: 2, verify: async value => value, storage: { list: async () => [{ id: 1 }] }, recommend: async () => ({ recommendations: [], computation: ++calls, partial: false }) });
+    const request = uid => new Request('https://filminibul.com/api/member/recommendations', { headers: { authorization: uid } });
+    for (const uid of ['A', 'B', 'C', 'A']) await handler(request(uid));
+    assert.equal(calls, 4);
 });
