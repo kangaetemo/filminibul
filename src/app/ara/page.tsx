@@ -78,9 +78,11 @@ async function Results({ q }: { q: string }) {
     } catch (err) {
         if (!(err instanceof VibeError)) console.error("vibe sayfası hatası:", err);
         const message = err instanceof VibeError ? err.message : "Arama şu an yapılamadı. Biraz sonra tekrar dene.";
+        const unavailable = err instanceof VibeError && err.code === "vibe_service_unavailable";
         return (
             <div role="alert" className="rounded-2xl border border-line bg-card p-6 text-ink/80">
-                <T text={message} />
+                <p><T text={message} /></p>
+                {unavailable && <div className="mt-5 max-w-xl"><h2 className="mb-3 text-base font-bold"><T text="Film adıyla ara" /></h2><SearchBox mode="film" allowDescription={false} autoFocus={false} size="md" /><Link href="/#modlar" className="text-link mt-4 inline-flex min-h-11 items-center"><T text="Ruh hâline göre keşfet" /></Link></div>}
             </div>
         );
     }

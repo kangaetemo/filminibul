@@ -12,7 +12,7 @@
 import keywordsTr from "@/data/keywords_tr.json";
 import { EMBEDDING_DIMS, EMBEDDING_MODEL } from "@/lib/recommend/embeddingDoc.mjs";
 import { supabaseRpc } from "@/lib/server/supabase";
-import { fetchWithRetry } from "@/lib/server/tmdbServer";
+import { createVibeOpenAI, VibeProviderError } from "@/lib/server/vibeOpenAI.mjs";
 import { toFilmDTO } from "./similar";
 import type { Candidate, FilmDTO } from "./types";
 
@@ -22,7 +22,7 @@ const POOL = 60;
 const RESULT_LIMIT = 24;
 
 export class VibeError extends Error {
-    constructor(message: string, public status: number) {
+    constructor(message: string, public status: number, public code = "vibe_search_failed", public retryAfter?: number) {
         super(message);
     }
 }
@@ -75,17 +75,19 @@ const normalizeQuery = (q: string) => q.toLocaleLowerCase("tr").replace(/\s+/g, 
 
 // ---- OpenAI ----
 
-function openaiKey(): string {
-    const key = process.env.OPENAI_API_KEY;
-    if (!key) throw new VibeError("Arama şu an kullanılamıyor.", 503);
-    return key;
+const openai = createVibeOpenAI();
+
+function providerError(error: unknown): never {
+    if (error instanceof VibeProviderError) {
+        const unavailable = error.kind === "quota" || error.kind === "unavailable";
+        throw new VibeError(unavailable ? "Tarif araması şu an kullanılamıyor. Film adıyla arama yapabilir veya ruh hâline göre keşfedebilirsin." : "Tarif araması şu an yoğun. Biraz sonra yeniden deneyebilirsin.", 503, unavailable ? "vibe_service_unavailable" : "vibe_service_busy", error.retryAfter);
+    }
+    throw error;
 }
 
 async function expandToDoc(query: string): Promise<string> {
-    const res = await fetchWithRetry("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${openaiKey()}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
+    try {
+        const data = await openai.call("chat/completions", {
             model: "gpt-4.1-mini",
             temperature: 0,
             max_tokens: 300,
@@ -93,22 +95,18 @@ async function expandToDoc(query: string): Promise<string> {
                 { role: "system", content: EXPAND_SYSTEM },
                 { role: "user", content: query },
             ],
-        }),
-        cache: "no-store",
-    });
-    if (!res.ok) throw new Error(`OpenAI chat ${res.status}: ${(await res.text()).slice(0, 200)}`);
-    return ((await res.json()).choices?.[0]?.message?.content ?? "").trim();
+        });
+        return (data?.choices?.[0]?.message?.content ?? "").trim();
+    } catch (error) { return providerError(error); }
 }
 
 async function embedDoc(doc: string): Promise<number[]> {
-    const res = await fetchWithRetry("https://api.openai.com/v1/embeddings", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${openaiKey()}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ model: EMBEDDING_MODEL, input: doc, dimensions: EMBEDDING_DIMS }),
-        cache: "no-store",
-    });
-    if (!res.ok) throw new Error(`OpenAI embeddings ${res.status}: ${(await res.text()).slice(0, 200)}`);
-    return (await res.json()).data[0].embedding;
+    try {
+        const data = await openai.call("embeddings", { model: EMBEDDING_MODEL, input: doc, dimensions: EMBEDDING_DIMS });
+        const vector = data?.data?.[0]?.embedding;
+        if (!Array.isArray(vector) || vector.length !== EMBEDDING_DIMS || !vector.every(Number.isFinite)) throw new VibeProviderError("busy");
+        return vector;
+    } catch (error) { return providerError(error); }
 }
 
 // ---- Sıralama ----
@@ -147,6 +145,7 @@ export async function vibeSearch(rawQuery: string, ip = "unknown"): Promise<Vibe
     const cached = cache.get(key);
     if (cached && Date.now() - cached.at < CACHE_TTL_MS) return cached.value;
 
+    try { openai.ensureAvailable(); } catch (error) { providerError(error); }
     checkRate(ip);
 
     const doc = await expandToDoc(query);

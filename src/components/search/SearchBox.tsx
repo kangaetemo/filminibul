@@ -23,11 +23,12 @@ interface SearchResult {
 
 const vibeHref = (q: string) => `/ara?q=${encodeURIComponent(q.trim())}`;
 
-export default function SearchBox({ initialQuery = "", autoFocus = true, size = "lg", mode = "auto" }: {
+export default function SearchBox({ initialQuery = "", autoFocus = true, size = "lg", mode = "auto", allowDescription = true }: {
     initialQuery?: string;
     autoFocus?: boolean;
     size?: "lg" | "md" | "sm";
     mode?: "auto" | "film" | "vibe";
+    allowDescription?: boolean;
 }) {
     const { language, t } = useLanguage();
     const router = useRouter();
@@ -43,7 +44,7 @@ export default function SearchBox({ initialQuery = "", autoFocus = true, size = 
     const boxRef = useRef<HTMLDivElement>(null);
     const analytics = useSearchAnalytics(query, "search");
     const trimmed = query.trim();
-    const canDescribe = trimmed.length >= 4;
+    const canDescribe = allowDescription && trimmed.length >= 4;
     const hasVibeOption = mode === "auto" && canDescribe;
     const compact = size === "sm";
 
@@ -75,7 +76,7 @@ export default function SearchBox({ initialQuery = "", autoFocus = true, size = 
             } catch (err) {
                 if ((err as Error).name !== "AbortError") {
                     setResults([]);
-                    setError("Film adları şu an yüklenemedi. Biraz sonra tekrar dene ya da tarif ederek ara.");
+                    setError(allowDescription ? "Film adları şu an yüklenemedi. Biraz sonra tekrar dene ya da tarif ederek ara." : "Film adları şu an yüklenemedi. Biraz sonra tekrar dene.");
                 }
             } finally {
                 if (!controller.signal.aborted) setLoading(false);
@@ -84,7 +85,7 @@ export default function SearchBox({ initialQuery = "", autoFocus = true, size = 
         return () => { clearTimeout(timer); abortRef.current?.abort(); };
         // The analytics hook keeps the pending search in refs; only the query restarts the request.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [trimmed, mode, initialQuery, language]);
+    }, [trimmed, mode, initialQuery, language, allowDescription]);
 
     useEffect(() => {
         const onDown = (e: PointerEvent) => {

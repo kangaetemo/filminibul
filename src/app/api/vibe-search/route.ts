@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     try {
         return NextResponse.json(await vibeSearch(q, ip));
     } catch (err) {
-        if (err instanceof VibeError) return NextResponse.json({ error: err.message }, { status: err.status });
+        if (err instanceof VibeError) return NextResponse.json({ error: err.message, code: err.code }, { status: err.status, headers: { "Cache-Control": "no-store", ...(err.retryAfter && { "Retry-After": String(err.retryAfter) }) } });
         console.error("vibe-search hatası:", err);
         return NextResponse.json({ error: "Arama yapılamadı, biraz sonra tekrar dene." }, { status: 500 });
     }
