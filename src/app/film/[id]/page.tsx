@@ -106,7 +106,7 @@ export default async function FilmPage({ params, searchParams }: Props) {
                     </div>
                     <details className="group col-span-2 -mt-1 border-t border-line sm:hidden">
                         <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 py-2 text-sm font-bold [&::-webkit-details-marker]:hidden"><T text={"Nerede izlenir?"} /><ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden /></summary>
-                        <div className="pb-3"><WatchProviders providers={providers} filmId={film.id} /></div>
+                        <div className="pb-3"><WatchProviders providers={providers} filmId={film.id} showHeading={false} /></div>
                     </details>
                 </section>
 

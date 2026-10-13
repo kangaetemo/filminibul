@@ -78,3 +78,10 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Koşullu kaldırma istekleri, kesin “TMDB’de incele” kaldırma isteğinden ayrı kaydedildi. Resmî kaynakların bağlantıları ve puan entegrasyonlarının veri izni bağımlılıkları takip dosyasına not edildi. Özellikler tamamlandı diye işaretlenmedi.
 - Paylaşımda sistem paylaşımı / bağlantı kopyalama ve iki film kimliğinin korunması; kişi sayfalarında kişi kimliği ve rol ayrımı; platform filtresinde çoklu seçim, URL, hatırlanan tercih ve seçili sayı göstergesi istişare önerisi olarak kaydedildi. Bunlar bu turda ürün değişikliği olarak uygulanmadı.
 - Kontrol: mevcut footer, gizlilik metni ve platform filtresi incelendi; resmî TMDB, IMDb ve Rotten Tomatoes sayfaları açılarak kaynak şartları doğrulandı. Yeni taleplerle takip maddelerinin eşleşmesi ve `git diff --check` kontrol edildi. Yalnızca iki takip dosyası değiştiği için uygulama derlemesi / testleri tekrarlanmadı.
+
+
+## 13 Ekim 2026 · Yayın paneli başlık tekrarı (MB-07)
+
+- Kullanıcının ekran görüntüsündeki iki “Nerede izlenir?” başlığı, açılır panel ve paylaşılan `WatchProviders` bileşeninin başlıklarının birlikte görünmesinden kaynaklanıyordu.
+- Bileşene varsayılan olarak açık `showHeading` seçeneği eklendi. Açılır panel içindeki kullanım başlığı ve 24 px üst boşluğu kapatır; masaüstündeki bağımsız bölüm başlığını korur. Kiralama / satın alma grupları ayrı kaldığından aynı platform iki grupta görünebilir.
+- Kontrol: `VERCEL_ENV=preview npm run build` (lint / tür kontrolü dahil) ve `git diff --check` başarılı. Yerel üretim Supabase anahtarları bulunmadığı için katalog yanıtı canlıda kontrol edilecek. Canlı yanıt doğrulaması bekleniyor. KYN-01 kaynak satırı sadeleştirmesi bu düzeltmeden ayrı açık kalır; MB-06 gerçek cihaz performans kontrolü de açık kalır.

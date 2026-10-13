@@ -4,7 +4,7 @@ import TrackedLink from "@/components/analytics/TrackedLink";
 import { platform, type FilmProviders } from "@/lib/recommend/providers";
 
 // "Nerede izlenir?" — Türkiye. Veri JustWatch'tan (TMDB üzerinden); kaynak belirtmek şart.
-export default function WatchProviders({ providers, filmId }: { providers: FilmProviders | null; filmId: number }) {
+export default function WatchProviders({ providers, filmId, showHeading = true }: { providers: FilmProviders | null; filmId: number; showHeading?: boolean }) {
     const groups = providers
         ? [
               { label: "Abonelikle", ids: providers.flatrate },
@@ -15,8 +15,8 @@ export default function WatchProviders({ providers, filmId }: { providers: FilmP
         : [];
 
     return (
-        <div className="mt-6">
-            <h2 className="text-sm font-semibold text-ink/80"><T text={"Nerede izlenir?"} /></h2>
+        <div className={showHeading ? "mt-6" : undefined}>
+            {showHeading && <h2 className="text-sm font-semibold text-ink/80"><T text={"Nerede izlenir?"} /></h2>}
             {groups.length === 0 ? (
                 <p className="mt-2 text-sm text-muted"><T text={"Şu an Türkiye'de bir dijital platformda görünmüyor."} /></p>
             ) : (
