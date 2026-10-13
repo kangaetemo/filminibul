@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import Footer from "@/components/Footer";
 import SiteHeader from "@/components/SiteHeader";
 import FilmCard from "@/components/film/FilmCard";
+import ShareButton from "@/components/film/ShareButton";
 import BlendPicker, { type PickedFilm } from "@/components/blend/BlendPicker";
 import { blendFilms } from "@/lib/recommend/blend";
 import { getFilm } from "@/lib/recommend/similar";
@@ -83,6 +84,7 @@ export default async function BlendPage({ searchParams }: Props) {
                         )}
                     </h1>
                     {!(a && b) && <p className="mt-3 max-w-2xl text-muted"><T text={"İki film seç; ikisinin de havasını taşıyan, ikisinin arasında kalan filmleri bulalım."} /></p>}
+                    {a && b && <div className="mt-5"><ShareButton key={`${a.id}:${b.id}`} path="/karistir" pair={[a.id, b.id]} title={`${a.title} + ${b.title}`} titleEn={`${a.titleEn || a.title} + ${b.titleEn || b.title}`} /></div>}
                     <div className="mt-8">
                         {/* key: adres değişince seçim baştan kurulsun (örnek bağlantılar, geri tuşu) */}
                         <BlendPicker key={`${a?.id}-${b?.id}`} initialA={toPicked(a)} initialB={toPicked(b)} />

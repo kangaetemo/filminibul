@@ -12,7 +12,7 @@ export function safePersonalFailure(error, stage) {
     };
 }
 
-export function createPersonalHandler({ verify, storage, recommend, now = Date.now, cacheTtlMs = 120000, maxCacheEntries = 250, logFailure = details => console.error("personal_recommendation_failed", details), logTiming = details => { if (details.totalMs >= 3000) console.info("personal_recommendation_timing", details); } }) {
+export function createPersonalHandler({ verify, storage, signals, recommend, now = Date.now, cacheTtlMs = 120000, maxCacheEntries = 250, logFailure = details => console.error("personal_recommendation_failed", details), logTiming = details => { if (details.totalMs >= 3000) console.info("personal_recommendation_timing", details); } }) {
     const requests = new Map(), cache = new Map(), inFlight = new Map();
     return async request => {
         let stage = "authentication";
@@ -27,13 +27,13 @@ export function createPersonalHandler({ verify, storage, recommend, now = Date.n
             // Query/body IDs or a claimed UID never control another user's interests.
             stage = "watchlist";
             const listStartedAt = now();
-            const records = await storage.list(uid);
+            const [records, feedback] = await Promise.all([storage.list(uid), signals ? signals.list(uid) : Promise.resolve([])]);
             const listMs = now() - listStartedAt;
             const ids = [...new Set(records.map(record => record.id).filter(id => Number.isSafeInteger(id) && id > 0))];
             stage = "recommendations";
             // A cache hit still requires fresh auth and the current private list.
             // The tuple prevents collisions and isolates identical lists by UID.
-            const key = JSON.stringify([uid, ids]);
+            const key = JSON.stringify([uid, ids, feedback.map(r => [r.id, r.watched, r.reaction]).sort((a, b) => a[0] - b[0])]);
             const cached = cache.get(key);
             if (cached && cached.until > now()) {
                 cache.delete(key); cache.set(key, cached);
@@ -44,7 +44,7 @@ export function createPersonalHandler({ verify, storage, recommend, now = Date.n
             const computeStartedAt = now();
             let task = inFlight.get(key);
             if (!task) {
-                task = Promise.resolve().then(() => recommend(ids));
+                task = Promise.resolve().then(() => recommend(ids, feedback));
                 inFlight.set(key, task);
             }
             let data;

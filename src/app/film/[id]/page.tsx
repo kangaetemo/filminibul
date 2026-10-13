@@ -3,13 +3,15 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ArrowDown, ArrowRight, ArrowUpRight, Blend, Star, ChevronDown } from "lucide-react";
+import { ArrowLeft, ArrowDown, ArrowRight, Blend, Star, ChevronDown } from "lucide-react";
 import Footer from "@/components/Footer";
 import SiteHeader from "@/components/SiteHeader";
 import { getFilm, getSimilarFilms } from "@/lib/recommend/similar";
 import { Suspense } from "react";
 import FilmCard from "@/components/film/FilmCard";
 import WatchProviders from "@/components/film/WatchProviders";
+import ShareButton from "@/components/film/ShareButton";
+import FilmFeedback from "@/components/film/FilmFeedback";
 import SaveButton from "@/components/film/SaveButton";
 import FilmSynopsis from "@/components/film/FilmSynopsis";
 import TrailerButton from "@/components/film/TrailerButton";
@@ -22,7 +24,7 @@ import { OG_BASE } from "@/lib/seo";
 export const revalidate = 3600;
 
 // Next 14: params senkron nesne (Next 15+'da Promise olur ve await gerekir)
-type Props = { params: { id: string }; searchParams?: { p?: string } };
+type Props = { params: { id: string }; searchParams?: { p?: string; lang?: string } };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const id = parseFilmParam(params.id);
@@ -67,7 +69,10 @@ export default async function FilmPage({ params, searchParams }: Props) {
     // Sadece id'li (/film/126986) ya da eski başlıklı adres → güncel adres (platform filtresi korunur)
     const canonical = filmPath(film.id, film.title);
     if (`/film/${params.id}` !== canonical) {
-        permanentRedirect(searchParams?.p ? `${canonical}?p=${encodeURIComponent(searchParams.p)}` : canonical);
+        const query = new URLSearchParams();
+        if (searchParams?.p !== undefined) query.set("p", searchParams.p);
+        if (searchParams?.lang === "en" || searchParams?.lang === "tr") query.set("lang", searchParams.lang);
+        permanentRedirect(query.size ? `${canonical}?${query}` : canonical);
     }
 
 
@@ -101,9 +106,11 @@ export default async function FilmPage({ params, searchParams }: Props) {
                         <div className="mt-4 flex flex-wrap gap-2 sm:mt-6 sm:gap-3">
                             {trailer && <TrailerButton videoKey={trailer.key} filmTitle={film.title} filmId={film.id} />}
                             <SaveButton film={film} />
+                            <ShareButton key={canonical} path={canonical} title={film.title} titleEn={film.titleEn} />
                             {film.inCatalog && <Link href="#benzer-filmler" className="button-secondary hidden sm:inline-flex"><T text={"Benzer filmleri gör"} /> <ArrowDown className="h-4 w-4" aria-hidden /></Link>}
                         </div>
-                        <p className="mt-2 max-w-md text-xs leading-relaxed text-muted"><T text="Kaydettiklerine göre sana özel film önerileri sunuyoruz." /></p>
+                        <FilmFeedback film={film} />
+                        <p className="mt-2 max-w-md text-xs leading-relaxed text-muted"><T text="Kaydettiklerin ve beğendiklerin yeni önerilere yol göstersin." /></p>
                     </div>
                     <details className="group col-span-2 -mt-1 border-t border-line sm:hidden">
                         <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 py-2 text-sm font-bold [&::-webkit-details-marker]:hidden"><T text={"Nerede izlenir?"} /><ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden /></summary>
@@ -128,7 +135,6 @@ export default async function FilmPage({ params, searchParams }: Props) {
                             {film.collectionName && <><dt className="text-muted"><T text={"Film serisi"} /></dt><dd className="text-ink">{film.collectionName}</dd></>}
                         </dl>
                         <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1">
-                            <a href={`https://www.themoviedb.org/movie/${film.id}`} target="_blank" rel="noopener noreferrer" className="text-link text-xs"><T text={"TMDB’de incele"} /> <ArrowUpRight className="h-3.5 w-3.5" aria-hidden /></a>
                             {film.inCatalog && <Link href={`/karistir?a=${film.id}`} className="text-link text-xs"><Blend className="h-4 w-4" aria-hidden /><T text={"Başka bir filmle karıştır"} /></Link>}
                         </div>
                         </div>

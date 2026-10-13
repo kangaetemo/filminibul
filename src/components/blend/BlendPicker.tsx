@@ -23,11 +23,16 @@ interface SearchResult extends PickedFilm {
 // Sadece katalogdaki filmler seçilebilir: karıştırmak için iki filmin de embedding'i gerekir.
 export default function BlendPicker({ initialA = null, initialB = null }: { initialA?: PickedFilm | null; initialB?: PickedFilm | null }) {
     const router = useRouter();
+    const { language } = useLanguage();
     const [a, setA] = useState<PickedFilm | null>(initialA);
     const [b, setB] = useState<PickedFilm | null>(initialB);
 
     const go = (x: PickedFilm | null, y: PickedFilm | null) => {
-        if (x && y) router.push(`/karistir?a=${x.id}&b=${y.id}`);
+        const params = new URLSearchParams(window.location.search);
+        if (x) params.set("a", String(x.id)); else params.delete("a");
+        if (y) params.set("b", String(y.id)); else params.delete("b");
+        params.set("lang", language);
+        router.push(`/karistir?${params}`);
     };
 
     return (
@@ -40,7 +45,7 @@ export default function BlendPicker({ initialA = null, initialB = null }: { init
                     setA(f);
                     go(f, b);
                 }}
-                onClear={() => setA(null)}
+                onClear={() => { setA(null); go(null, b); }}
             />
             <div className="blend-plus mt-16 flex h-10 w-10 items-center justify-center rounded-full border border-accent/40 bg-accent/10 text-accent-ink sm:mt-24" aria-hidden>
                 <Plus className="h-5 w-5" />
@@ -53,7 +58,7 @@ export default function BlendPicker({ initialA = null, initialB = null }: { init
                     setB(f);
                     go(a, f);
                 }}
-                onClear={() => setB(null)}
+                onClear={() => { setB(null); go(a, null); }}
             />
             {a && b && (
                 <div className="blend-swap col-span-3 flex justify-center">
@@ -62,6 +67,7 @@ export default function BlendPicker({ initialA = null, initialB = null }: { init
                         onClick={() => {
                             setA(b);
                             setB(a);
+                            go(b, a);
                         }}
                         className="flex items-center gap-2 text-xs text-muted hover:text-ink"
                     >
@@ -155,7 +161,7 @@ function FilmSearch({ exclude, onPick }: { exclude?: number; onPick: (f: PickedF
         return () => { clearTimeout(timer); abortRef.current?.abort(); };
     }, [trimmed, language, exclude]);
 
-    const pick = (r: SearchResult) => { analytics.commit(); onPick({ id: r.id, title: r.title, year: r.year, posterUrl: r.posterUrl }); };
+    const pick = (r: SearchResult) => { analytics.commit(); onPick({ id: r.id, title: r.title, titleEn: r.titleEn, year: r.year, posterUrl: r.posterUrl }); };
 
     const onKeyDown = (e: React.KeyboardEvent) => {
         if (!pickable.length) return;

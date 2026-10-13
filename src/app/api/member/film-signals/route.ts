@@ -1,0 +1,10 @@
+import { createFilmSignalsHandler } from "@/lib/server/filmSignalsHandler.mjs";
+import { createFilmSignalsStorage } from "@/lib/server/filmSignalsStorage.mjs";
+import { verifyMember } from "@/lib/server/memberAuth.mjs";
+import { loadMemberFilms } from "@/lib/server/memberFilms";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 30;
+const handle = createFilmSignalsHandler({ verify: verifyMember, storage: createFilmSignalsStorage(), loadFilms: loadMemberFilms });
+export const GET = handle;
+export const PUT = handle;

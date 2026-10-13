@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Bookmark, RefreshCw } from "lucide-react";
 import { T, useLanguage } from "@/components/preferences/Preferences";
 import { useSavedFilms } from "@/lib/savedFilms";
+import FeedbackFilms from "./FeedbackFilms";
 import FilmCard from "./FilmCard";
 
 export default function SavedFilms() {
@@ -33,5 +34,6 @@ export default function SavedFilms() {
             {importNotice && <p role="status" className="text-sm text-muted">{en ? `${importNotice.imported} films transferred. ${importNotice.remaining} films remain in the browser list.` : `${importNotice.imported} film aktarıldı. Tarayıcı listesinde ${importNotice.remaining} film kaldı.`}</p>}
         </div>
         {!films.length ? (member && phase === "error" ? <p className="py-8 text-muted"><T text="Bulut listen henüz yüklenemedi. Bu cihazda gösterilecek kayıt bulunmuyor." /></p> : <div className="rounded-xl border border-dashed border-ink/25 px-6 py-16 text-center"><Bookmark className="mx-auto mb-5 h-9 w-9 text-muted" aria-hidden /><h2 className="text-xl font-extrabold"><T text="Burada güzel filmler birikecek." /></h2><p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-muted"><T text="Bir afişin üzerindeki kaydet simgesine dokun. İzlemek istediğin filmler burada seni beklesin." /></p><Link href="/" className="button-primary mt-6"><T text="Bir film bul" /><ArrowRight className="h-4 w-4" aria-hidden /></Link></div>) : <><p className="mb-6 text-sm text-muted">{films.length} <T text="film · en son kaydettiğinden başlayarak" /></p><ul className="movie-grid">{films.map((film, i) => <FilmCard key={film.id} film={{ ...film, originalTitle: null, overview: null, voteCount: null, backdropUrl: null, director: null, cast: [], collectionName: null, inCatalog: false }} index={i} />)}</ul></>}
+        <FeedbackFilms />
     </>;
 }

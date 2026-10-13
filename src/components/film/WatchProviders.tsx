@@ -1,10 +1,9 @@
 import { T } from "@/components/preferences/Preferences";
 import Image from "next/image";
-import TrackedLink from "@/components/analytics/TrackedLink";
 import { platform, type FilmProviders } from "@/lib/recommend/providers";
 
 // "Nerede izlenir?" — Türkiye. Veri JustWatch'tan (TMDB üzerinden); kaynak belirtmek şart.
-export default function WatchProviders({ providers, filmId, showHeading = true }: { providers: FilmProviders | null; filmId: number; showHeading?: boolean }) {
+export default function WatchProviders({ providers, showHeading = true }: { providers: FilmProviders | null; filmId: number; showHeading?: boolean }) {
     const groups = providers
         ? [
               { label: "Abonelikle", ids: providers.flatrate },
@@ -40,13 +39,7 @@ export default function WatchProviders({ providers, filmId, showHeading = true }
                     ))}
                 </div>
             )}
-            <p className="mt-2 text-[11px] text-muted"> <T text={"Veri: JustWatch"} /> {providers?.link && (
-                    <>
-                        {" · "}
-                        <TrackedLink event="platform_clicked" data={{ film_id: filmId, platform: "justwatch" }} href={providers.link} target="_blank" rel="noopener noreferrer" className="underline hover:text-muted"> <T text={"tüm seçenekler"} /> </TrackedLink>
-                    </>
-                )}
-            </p>
+            <p className="mt-3 text-[11px] text-muted">JustWatch</p>
         </div>
     );
 }

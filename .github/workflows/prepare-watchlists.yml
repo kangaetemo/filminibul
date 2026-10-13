@@ -6,6 +6,8 @@ on:
       - .github/workflows/prepare-watchlists.yml
       - scripts/catalog/prepare_watchlists.mjs
       - src/lib/server/watchlistStorage.mjs
+      - src/lib/server/filmSignalsStorage.mjs
+      - src/lib/filmSignalsModel.mjs
       - src/lib/watchlistModel.mjs
   workflow_dispatch:
 concurrency:

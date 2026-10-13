@@ -80,5 +80,5 @@ export function createWatchlistStorage({ url = process.env.SUPABASE_URL, key = p
         const response = await call(`object/${WATCHLIST_BUCKET}`, { method: "DELETE", body: JSON.stringify({ prefixes: [path(uid, id)] }) });
         if (!response.ok) throw new WatchlistStorageError("watchlist_unavailable");
     }
-    return { bucket, list, save, remove, readFilm };
+    return { bucket, list, save, remove, readFilm, call };
 }

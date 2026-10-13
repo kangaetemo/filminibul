@@ -31,7 +31,7 @@ const { getPersonalRecommendations } = await import(moduleUrl(resolve(root, 'lib
 const row = (movie_id, extra = {}) => ({ movie_id, title: `Film ${movie_id}`, tr_title: `Türkçe ${movie_id}`, original_title: null, overview: 'A film story.', tr_overview: 'Bir film hikâyesi.', year: 2000, genres: [{ id: 28, name: 'Action' }], keywords: ['space travel'], rating: 7, vote_count: 5000, popularity: 20, language: 'en', countries: [], poster_path: '/poster.jpg', backdrop_path: null, director: null, cast_names: [], collection_id: null, collection_name: null, ...extra });
 const req = new Request('https://filminibul.com/api/member/recommendations?uid=B&ids=999', { headers: { authorization: 'Bearer fixture' } });
 
-async function runFixture(ids, { catalog = ids.map(id => row(id)), failedSeed = null, allFailed = false } = {}) {
+async function runFixture(ids, { catalog = ids.map(id => row(id)), failedSeed = null, allFailed = false, signals = [] } = {}) {
     const calls = [], oldFetch = globalThis.fetch, oldError = console.error;
     let active = 0, maxActive = 0;
     globalThis.fetch = async (url, init) => {
@@ -44,10 +44,10 @@ async function runFixture(ids, { catalog = ids.map(id => row(id)), failedSeed = 
         }
         if (url.includes('/rpc/')) {
             const { seed_movie_id: seed } = JSON.parse(init.body);
-            assert.ok(ids.includes(seed)); active++; maxActive = Math.max(maxActive, active);
+            assert.ok(catalog.some(row => row.movie_id === seed)); active++; maxActive = Math.max(maxActive, active);
             await new Promise(done => setTimeout(done, 2)); active--;
             if (allFailed || seed === failedSeed) return Response.json({ error: 'fixture unavailable' }, { status: 503 });
-            return Response.json([row(ids[0], { similarity: .99 }), row(9001, { similarity: .98 }), row(9002, { similarity: .8 })]);
+            return Response.json([row(seed, { similarity: .99 }), row(9001, { similarity: .98 }), row(9002, { similarity: .8 }), row(9003, { similarity: .7 })]);
         }
         if (url.includes('/rest/v1/film_embeddings_v3?')) {
             const wanted = new Set(url.match(/movie_id=in\.\(([^)]+)\)/)[1].split(',').map(Number));
@@ -57,7 +57,7 @@ async function runFixture(ids, { catalog = ids.map(id => row(id)), failedSeed = 
     };
     console.error = () => {};
     try {
-        const handle = createPersonalHandler({ verify: async auth => { assert.equal(auth, 'Bearer fixture'); return 'member-A'; }, storage: createWatchlistStorage({ url: 'https://storage.invalid', key: 'fixture-only' }), recommend: getPersonalRecommendations });
+        const handle = createPersonalHandler({ verify: async auth => { assert.equal(auth, 'Bearer fixture'); return 'member-A'; }, storage: createWatchlistStorage({ url: 'https://storage.invalid', key: 'fixture-only' }), signals: { list: async uid => { assert.equal(uid, "member-A"); return signals; } }, recommend: getPersonalRecommendations });
         const response = await handle(req);
         return { response, data: await response.json(), calls, maxActive };
     } finally { globalThis.fetch = oldFetch; console.error = oldError; }
@@ -97,4 +97,17 @@ test('large lists batch catalog reads and bound candidate work to 8 seeds / 3 co
     assert.equal(result.calls.filter(call => call.url.includes('/rest/v1/film_embeddings_v3?')).length, 2);
     assert.equal(result.calls.filter(call => call.url.includes('/rpc/')).length, 8);
     assert.ok(result.maxActive <= 3); assert.ok(result.maxActive > 1);
+});
+
+
+test('real personalized flow uses liked-only interests, excludes watched/disliked and does not infer liking from watching', async () => {
+    const likedOnly = await runFixture([], { catalog: [row(603)], signals: [{ id:603, watched:false, reaction:'liked' }, { id:9001, watched:true, reaction:null }, { id:9002, watched:false, reaction:'disliked' }] });
+    assert.equal(likedOnly.data.status,'ready');
+    assert.deepEqual(likedOnly.data.recommendations.map(r => r.film.id),[9003]);
+    assert.match(likedOnly.data.recommendations[0].reasons[0],/603.*beğendiğin için/);
+    assert.match(likedOnly.data.recommendations[0].reasonsEn[0],/^Because you liked Film 603/);
+    const watchedOnly = await runFixture([], { catalog:[row(603)], signals:[{id:603,watched:true,reaction:null}] });
+    assert.equal(watchedOnly.data.status,'empty'); assert.ok(watchedOnly.calls.every(call=>!call.url.includes('/rpc/')));
+    const rejectedSave = await runFixture([603], { signals:[{id:603,watched:false,reaction:'disliked'}] });
+    assert.equal(rejectedSave.data.status,'empty');assert.ok(rejectedSave.calls.every(call=>!call.url.includes('/rpc/')));
 });

@@ -10,11 +10,11 @@
 
 ## Veri erişimi talebi
 
-Firebase üyelikteki temel profil ile Supabase'de yalnızca doğrulanmış hesabın listesine ait kayıtları incele. Başka kullanıcı kayıtlarını veya kimlik bilgisi / servis anahtarını çıktı dosyasına ekleme. İstenen bilgi kapsamıyla sınırlı yanıt ver; mevcut yetkili yönetim konsollarını kullan.
+Firebase üyelikteki temel profil ile Supabase'de yalnızca doğrulanmış hesabın listesine ait kayıtları ve `signals/` içindeki izleme / beğeni tercihlerini incele. Başka kullanıcı kayıtlarını veya kimlik bilgisi / servis anahtarını çıktı dosyasına ekleme. İstenen bilgi kapsamıyla sınırlı yanıt ver; mevcut yetkili yönetim konsollarını kullan.
 
 ## Yalnızca bulut listesinin silinmesi
 
-Firebase üyelik kaydını koru. `member-watchlists` özel bucket'ında yalnızca ilgili hesabın SHA-256 UID önekindeki film JSON nesnelerini Storage arayüzü veya Storage API'siyle kaldır. Kullanıcıya, yerel bekleyen işlemler / önbelleğin kendi cihazlarında site verileri temizlenerek ayrıca kaldırılabileceğini ve hesabıyla yeni kayıt yapabileceğini anlat. Kullanıcı sadece tek film kaldırmak istiyorsa mevcut Kaydettiklerim arayüzünü kullanabilir.
+Firebase üyelik kaydını koru. `member-watchlists` özel bucket'ında yalnızca ilgili hesabın SHA-256 UID önekindeki film JSON nesnelerini ve `signals/` alt klasöründeki izleme / beğeni / tercih sıfırlama nesnelerini Storage arayüzü veya Storage API'siyle kaldır. Kullanıcıya, yerel bekleyen işlemler / önbelleğin kendi cihazlarında site verileri temizlenerek ayrıca kaldırılabileceğini ve hesabıyla yeni kayıt yapabileceğini anlat. Kullanıcı sadece tek film kaldırmak istiyorsa mevcut Kaydettiklerim arayüzünü kullanabilir.
 
 Önek, mevcut `src/lib/server/watchlistStorage.mjs` dosyasındaki `ownerPrefix(uid)` ile belirlenir. UID'yi kullanıcıdan token olarak isteme; yetkili Firebase kaydından al. Bütün bucket'ı veya başka hesapların klasörlerini temizleme. SQL ile yalnızca `storage.objects` metadata satırını silmek, nesnenin kendisini silme yöntemi değildir; Storage arayüzü / API kullanılmalıdır.
 
