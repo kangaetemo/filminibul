@@ -70,3 +70,11 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Canlı keşif girişlerinin ekran görüntüsü: [kesif-girisleri-onizleme.jpg](docs/kesif-girisleri-onizleme.jpg). Görüntü masaüstü test tarayıcısından alınmıştır.
 - Son küçük düzenleme: mobilde yayın platformları tanıtımın altındaki kapalı panelde korunur; uzun orijinal başlık iki satırla sunulur, ana film başlığı tam gösterilir. Son düzenleme [3df0800](https://github.com/kangaetemo/filminibul/commit/3df08003e5cd1a775978993fa4aa244ec6b11d47) ile pushlandı; yerel üretim derlemesi başarılı. Vercel `dpl_2aCYTRDe685rS2ArJvDYbxmgHF8H` üretim yayını READY. Canlı Matrix yanıtında panelin mevcut, başlangıçta kapalı ve masaüstünde gizli olduğu; normal masaüstü platformlarının afiş altında kaldığı ve 20 benzer filmin yüklendiği doğrulandı. Bu DOM kontrolü gerçek telefonda panel etkileşimi testi olarak sunulmaz.
 - MB-06 kapsamında gerçek telefon / dar ekran görsel, özet açma-kapama ve kaydırma performansı kontrolü açık; test tarayıcısı desteklenen API'de telefon emülasyonu sunmuyor. Gerçek S25 FE ölçümü veya dar ekran etkileşimi yapılmış gibi kaydedilmez.
+
+
+## 13 Ekim 2026 · Yeni geliştirme isteklerinin kaydı
+
+- Kullanıcının yeni talepleri `yapilacaklar.md` dosyasına eklendi: harici puanlar (PU-01–PU-03), film / karıştır paylaşımı (PY-01–PY-02), kaynak metinleri ve TMDB bağlantısının sadeleştirilmesi (KYN-01–KYN-03), oyuncu / yönetmen / senarist listeleri (Kİ-01–Kİ-02) ve kompakt platform filtresi (PF-03).
+- Koşullu kaldırma istekleri, kesin “TMDB’de incele” kaldırma isteğinden ayrı kaydedildi. Resmî kaynakların bağlantıları ve puan entegrasyonlarının veri izni bağımlılıkları takip dosyasına not edildi. Özellikler tamamlandı diye işaretlenmedi.
+- Paylaşımda sistem paylaşımı / bağlantı kopyalama ve iki film kimliğinin korunması; kişi sayfalarında kişi kimliği ve rol ayrımı; platform filtresinde çoklu seçim, URL, hatırlanan tercih ve seçili sayı göstergesi istişare önerisi olarak kaydedildi. Bunlar bu turda ürün değişikliği olarak uygulanmadı.
+- Kontrol: mevcut footer, gizlilik metni ve platform filtresi incelendi; resmî TMDB, IMDb ve Rotten Tomatoes sayfaları açılarak kaynak şartları doğrulandı. Yeni taleplerle takip maddelerinin eşleşmesi ve `git diff --check` kontrol edildi. Yalnızca iki takip dosyası değiştiği için uygulama derlemesi / testleri tekrarlanmadı.
