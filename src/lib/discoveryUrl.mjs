@@ -15,3 +15,12 @@ export function shareUrl(pathname, search, language, pair) {
     params.set("lang", language === "en" ? "en" : "tr");
     return `https://filminibul.com${pathname}?${params}`;
 }
+
+export function socialShareUrls(url, title) {
+    const text = title ? `${title} · Filminibul` : "Filminibul";
+    return {
+        x: `https://x.com/intent/tweet?${new URLSearchParams({ url, text })}`,
+        whatsapp: `https://wa.me/?${new URLSearchParams({ text: `${text}\n${url}` })}`,
+        telegram: `https://t.me/share/url?${new URLSearchParams({ url, text })}`,
+    };
+}

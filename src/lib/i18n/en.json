@@ -352,5 +352,14 @@
   "“İzledim”, “Beğendim” ve “Bana göre değildi” seçimlerini film numarasıyla, kaydetme listenden ayrı olarak hesabına bağlı özel Supabase alanında saklarız. İzlemek beğeni sayılmaz. Beğendiğin filmler önerilere yön verir; izlenmiş ve beğenilmemiş filmler kişisel önerilerden çıkarılır. Tercihler cihazlarında eşitlenir ve eşitleme için tarayıcı önbelleğinde de tutulabilir. Seçili düğmeye tekrar basarak tercihin etkisini geri alabilirsin; bunu yapmak Kaydet seçimini değiştirmez. Tercih sıfırlamalarına ait film numarası ve teknik sıfırlama kayıtları hesap verileri silinene kadar tutulabilir. Liste veya hesap silme talebinde bu kayıtları da silebiliriz. Bu tercihler OpenAI’ye, reklam kişiselleştirmesine veya anonim ürün istatistiklerine gönderilmez.": "Your Watched, Liked and Not for me choices are stored with film IDs in private Supabase storage linked to your account, separately from your saved list. Watching does not imply liking. Liked films guide recommendations; watched and disliked films are excluded from personal recommendations. Preferences sync across devices and may also be cached in your browser for syncing. Press a selected button again to undo its effect without changing your saved list. Film IDs and technical reset records may remain until account data is deleted. These records can also be deleted as part of a list or account deletion request. These choices are not sent to OpenAI, advertising personalization or anonymous product analytics.",
   "İzleme ve beğeni tercihlerin": "Watched films and reactions",
   "Bildirimi kapat": "Dismiss notice",
-  "Tamam": "OK"
+  "Tamam": "OK",
+  "Nerede paylaşalım?": "Where would you like to share?",
+  "Paylaşım seçeneklerini kapat": "Close sharing options",
+  "Instagram için bağlantıyı kopyalayıp mesajına veya hikâyenin bağlantı alanına yapıştırabilirsin.": "For Instagram, copy the link and paste it into a message or your story’s link sticker.",
+  "Bağlantıyı kopyala": "Copy link",
+  "Diğer uygulamalar": "Other apps",
+  "Instagram’ı aç": "Open Instagram",
+  "Bağlantı kopyalandı. Instagram’da mesajına veya hikâyenin bağlantı alanına yapıştırabilirsin.": "Link copied. Paste it into an Instagram message or your story’s link sticker.",
+  "Paylaşım menüsü açıldı.": "Sharing menu opened.",
+  "Uygulama paylaşımını açamadık. Bağlantıyı kopyalayabilirsin.": "We could not open app sharing. You can copy the link instead."
 }

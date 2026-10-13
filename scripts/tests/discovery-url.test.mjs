@@ -12,3 +12,14 @@ test('shared URLs contain only canonical content, public preference parameters a
     assert.ok(!url.href.includes('secret'));assert.ok(!url.href.includes('private'));
     const film=new URL(shareUrl('/film/603-matrix','a=1&b=2&uid=A&p=','tr'));assert.equal(film.searchParams.get('a'),null);assert.equal(film.searchParams.get('p'),'');
 });
+
+test('social compose URLs preserve encoded film pairs, punctuation and public preferences without tracking SDKs', async()=>{
+    const {socialShareUrls}=await import('../../src/lib/discoveryUrl.mjs');
+    const shared=shareUrl('/karistir','uid=secret&p=8,119','en',[603,194]);
+    const links=socialShareUrls(shared,'Matrix & Amélie + ?');
+    const x=new URL(links.x),telegram=new URL(links.telegram),whatsapp=new URL(links.whatsapp);
+    assert.equal(x.origin,'https://x.com');assert.equal(x.pathname,'/intent/tweet');assert.equal(x.searchParams.get('url'),shared);
+    assert.equal(telegram.searchParams.get('url'),shared);assert.equal(telegram.searchParams.get('text'),'Matrix & Amélie + ? · Filminibul');
+    assert.equal(whatsapp.origin,'https://wa.me');assert.equal(whatsapp.searchParams.get('text'),'Matrix & Amélie + ? · Filminibul\n'+shared);
+    assert.ok(Object.values(links).every(url=>!url.includes('secret')));
+});
