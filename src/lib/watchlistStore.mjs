@@ -101,19 +101,13 @@ export function createWatchlistStore({ read, write, cloud, nonce = () => crypto.
     }
     function toggle(value) {
         const film = savedFilm(value);
-        if (!film || !state.ready) return { blocked: true, saved: false, persistent, cloud: !!owner };
+        if (!film || !state.ready || !owner) return { blocked: true, saved: false, persistent, cloud: !!owner };
         mutation++;
         const saved = !state.films.some(item => item.id === film.id);
-        if (!owner) {
-            const current = localFilms();
-            const next = saved ? [film, ...current.filter(item => item.id !== film.id)] : current.filter(item => item.id !== film.id);
-            put(GUEST_KEY, JSON.stringify(next)); emit("guest");
-        } else {
-            // Merge another tab's durable pending films before this update.
-            const stored = readPending(owner);
-            pending = [...stored.filter(op => op.film.id !== film.id), { film, saved, nonce: nonce() }];
-            persist(); emit("syncing"); void flush();
-        }
+        // Merge another tab's durable pending films before this update.
+        const stored = readPending(owner);
+        pending = [...stored.filter(op => op.film.id !== film.id), { film, saved, nonce: nonce() }];
+        persist(); emit("syncing"); void flush();
         return { saved, persistent, cloud: !!owner, blocked: false };
     }
     async function importLocal() {

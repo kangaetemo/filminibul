@@ -71,7 +71,22 @@ test('two devices add independent films without replacing the other device’s l
     assert.deepEqual(new Set(a.getSnapshot().films.map(f=>f.id)),new Set([1,2]));assert.deepEqual(new Set(b.getSnapshot().films.map(f=>f.id)),new Set([1,2]));
 });
 test('blocked browser storage keeps this-session choices and pending changes in memory',async()=>{
-    const f=fixture(),s=f.make();f.failWrites(true);s.setMember(null);s.toggle(film(1));s.toggle(film(2));assert.equal(s.getSnapshot().films.length,2);assert.equal(s.getSnapshot().persistent,false);
+    const f=fixture(),s=f.make();f.failWrites(true);s.setMember(null);assert.equal(s.toggle(film(1)).blocked,true);assert.equal(s.getSnapshot().films.length,0);
     s.setMember('A');await s.refresh();f.offline(true);s.toggle(film(3));await tick();assert.equal(s.getSnapshot().pendingIds[0],3);
     f.offline(false);await s.refresh();assert.equal(f.remote.get('A').has(3),true);assert.equal(s.getSnapshot().pendingIds.length,0);
+});
+
+test('unresolved and guest saves are blocked without writing or clearing legacy records', async () => {
+    const f=fixture(), s=f.make();
+    assert.equal(s.toggle(film(1)).blocked,true);
+    f.disk.set(GUEST_KEY,JSON.stringify([film(9)]));
+    s.setMember(null);
+    const before=new Map(f.disk);
+    assert.equal(s.toggle(film(1)).blocked,true);
+    assert.equal(s.toggle(film(9)).blocked,true);
+    assert.deepEqual(f.disk,before); assert.deepEqual(f.calls,[]);
+    s.setMember('A'); await s.refresh(); await s.importLocal();
+    assert.equal(f.remote.get('A').has(9),true);
+    s.setMember(null);
+    assert.equal(s.toggle(film(2)).blocked,true);
 });

@@ -37,7 +37,7 @@ const sections = [
     {
         "id": "film-preferences",
         "title": "İzleme ve beğeni tercihlerin",
-        "paragraphs": ["“İzledim”, “Beğendim” ve “Bana göre değildi” seçimlerini film numarasıyla, kaydetme listenden ayrı olarak hesabına bağlı özel Supabase alanında saklarız. İzlemek beğeni sayılmaz. Beğendiğin filmler önerilere yön verir; izlenmiş ve beğenilmemiş filmler kişisel önerilerden çıkarılır. Tercihler cihazlarında eşitlenir ve eşitleme için tarayıcı önbelleğinde de tutulabilir. Seçili düğmeye tekrar basarak tercihin etkisini geri alabilirsin; bunu yapmak Kaydet seçimini değiştirmez. Tercih sıfırlamalarına ait film numarası ve teknik sıfırlama kayıtları hesap verileri silinene kadar tutulabilir. Liste veya hesap silme talebinde bu kayıtları da silebiliriz. Bu tercihler OpenAI’ye, reklam kişiselleştirmesine veya anonim ürün istatistiklerine gönderilmez."]
+        "paragraphs": ["“İzledim”, “Beğendim” ve “Bana göre değil” seçimlerini film numarasıyla, kaydetme listenden ayrı olarak hesabına bağlı özel Supabase alanında saklarız. İzlemek beğeni sayılmaz. Beğendiğin filmler önerilere yön verir; izlenmiş ve beğenilmemiş filmler kişisel önerilerden çıkarılır. Tercihler cihazlarında eşitlenir ve eşitleme için tarayıcı önbelleğinde de tutulabilir. Seçili düğmeye tekrar basarak tercihin etkisini geri alabilirsin; bunu yapmak Kaydet seçimini değiştirmez. Tercih sıfırlamalarına ait film numarası ve teknik sıfırlama kayıtları hesap verileri silinene kadar tutulabilir. Liste veya hesap silme talebinde bu kayıtları da silebiliriz. Bu tercihler OpenAI’ye, reklam kişiselleştirmesine veya anonim ürün istatistiklerine gönderilmez."]
     },
     {
         "id": "search",
