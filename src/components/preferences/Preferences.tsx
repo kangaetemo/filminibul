@@ -1,6 +1,8 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
+import { createThemeTransition } from "@/lib/themeTransition.mjs";
 import Link from "next/link";
 import { Moon, Sun, Languages, UserRound } from "lucide-react";
 import english from "@/lib/i18n/en.json";
@@ -20,6 +22,7 @@ export function translate(text: string, language: Language): string {
 export function PreferencesProvider({ children }: { children: React.ReactNode }) {
     const [language, updateLanguage] = useState<Language>("tr");
     const [theme, updateTheme] = useState<Theme>("light");
+    const transition = useRef<ReturnType<typeof createThemeTransition> | null>(null);
     useEffect(() => {
         updateTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light");
         try {
@@ -27,6 +30,7 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
             if (lang === "en") { updateLanguage("en"); document.documentElement.lang = "en"; }
         } catch { /* Preferences still work for this visit if storage is blocked. */ }
     }, []);
+    useEffect(() => () => transition.current?.dispose(), []);
     const setLanguage = (value: Language) => {
         updateLanguage(value); document.documentElement.lang = value;
         try { localStorage.setItem("fb_language", value); } catch {}
@@ -35,7 +39,12 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
         window.history.replaceState(window.history.state, "", url);
     };
     const setTheme = (value: Theme) => {
-        updateTheme(value); document.documentElement.dataset.theme = value;
+        transition.current ??= createThemeTransition(document, () => window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+        // Update the button immediately so rapid opposite clicks use the latest intent.
+        flushSync(() => updateTheme(value));
+        transition.current.change(() => {
+            document.documentElement.dataset.theme = value;
+        });
         try { localStorage.setItem("fb_theme", value); } catch {}
     };
     return <Preferences.Provider value={{ language, theme, setLanguage, setTheme }}>{children}</Preferences.Provider>;

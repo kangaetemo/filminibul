@@ -113,3 +113,9 @@ Kullanıcı gizlilik politikasının tamamlanmasını önceliklendirdi ve yayım
 3. Kod, veri işlemi ve gerekli doğrulama tamamlanınca madde `[x]` yapılır.
 4. Aynı değişiklikte `yapilanlar.md` dosyasına tarih, ilgili madde kodu, yapılan iş, kontroller ve kalan sınırlamalar yazılır.
 5. GitHub’a push / canlı yayın yapıldıysa sonucu ve ilgili commit ya da çalışma bağlantısı kaydedilir. Devam eden arka plan işleri tamamlanmış gösterilmez.
+
+
+## 14 Ekim 2026 — Yerinde giriş ve tema geçişi
+
+- [ ] **ÜY-03 — Film işlemlerinde yerinde Google giriş paneli.** Kullanıcı onayladı: mobilde alttan panel, masaüstünde merkezde pencere; film adı, kısa eşitleme / öneri açıklaması ve Google düğmesi. Kaydet / İzledim / Beğendim / Bana göre değil sonrası sayfada kal; başarılı giriş ve güncel hesap okumasından sonra seçilen işlemi bir kez tamamla. Zaten kaydedilen / işaretlenen filmi geri alma. Kapatma / Escape / route değişimi / iptal / hesap değişimi / hata ve geç auth yanıtlarında yeni bekleyen işlem yazma. Üye akışı ve eski liste aktarımı korunsun; TR / EN, odak ve mobil sınırlar doğrulansın.
+- [ ] **UI-02 — Açık / koyu tema değişimini yumuşat.** Kullanıcı kısa görsel efekt istedi: 220ms renk çapraz geçişi; eski tarayıcıya geçici renk transition fallback. İlk tema yüklemesi, tercih saklama, hızlı karşıt tıklamalar ve hareketi azalt ayarı korunsun.

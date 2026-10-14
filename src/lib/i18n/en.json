@@ -361,5 +361,19 @@
   "Instagram’ı aç": "Open Instagram",
   "Bağlantı kopyalandı. Instagram’da mesajına veya hikâyenin bağlantı alanına yapıştırabilirsin.": "Link copied. Paste it into an Instagram message or your story’s link sticker.",
   "Paylaşım menüsü açıldı.": "Sharing menu opened.",
-  "Uygulama paylaşımını açamadık. Bağlantıyı kopyalayabilirsin.": "We could not open app sharing. You can copy the link instead."
+  "Uygulama paylaşımını açamadık. Bağlantıyı kopyalayabilirsin.": "We could not open app sharing. You can copy the link instead.",
+  "Filmi kaydetmek için giriş yap": "Sign in to save this film",
+  "Tercihini kaydetmek için giriş yap": "Sign in to save your preference",
+  "Kaydettiklerin ve tercihlerin cihazlarında eşitlensin, sana özel öneriler sunalım.": "Sync your saved films and preferences across devices and get recommendations picked for you.",
+  "Giriş penceresini kapat": "Close sign-in window",
+  "Giriş yapılıyor…": "Signing in…",
+  "İşlemin tamamlanıyor…": "Completing your action…",
+  "Giriş penceresi engellendi. Tarayıcında açılır pencerelere izin verip yeniden dene.": "The sign-in window was blocked. Allow pop-ups in your browser and try again.",
+  "Giriş yapılamadı. Yeniden deneyebilirsin.": "Could not sign in. Please try again.",
+  "Giriş tamamlandı ama hesabına ulaşamadık. İşlemini tamamlamak için yeniden dene.": "You are signed in, but we could not sync your account. Try again to complete your action.",
+  "Girişten sonra seçtiğin işlemi burada tamamlayacağız.": "We will complete your selected action here after you sign in.",
+  "Film hesabına kaydedildi.": "Film saved to your account.",
+  "Tercihin hesabına kaydedildi.": "Preference saved to your account.",
+  "Hesap değişti. İşlemi tekrar seçebilirsin.": "Your account changed. Please select the action again.",
+  "Giriş tamamlandı": "Signed in"
 }

@@ -1,4 +1,5 @@
 import { PreferencesProvider } from "@/components/preferences/Preferences";
+import { FilmLoginPromptProvider } from "@/components/auth/FilmLoginPrompt";
 import { Suspense } from "react";
 import PageTracker from "@/components/analytics/PageTracker";
 import type { Metadata } from "next";
@@ -37,7 +38,7 @@ export default function RootLayout({
 				crossOrigin="anonymous"
 				strategy="afterInteractive"
 				/>
-                <PreferencesProvider>{children}</PreferencesProvider>
+                <PreferencesProvider><FilmLoginPromptProvider>{children}</FilmLoginPromptProvider></PreferencesProvider>
                 <Suspense fallback={null}><PageTracker /></Suspense>
                 <Analytics />
             </body>

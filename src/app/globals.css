@@ -97,3 +97,24 @@ button, a, input { -webkit-tap-highlight-color: transparent; }
   line-height: 18px;
 }
 .film-actions svg { flex-shrink: 0; width: 16px; height: 16px; }
+
+/* One short page crossfade instead of thousands of per-element animations. */
+::view-transition-group(root) { animation-duration: 220ms; }
+::view-transition-old(root) { animation: none; mix-blend-mode: normal; }
+::view-transition-new(root) { animation: theme-appear 220ms ease-out both; mix-blend-mode: normal; }
+@keyframes theme-appear { from { opacity: 0; } to { opacity: 1; } }
+/* Temporary fallback for browsers without View Transitions. */
+html.theme-colors-changing body,
+html.theme-colors-changing :is(main, header, footer, section, article, aside, dialog, button, a, input, p, h1, h2, h3, span, li) {
+  transition-property: background-color, color, border-color;
+  transition-duration: 220ms;
+  transition-timing-function: ease-out;
+}
+.member-prompt[open] { display: flex; animation: prompt-shade 180ms ease-out; }
+.member-prompt::backdrop { background: transparent; }
+.member-prompt-panel { animation: prompt-enter 220ms ease-out; padding-bottom: max(1.25rem, env(safe-area-inset-bottom)); }
+@keyframes prompt-enter { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes prompt-shade { from { background-color: transparent; } to { background-color: rgb(0 0 0 / .5); } }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(root), ::view-transition-old(root), ::view-transition-new(root) { animation: none !important; }
+}

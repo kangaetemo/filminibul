@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useFilmLoginPrompt } from "@/components/auth/FilmLoginPrompt";
 import { Bookmark, Check, CloudOff, Loader2 } from "lucide-react";
 import { useLanguage } from "@/components/preferences/Preferences";
 import { useSavedFilms, type SavedFilm } from "@/lib/savedFilms";
 
 export default function SaveButton({ film, compact = false }: { film: SavedFilm; compact?: boolean }) {
-    const router = useRouter();
+    const promptLogin = useFilmLoginPrompt();
     const { language, t } = useLanguage();
     const title = language === "en" ? film.titleEn || film.title : film.title;
     const { films, toggle, ready, member, phase, pendingIds, persistent } = useSavedFilms();
@@ -20,7 +20,7 @@ export default function SaveButton({ film, compact = false }: { film: SavedFilm;
     return <>
         <button type="button" disabled={!ready} aria-pressed={saved} aria-label={`${title}: ${t(saved ? "Kaydedilenlerden çıkar" : "Kaydet")}${pending ? ` · ${label}` : ""}`} title={pending ? label : t(saved ? "Kaydedilenlerden çıkar" : "Kaydet")} onClick={() => {
             if (!ready) return;
-            if (!member) { router.push(`/hesap?lang=${language}`); return; }
+            if (!member) { promptLogin(film, "save"); return; }
             const result = toggle(film);
             if (!result.blocked) setAction({ member, saved: result.saved });
         }} className={compact ? `absolute right-2 top-2 z-10 flex h-11 w-11 items-center justify-center rounded-full border border-white/30 shadow-sm transition-colors disabled:opacity-50 ${saved ? "bg-accent text-button-ink" : "bg-black/60 text-white hover:bg-black/80"}` : `button-secondary disabled:opacity-50 ${saved ? "border-accent-ink/40 bg-accent/30" : ""}`}>
