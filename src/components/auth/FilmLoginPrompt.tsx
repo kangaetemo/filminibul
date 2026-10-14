@@ -76,7 +76,13 @@ export function FilmLoginPromptProvider({ children }: { children: React.ReactNod
     return <PromptContext.Provider value={open}>
         {children}
         {notice && <div role="status" className="fixed bottom-5 left-1/2 z-[90] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-xl border border-line bg-card px-4 py-3 text-sm text-ink shadow-lg">{t(notice)}</div>}
-        {request && createPortal(<dialog ref={dialog} aria-labelledby={titleId} aria-describedby={descriptionId} className="member-prompt fixed inset-0 m-0 h-dvh max-h-none w-screen max-w-none items-end justify-center border-0 bg-black/50 p-0 text-ink sm:items-center sm:p-5" onCancel={event => { event.preventDefault(); dismiss(); }} onClick={event => { if (event.target === event.currentTarget) dismiss(); }}>
+        {request && createPortal(<dialog ref={dialog} aria-labelledby={titleId} aria-describedby={descriptionId} className="member-prompt fixed inset-0 m-0 h-dvh max-h-none w-screen max-w-none items-end justify-center border-0 bg-black/50 p-0 text-ink sm:items-center sm:p-5" onCancel={event => { event.preventDefault(); dismiss(); }} onClick={event => { if (event.target === event.currentTarget) dismiss(); }} onKeyDown={event => {
+            if (event.key !== "Tab") return;
+            const controls = event.currentTarget.querySelectorAll<HTMLElement>("button:not(:disabled), a[href], input:not(:disabled)");
+            const first = controls[0], last = controls[controls.length - 1];
+            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+            else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+        }}>
             <section className="member-prompt-panel max-h-[85dvh] w-full max-w-md overflow-y-auto rounded-t-2xl border border-line bg-card p-5 shadow-glow-card sm:rounded-2xl sm:p-6">
                 <div className="flex items-start justify-between gap-3"><div><Bookmark className="h-6 w-6 text-accent-ink" aria-hidden /><h2 id={titleId} className="mt-3 text-xl font-extrabold">{t(heading)}</h2></div><button type="button" onClick={dismiss} aria-label={t("Giriş penceresini kapat")} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-card-hover"><X className="h-5 w-5" aria-hidden /></button></div>
                 <p className="mt-2 break-words text-sm font-bold">{language === "en" ? request.film.titleEn || request.film.title : request.film.title}</p>
