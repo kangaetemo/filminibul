@@ -1,6 +1,6 @@
 # Filminibul — yapılacaklar
 
-Son güncelleme: 15 Ekim 2026 (Türkiye saati).
+Son güncelleme: 16 Ekim 2026 (Türkiye saati).
 
 Bu dosya, konuşulan geliştirmeleri ve açık işleri takip eder. Öncelikler istişarede önerilen sıradır; uygulama kapsamı yeni kararlarla güncellenir. Tamamlanan maddeler burada `[x]` olarak işaretlenir, tarih ve doğrulama bilgileriyle `yapilanlar.md` dosyasına eklenir. Başlatılmış ama bitmemiş işler açık kalır.
 
@@ -149,3 +149,12 @@ Kullanıcı API-01 → AR-02 → İÇ-01 → SEO-02 sırasıyla uygulamayı ve t
 - [ ] Kİ-02 gerçek yazarlık rolleri ve SEO-02 tematik ikinci aşama mevcut planda açık.
 
 Not: önceki bütçe onayı ve içerik işi mevcut branch kaydında korunur. SEO hazırlığı için ücretli OpenAI çağrısı veya canlı şema değişikliği yapılmadı.
+
+
+## İÇ-01 — Gerçek toplu çalışma sonucu · 16 Ekim 2026 00:18 Türkiye saati
+
+- [x] Kaynağı kullanılabilir özetlerin çeviri turu: 1.903 kontrol, 1.746 TR özet / 3 afiş gerçekten kaydedildi, sıfır çakışma. Usage: 1.749 istek, 302.578 girdi / 151.260 çıktı tokenı; standart fiyatla **0,3630472 USD**, belirsiz ücretli istek yok. 4 USD onaylı tavan aşılmadı.
+- [ ] Kalan 157 kaynak: 156 metadata/yer tutucu + 1 DVD şarkı listesi (784161). Hikâye uydurulmadan gerçek kaynak bulunmalı; bunlar çeviri kuyruğuna körlemesine gönderilmemeli.
+- [ ] Şarkı listesi kaynak sınıflandırmasıyla sıfır OpenAI bütçeli son metadata raporunu doğrula.
+
+İlk ücretli run #38807465092 bir kaydın doğal Türkçe doğrulaması nedeniyle failure olarak sonuçlandı; 1.746 gerçek kayıt ve cache yenileme başarılıdır. Başarısızlığı gizleyen complete etiketi kullanılmadı. Ücretli çıktı docs/content-maintenance-paid-report-20261016.json dosyasında korunur.

@@ -34,3 +34,7 @@ test('placeholders and metadata labels are identified without rejecting genuine 
     for (const s of ['\\', 'Details Here', 'Plot TBA.', 'Hong Kong movie', '1999 Japanese short film', 'Pink film directed by Example.', 'Original video.']) assert.ok(translationSourceIssue(s), s);
     for (const s of ['Bigfoot steals the mail!', 'A couple flee their home after a disaster.', 'A picturesque sketch of flowers.']) assert.equal(translationSourceIssue(s), null, s);
 });
+test('a DVD track listing is metadata; a story mentioning a DVD remains usable', () => {
+    assert.equal(translationSourceIssue('Ernie Haase DVD RELEASE DATE: October 2005 (DVD) Track Listing: Glory To God Stand By Me'), 'metadata_only_source');
+    assert.equal(translationSourceIssue('A young singer records a DVD while trying to reunite her family.'), null);
+});

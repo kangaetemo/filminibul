@@ -27,6 +27,8 @@ export function translationSourceIssue(value) {
     const s = typeof value === 'string' ? value.trim() : '';
     if (!/[\p{L}\p{N}]/u.test(s)) return 'empty_source';
     if (/^(?:plot\s*(?:tba|to be announced)|details here|tba|tbd|unknown|no (?:plot|overview|synopsis)(?: available)?)[.!]?$/i.test(s)) return 'placeholder_source';
+    // A DVD release label followed by its track listing is not a narrative synopsis.
+    if (/\bDVD\s+RELEASE\s+DATE\s*:/i.test(s) && /\bTrack\s+Listing\s*:/i.test(s)) return 'metadata_only_source';
     if (/^(?:(?:an? |the )?(?:\d{4} )?(?:hong kong|taiwan(?:ese)?|chin(?:a|ese)|japanese|malaysian|indian)?\s*(?:short |horror |action |drama |silent |animated )?(?:films?|movies?|release|production|original videos?)(?: (?:from|released in) \d{4})?)[.!]?$/i.test(s)) return 'metadata_only_source';
     if (/^(?:(?:\d{4} |early )?(?:pink(?: film)?|pinku|gay pinku|lesbian pinku)|film) (?:distributed by|directed by|from) .+[.!]?$/i.test(s)) return 'metadata_only_source';
     return null;
