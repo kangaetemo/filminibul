@@ -137,3 +137,15 @@ Kullanıcı gizlilik politikasının tamamlanmasını önceliklendirdi ve yayım
 ## İÇ-01 — Onaylı çalışma · 16 Ekim 2026 00:04 Türkiye saati
 
 Kullanıcı API-01 → AR-02 → İÇ-01 → SEO-02 sırasıyla uygulamayı ve toplam azami **4 USD** ücretli kullanımı açıkça onayladı. Önceki 2 USD önerisinin onay bekleme durumu kaldırılmıştır. 1.903 retry kaydı mevcut runner sırlarıyla işlenecek; önceden doğrulanmış bütçe sayacı her istek/yeniden denemeden önce ortak rezervasyon yapar. Kaynak/embedding korunur. Başlatma tamamlanma sayılmaz; gerçek sonuç, usage, kalanlar ve cache doğrulanınca durum güncellenecek. SEO-02 sonraki sıradadır.
+
+
+## SEO-02 — İlk uygulama paketi · 16 Ekim 2026 00:15 Türkiye saati
+
+- [x] Onaylı 30 yıl/tür kombinasyonunun manifesti, /listeler dizini ve deterministik 24 kart sayfalama kodu.
+- [x] İlk HTML kartları / bağlantıları, ItemList + BreadcrumbList, self canonical, page=1 yönlendirmesi, geçersiz / taşan sayfa 404, upstream hata 500 ve preview noindex yerel fixture ile doğrulandı.
+- [x] Footer bağlantısı, sitemap pilot girişleri ve liste / kişi ölçüm bağlamı.
+- [ ] Gerçek katalogla salt okunur SSR workflow sonucunu doğrula; uygulama henüz üretime alınmadı.
+- [ ] 50 kişinin TMDB kimliklerini katalog film çapalarıyla doğrula, kişi / kredi modeli ve oyuncu / yönetmen sayfalarını uygula (SEO-02 / Kİ-01). İsimler veya ilk beş oyuncu listesi kimlik sayılmadı.
+- [ ] Kİ-02 gerçek yazarlık rolleri ve SEO-02 tematik ikinci aşama mevcut planda açık.
+
+Not: önceki bütçe onayı ve içerik işi mevcut branch kaydında korunur. SEO hazırlığı için ücretli OpenAI çağrısı veya canlı şema değişikliği yapılmadı.

@@ -1,0 +1,44 @@
+name: SEO yıl-tür pilotunu doğrula
+on:
+  push:
+    branches: [feat/seo-pilot]
+    paths:
+      - src/**
+      - scripts/catalog/verify_seo_pages.mjs
+      - scripts/tests/catalog-lists.test.mjs
+      - .github/workflows/verify-seo-pilot.yml
+permissions:
+  contents: read
+concurrency:
+  group: seo-pilot-verification
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --test scripts/tests/catalog-lists.test.mjs scripts/tests/analytics.test.mjs
+      - run: npm run build
+        env:
+          VERCEL_ENV: preview
+          NEXT_TELEMETRY_DISABLED: '1'
+      - name: Yerel fixture ile SSR ve hata senaryoları
+        run: node scripts/catalog/verify_seo_pages.mjs
+      - name: Canlı katalogda salt okunur sayfa doğrulaması
+        run: node scripts/catalog/verify_seo_pages.mjs --live
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: seo-pilot-verification
+          path: docs/seo-02-*-verification.json

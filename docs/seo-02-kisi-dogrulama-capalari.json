@@ -1,0 +1,306 @@
+{
+  "verified_at": "2026-10-15",
+  "status": "catalog_anchors_only_not_verified_person_ids",
+  "candidates": [
+    {
+      "name": "Kemal Sunal",
+      "role": "actor",
+      "anchor_movie_id": 83651,
+      "anchor_title": "The Chaos Class"
+    },
+    {
+      "name": "Türkan Şoray",
+      "role": "actor",
+      "anchor_movie_id": 31412,
+      "anchor_title": "The Girl with the Red Scarf"
+    },
+    {
+      "name": "Şener Şen",
+      "role": "actor",
+      "anchor_movie_id": 26900,
+      "anchor_title": "The Bandit"
+    },
+    {
+      "name": "Tarık Akan",
+      "role": "actor",
+      "anchor_movie_id": 83651,
+      "anchor_title": "The Chaos Class"
+    },
+    {
+      "name": "Kadir İnanır",
+      "role": "actor",
+      "anchor_movie_id": 31412,
+      "anchor_title": "The Girl with the Red Scarf"
+    },
+    {
+      "name": "Adile Naşit",
+      "role": "actor",
+      "anchor_movie_id": 83651,
+      "anchor_title": "The Chaos Class"
+    },
+    {
+      "name": "Münir Özkul",
+      "role": "actor",
+      "anchor_movie_id": 83651,
+      "anchor_title": "The Chaos Class"
+    },
+    {
+      "name": "Hülya Koçyiğit",
+      "role": "actor",
+      "anchor_movie_id": 58897,
+      "anchor_title": "Dry Summer"
+    },
+    {
+      "name": "Ayşen Gruda",
+      "role": "actor",
+      "anchor_movie_id": 38794,
+      "anchor_title": "Tosun Pasha"
+    },
+    {
+      "name": "Halit Akçatepe",
+      "role": "actor",
+      "anchor_movie_id": 83651,
+      "anchor_title": "The Chaos Class"
+    },
+    {
+      "name": "Cem Yılmaz",
+      "role": "actor",
+      "anchor_movie_id": 256917,
+      "anchor_title": "The Water Diviner"
+    },
+    {
+      "name": "Demet Akbağ",
+      "role": "actor",
+      "anchor_movie_id": 265169,
+      "anchor_title": "Winter Sleep"
+    },
+    {
+      "name": "Keanu Reeves",
+      "role": "actor",
+      "anchor_movie_id": 603,
+      "anchor_title": "The Matrix"
+    },
+    {
+      "name": "Tom Hanks",
+      "role": "actor",
+      "anchor_movie_id": 13,
+      "anchor_title": "Forrest Gump"
+    },
+    {
+      "name": "Robert De Niro",
+      "role": "actor",
+      "anchor_movie_id": 475557,
+      "anchor_title": "Joker"
+    },
+    {
+      "name": "Nicolas Cage",
+      "role": "actor",
+      "anchor_movie_id": 23483,
+      "anchor_title": "Kick-Ass"
+    },
+    {
+      "name": "Samuel L. Jackson",
+      "role": "actor",
+      "anchor_movie_id": 680,
+      "anchor_title": "Pulp Fiction"
+    },
+    {
+      "name": "Leonardo DiCaprio",
+      "role": "actor",
+      "anchor_movie_id": 27205,
+      "anchor_title": "Inception"
+    },
+    {
+      "name": "Brad Pitt",
+      "role": "actor",
+      "anchor_movie_id": 550,
+      "anchor_title": "Fight Club"
+    },
+    {
+      "name": "Tom Cruise",
+      "role": "actor",
+      "anchor_movie_id": 137113,
+      "anchor_title": "Edge of Tomorrow"
+    },
+    {
+      "name": "Christian Bale",
+      "role": "actor",
+      "anchor_movie_id": 155,
+      "anchor_title": "The Dark Knight"
+    },
+    {
+      "name": "Scarlett Johansson",
+      "role": "actor",
+      "anchor_movie_id": 24428,
+      "anchor_title": "The Avengers"
+    },
+    {
+      "name": "Natalie Portman",
+      "role": "actor",
+      "anchor_movie_id": 10195,
+      "anchor_title": "Thor"
+    },
+    {
+      "name": "Cate Blanchett",
+      "role": "actor",
+      "anchor_movie_id": 284053,
+      "anchor_title": "Thor: Ragnarok"
+    },
+    {
+      "name": "Meryl Streep",
+      "role": "actor",
+      "anchor_movie_id": 350,
+      "anchor_title": "The Devil Wears Prada"
+    },
+    {
+      "name": "Kate Winslet",
+      "role": "actor",
+      "anchor_movie_id": 597,
+      "anchor_title": "Titanic"
+    },
+    {
+      "name": "Denzel Washington",
+      "role": "actor",
+      "anchor_movie_id": 156022,
+      "anchor_title": "The Equalizer"
+    },
+    {
+      "name": "Jackie Chan",
+      "role": "actor",
+      "anchor_movie_id": 9502,
+      "anchor_title": "Kung Fu Panda"
+    },
+    {
+      "name": "Tony Leung Chiu-wai",
+      "role": "actor",
+      "anchor_movie_id": 566525,
+      "anchor_title": "Shang-Chi and the Legend of the Ten Rings"
+    },
+    {
+      "name": "Saoirse Ronan",
+      "role": "actor",
+      "anchor_movie_id": 391713,
+      "anchor_title": "Lady Bird"
+    },
+    {
+      "name": "Atıf Yılmaz",
+      "role": "director",
+      "anchor_movie_id": 27211,
+      "anchor_title": "Feyzo, The Polite One"
+    },
+    {
+      "name": "Ertem Eğilmez",
+      "role": "director",
+      "anchor_movie_id": 83651,
+      "anchor_title": "The Chaos Class"
+    },
+    {
+      "name": "Kartal Tibet",
+      "role": "director",
+      "anchor_movie_id": 38794,
+      "anchor_title": "Tosun Pasha"
+    },
+    {
+      "name": "Çağan Irmak",
+      "role": "director",
+      "anchor_movie_id": 13393,
+      "anchor_title": "My Father and My Son"
+    },
+    {
+      "name": "Nuri Bilge Ceylan",
+      "role": "director",
+      "anchor_movie_id": 265169,
+      "anchor_title": "Winter Sleep"
+    },
+    {
+      "name": "Zeki Demirkubuz",
+      "role": "director",
+      "anchor_movie_id": 31413,
+      "anchor_title": "Innocence"
+    },
+    {
+      "name": "Metin Erksan",
+      "role": "director",
+      "anchor_movie_id": 124611,
+      "anchor_title": "Time to Love"
+    },
+    {
+      "name": "Yılmaz Güney",
+      "role": "director",
+      "anchor_movie_id": 52556,
+      "anchor_title": "The Road"
+    },
+    {
+      "name": "Christopher Nolan",
+      "role": "director",
+      "anchor_movie_id": 157336,
+      "anchor_title": "Interstellar"
+    },
+    {
+      "name": "Steven Spielberg",
+      "role": "director",
+      "anchor_movie_id": 329,
+      "anchor_title": "Jurassic Park"
+    },
+    {
+      "name": "Martin Scorsese",
+      "role": "director",
+      "anchor_movie_id": 106646,
+      "anchor_title": "The Wolf of Wall Street"
+    },
+    {
+      "name": "Quentin Tarantino",
+      "role": "director",
+      "anchor_movie_id": 680,
+      "anchor_title": "Pulp Fiction"
+    },
+    {
+      "name": "David Fincher",
+      "role": "director",
+      "anchor_movie_id": 550,
+      "anchor_title": "Fight Club"
+    },
+    {
+      "name": "Ridley Scott",
+      "role": "director",
+      "anchor_movie_id": 286217,
+      "anchor_title": "The Martian"
+    },
+    {
+      "name": "Alfred Hitchcock",
+      "role": "director",
+      "anchor_movie_id": 539,
+      "anchor_title": "Psycho"
+    },
+    {
+      "name": "Stanley Kubrick",
+      "role": "director",
+      "anchor_movie_id": 694,
+      "anchor_title": "The Shining"
+    },
+    {
+      "name": "Akira Kurosawa",
+      "role": "director",
+      "anchor_movie_id": 346,
+      "anchor_title": "Seven Samurai"
+    },
+    {
+      "name": "Hayao Miyazaki",
+      "role": "director",
+      "anchor_movie_id": 129,
+      "anchor_title": "Spirited Away"
+    },
+    {
+      "name": "Denis Villeneuve",
+      "role": "director",
+      "anchor_movie_id": 329865,
+      "anchor_title": "Arrival"
+    },
+    {
+      "name": "Wes Anderson",
+      "role": "director",
+      "anchor_movie_id": 120467,
+      "anchor_title": "The Grand Budapest Hotel"
+    }
+  ]
+}

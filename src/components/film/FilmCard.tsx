@@ -15,7 +15,7 @@ import type { Platform } from "@/lib/recommend/providers";
 // Poster kartı: benzer filmler, mod ve tarif sonuçlarında ortak.
 // reasons verilirse "neden önerildi?" satırlarının ilk 2'si gösterilir, tamamı tooltip'te.
 // platforms verilirse Türkiye'de izlenebildiği platformların logoları (en fazla 3).
-export default function FilmCard({ film, reasons, reasonsEn, platforms, index = 0, context, sourceFilmId }: { film: FilmDTO; reasons?: string[]; reasonsEn?: string[]; platforms?: Platform[]; index?: number; context?: "similar" | "vibe" | "blend" | "mood"; sourceFilmId?: number }) {
+export default function FilmCard({ film, reasons, reasonsEn, platforms, index = 0, context, sourceFilmId, page }: { film: FilmDTO; reasons?: string[]; reasonsEn?: string[]; platforms?: Platform[]; index?: number; context?: "similar" | "vibe" | "blend" | "mood" | "list" | "person"; sourceFilmId?: number; page?: number }) {
     const { language, t } = useLanguage();
     const title = language === "en" ? film.titleEn || film.title : film.title;
     const displayedReasons = language === "en" ? reasonsEn || reasons : reasons;
@@ -44,7 +44,7 @@ export default function FilmCard({ film, reasons, reasonsEn, platforms, index = 
         document.addEventListener("visibilitychange", visibility);
         return () => { observer.disconnect(); if (timer) clearTimeout(timer); document.removeEventListener("visibilitychange", visibility); };
     }, [film.id, sourceFilmId, index, context, pathname, params]);
-    const onClick = () => track(context === "similar" && sourceFilmId ? "recommendation_clicked" : "film_clicked", { film_id: film.id, source_film_id: sourceFilmId, rank: index + 1, context });
+    const onClick = () => track(context === "similar" && sourceFilmId ? "recommendation_clicked" : "film_clicked", { film_id: film.id, source_film_id: sourceFilmId, rank: index + 1, context, page });
     return (
         <li ref={ref} className="min-w-0">
             <div className="group relative">

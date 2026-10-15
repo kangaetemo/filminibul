@@ -338,3 +338,12 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Kullanıcı toplam 3–4 USD kullanımına izin verdi; muhafazakâr rezervasyonlu azami 4 USD tavan seçildi. Ek onay gerekmez.
 - Mevcut test edilmiş script'ler yalnız 1.903 eksik retry kaydında çalışacak. Tek seferlik branch workflow'u anahtarları runner dışına çıkarmadan çeviri/metadata bakımını yapar; sonuç artifact/log olarak korunur ve katalog cache yenilenir. Ana uygulama main'ine otomatik rapor commit/deploy eklenmedi.
 - Bu kayıt çalışma komutunu somutlaştırır; henüz başarılı sonuç veya tamamlanan çeviri iddiası değildir. Gerçek run bağlantısı ve sonuçlar eklenecek.
+
+
+## SEO-02 — Yıl/tür pilotunun uygulanması · 16 Ekim 2026 00:15 Türkiye saati
+
+- Auditte seçilen 30 kombinasyon tek yayın manifestine alındı; /listeler ve /listeler/[slug] eklendi. Katalog yalnız gerekli kart metadatasını okur; vektör / kaynak özet seçilmez. Günlük katalog etiketli cache, vote_count DESC NULLS LAST + movie_id ASC sırası ve 24 kart kullanılır; toplam ve kartlar aynı üyelik snapshotından çıkarılır.
+- Canonical / OG, güvenli JSON-LD ItemList ve BreadcrumbList; page=1 için 308, bilinmeyen kombinasyon / geçersiz veya taşan sayfa için 404, DB kesintisinde 500. Devam sayfası kendi canonicalını taşır; preview ve dil/filtre varyantı noindex. Footer dizin bağlantısı ve manifest temelli sitemap girişleri eklendi; kart ölçümü list/person ve sınırlı page alanını kabul eder.
+- 10 ilgili test başarılı; TypeScript ve Next 14 üretim build başarılı. Fixture üzerinde gerçek Next sunucusu: dizinde 30 bağlantı; ilk iki sayfada 24 SSR kart, çakışmasız film URLleri, doğru JSON-LD konumları, 49. kayıtta tek kart; bozuk sayfalama/taşma 404, page=1 308, upstream 503 cevabında uygulama 500. Kanıt docs/seo-02-fixture-verification.json. Build sırasında mevcut anasayfa öneri bileşeni yerel DB sırrı olmadığı için fallback logu üretti; build başarılıdır, bu gerçek canlı veri testi sayılmadı.
+- 50 kişi adayı için mevcut katalogdaki rol ile en çok oy alan filmden kimlik doğrulama çapaları çıkarıldı; docs/seo-02-kisi-dogrulama-capalari.json henüz doğrulanmış kişi IDsi içermez. Kişi tablosu / migration / backfill ve filmografi sayfaları sonraki uygulama adımları olarak açık.
+- Canlı salt okunur SSR doğrulaması GitHub runner sırlarıyla yapılacak; henüz sonucu yok. Bu aşamada uygulama main/publish veya yeni DB şeması değişikliği yok.
