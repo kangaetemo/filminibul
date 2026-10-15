@@ -132,3 +132,8 @@ Kullanıcı gizlilik politikasının tamamlanmasını önceliklendirdi ve yayım
 - [x] **UI-02 — Açık / koyu tema değişimini yumuşat.** Kullanıcı kısa görsel efekt istedi: 220ms renk çapraz geçişi; eski tarayıcıya geçici renk transition fallback. İlk tema yüklemesi, tercih saklama, hızlı karşıt tıklamalar ve hareketi azalt ayarı korunsun.
 
 ÜY-03 / UI-02 sonucu: 87 test ve son derleme başarılı; a8a092b yayını READY. Canlı dört detay düğmesi / kart paneli, TR–EN, Escape / odak dönüşü, Tab çevrimi ve tema renkleri doğrulandı. Gerçek Google hesabı ve fiziksel S25 FE kontrolü ayrı kullanıcı doğrulaması olarak kalır.
+
+
+## İÇ-01 — Onaylı çalışma · 16 Ekim 2026 00:04 Türkiye saati
+
+Kullanıcı API-01 → AR-02 → İÇ-01 → SEO-02 sırasıyla uygulamayı ve toplam azami **4 USD** ücretli kullanımı açıkça onayladı. Önceki 2 USD önerisinin onay bekleme durumu kaldırılmıştır. 1.903 retry kaydı mevcut runner sırlarıyla işlenecek; önceden doğrulanmış bütçe sayacı her istek/yeniden denemeden önce ortak rezervasyon yapar. Kaynak/embedding korunur. Başlatma tamamlanma sayılmaz; gerçek sonuç, usage, kalanlar ve cache doğrulanınca durum güncellenecek. SEO-02 sonraki sıradadır.

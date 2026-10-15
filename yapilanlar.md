@@ -331,3 +331,10 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 ### 15 Ekim 2026 16:55 — Taslakların kaydı
 
 - Doğrulama ve hazırlık dosyaları yalnız `verify/openai-credit-20261015` branch'inde [ae5c804](https://github.com/kangaetemo/filminibul/commit/ae5c804981319e2d6afa1da6dae28c43204de0cd) ile kaydedildi. Yeni/yenilenen 11 dosyanın blob SHA'ları uzak tree üzerinden doğrulandı. main'e merge/push ve üretim uygulama yayını yapılmadı; toplu içerik işi başlamadı. Yerel SEO audit geçmişi ve kanıt dosyaları korunur; bunlar bu doğrulama branch'ine topluca yüklenmedi.
+
+
+## İÇ-01 — Kullanıcı bütçe onayı ve gerçek işin başlatılması · 16 Ekim 2026 00:04 Türkiye saati
+
+- Kullanıcı toplam 3–4 USD kullanımına izin verdi; muhafazakâr rezervasyonlu azami 4 USD tavan seçildi. Ek onay gerekmez.
+- Mevcut test edilmiş script'ler yalnız 1.903 eksik retry kaydında çalışacak. Tek seferlik branch workflow'u anahtarları runner dışına çıkarmadan çeviri/metadata bakımını yapar; sonuç artifact/log olarak korunur ve katalog cache yenilenir. Ana uygulama main'ine otomatik rapor commit/deploy eklenmedi.
+- Bu kayıt çalışma komutunu somutlaştırır; henüz başarılı sonuç veya tamamlanan çeviri iddiası değildir. Gerçek run bağlantısı ve sonuçlar eklenecek.
