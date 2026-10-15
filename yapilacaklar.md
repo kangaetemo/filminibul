@@ -6,6 +6,8 @@ Bu dosya, konuşulan geliştirmeleri ve açık işleri takip eder. Öncelikler i
 
 ## P0 — OpenAI bakiyesi yüklendi: ilk öncelikli işler (15 Ekim 2026)
 
+**15 Ekim kullanıcı sırası: API-01 → AR-02 → İÇ-01 → SEO-02.** Mevcut SEO-02 planı / ayrı salt okunur raporu korunur. API erişimi ve sınırlı canlı TR / EN arama kontrolü başlatıldı; toplu çeviri için güncel maliyet raporu hazırlanıyor.
+
 Kullanıcı 15 Ekim'de OpenAI API hesabına bakiye yüklediğini bildirdi. Bu **kullanıcı beyanıdır**; uygulamanın kullandığı doğru OpenAI proje/anahtarında kredinin etkin olduğu, limitler ve ücretli uç noktaların çalıştığı henüz teknik olarak doğrulanmadı. Aşağıdaki işler SEO-02'nin geliştirme aşamasından önce değerlendirilir. Bu öncelik güncellemesi ücretli bir çalışmayı başlatmaz.
 
 - [ ] **API-01 — OpenAI API bakiyesini ve kota durumunu güvenli biçimde doğrula.** Üretimde / GitHub Actions'ta kullanılan API anahtarının doğru projeye ait olduğunu, faturalandırmanın etkinliğini, kalan proje limitini ve harcama uyarılarını anahtarı ifşa etmeden kontrol et. Mümkünse tek küçük, ölçülü test çağrısı ile `insufficient_quota` durumunun giderildiğini doğrula; harcama / token bilgisini raporla. Kullanıcıdan açık onay almadan büyük toplu çeviri veya başka ücretli işlem başlatma. Hata devam ederse proje / anahtar / bütçe nedenini ayır.

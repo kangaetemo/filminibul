@@ -308,3 +308,11 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - `yapilacaklar.md` dosyasının en üstüne P0 OpenAI işleri taşındı: **API-01** (doğru proje, kota ve düşük maliyetli doğrulama), **AR-02** (Tarif et aramasının gerçek sonuçlarla yeniden doğrulanması) ve mevcut **İÇ-01** (13 Ekim raporunda eksik 1.903 Türkçe özeti kontrollü partilerle tamamlama). Tamamlanan AR-01 / İÇ-03 düzeltmeleri açık göreve dönüştürülmedi.
 - İş sırası ve harcama kapısı: önce doğru anahtar / proje ve kredi doğrulaması, sonra birkaç sınırlı canlı arama; toplu çeviri için güncel eksik sayısı, maliyet tahmini ve kullanıcı harcama onayı. SEO-02 geliştirme planı / görevleri korunur.
 - Yalnızca takip dosyaları düzenlendi; ücretli OpenAI çağrısı, GitHub Actions çalıştırma, veritabanı yazımı, uygulama kodu değişikliği veya canlı yayın yapılmadı.
+
+
+## API-01 / AR-02 / İÇ-01 — Sıralı doğrulama · 15.10.2026 16:41 Türkiye saati
+
+- Kullanıcı API-01 → AR-02 → İÇ-01 → SEO-02 sırasını istedi; SEO görevi zaten mevcut ve sonraki sıraya kaydedildi. Önceki ayrı salt okunur SEO raporu korunur.
+- Canlı TR / EN tarif testleri HTTP200 / 24 film verdi. Üretim anahtarı dışarı alınmadı. OpenAI faturalama / limit ekranı giriş istediğinden bakiye tutarı ve proje kimliği doğrulanmış sayılmaz.
+- Mevcut GitHub Actions anahtarını iki küçük çağrıyla (chat max_tokens=8, mevcut text-embedding-3-large/1536) kontrol eden verify_openai.mjs ve yalnız doğrulama branch'i için workflow hazırlandı. Retry, Supabase/TMDB erişimi ve DB yazımı yok; yalnız kullanım / güvenli durum raporu. Üç doğrulama testi + mevcut kota/içerik akışlarında 17 test geçti. Runner sonucu bekleniyor; hiçbir görev salt kod yazıldı diye tamamlanmadı.
+- Canlı eksikler hâlâ 1.903; eski retry ID kümesiyle aynı. Gerçek kaynaklar o200k_base ile 107.725 token; schema paylı tahmini girdi 551.177 token. Tek geçiş için çıktı varsayımına göre yaklaşık 0,48–0,65 USD. Gerçek kullanım değildir. Toplu çeviri / üretim yayını başlatılmadı.
