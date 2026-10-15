@@ -9,7 +9,7 @@ export async function verifyOpenAI({ apiKey = process.env.OPENAI_API_KEY, reques
     const report = { checked_at: new Date(now()).toISOString(), status: 'pending', requests: [], estimated_usd: 0, billing_dashboard_verified: false, project_identity_verified: false };
     if (!apiKey) return { ...report, status: 'not_configured' };
     const samples = [
-        { endpoint: 'chat/completions', body: { model: 'gpt-4.1-mini', temperature: 0, max_tokens: 8, messages: [{ role: 'user', content: 'Reply OK.' }] } },
+        { endpoint: 'chat/completions', body: { model: 'gpt-4.1-mini', temperature: 0, max_tokens: 8, messages: [{ role: 'user', content: 'Return exactly OK without punctuation or formatting.' }] } },
         { endpoint: 'embeddings', body: { model: EMBEDDING_MODEL, dimensions: EMBEDDING_DIMS, input: 'Film search verification.' } },
     ];
     for (const { endpoint, body } of samples) {
@@ -24,7 +24,7 @@ export async function verifyOpenAI({ apiKey = process.env.OPENAI_API_KEY, reques
         const input = Number.isSafeInteger(usage.prompt_tokens) ? usage.prompt_tokens : null;
         const output = endpoint === 'embeddings' ? 0 : Number.isSafeInteger(usage.completion_tokens) ? usage.completion_tokens : null;
         const estimated = input === null || output === null ? null : (input * (endpoint === 'embeddings' ? 0.13 : 0.40) + output * 1.60) / 1e6;
-        const valid = endpoint === 'embeddings' ? Array.isArray(data.data?.[0]?.embedding) && data.data[0].embedding.length === EMBEDDING_DIMS && data.data[0].embedding.every(Number.isFinite) : data.choices?.[0]?.finish_reason === 'stop' && data.choices[0].message?.content?.trim() === 'OK';
+        const valid = endpoint === 'embeddings' ? Array.isArray(data.data?.[0]?.embedding) && data.data[0].embedding.length === EMBEDDING_DIMS && data.data[0].embedding.every(Number.isFinite) : data.choices?.[0]?.finish_reason === 'stop' && /^OK[.!]?$/.test(data.choices[0].message?.content?.trim() ?? '');
         const sample = { endpoint, model: data.model ?? body.model, http_status: response.status, duration_ms: now() - start, input_tokens: input, output_tokens: output, estimated_usd: estimated, output_valid: !!valid, rate_limit_requests: response.headers.get('x-ratelimit-limit-requests'), rate_limit_tokens: response.headers.get('x-ratelimit-limit-tokens') };
         if (estimated !== null) report.estimated_usd += estimated;
         report.requests.push(sample);
