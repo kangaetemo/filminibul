@@ -2,12 +2,16 @@
 import { mkdirSync, readFileSync, existsSync, writeFileSync } from "node:fs";
 import { cleanOverview, looksEnglish, selectOriginalPoster, turkishOverview } from "../../src/lib/filmContent.mjs";
 import { createTranslator, TranslationPaused } from "./translate_overview.mjs";
+import { translationSourceIssue } from "./content_budget.mjs";
 import { tmdb } from "../tmdb/tmdbClient.mjs";
 import { arg, flag, pool, sb, sbAll, summary } from "./lib.mjs";
 
 const MAX = Number(arg("max", "30000"));
 if (!Number.isSafeInteger(MAX) || MAX < 1 || MAX > 50000) throw new Error("--max must be between 1 and 50000");
 const dry = flag("dry-run"), skipTranslation = flag("skip-translation"), retryFailed = flag("retry-failed");
+const budgetArg = arg("max-usd", process.env.MAX_TRANSLATION_USD);
+const maxUsd = budgetArg === undefined ? Infinity : Number(budgetArg);
+if (budgetArg !== undefined && (!Number.isFinite(maxUsd) || maxUsd < 0)) throw new Error("--max-usd must be finite and non-negative");
 const cachePath = "data/content/checked.json", reportPath = "docs/content-maintenance-report.json";
 const cached = existsSync(cachePath) ? JSON.parse(readFileSync(cachePath, "utf8")) : {};
 const previous = existsSync(reportPath) ? JSON.parse(readFileSync(reportPath, "utf8")) : {};
@@ -15,7 +19,8 @@ const retryIds = new Set([...(previous.failed_ids || []), ...(previous.deferred_
 const report = { started_at: new Date().toISOString(), status: "running", mode: skipTranslation ? "metadata_only" : "full", retry_failed: retryFailed, scanned: 0, translated: 0, cleaned: 0, tmdb_turkish: 0, original_posters: 0, conflicts: 0, conflict_ids: [], failed: 0, deferred: 0, remaining_turkish: 0, stop_reason: null, failed_ids: [], deferred_ids: [], unresolved_ids: [] };
 const rows = await sbAll("film_embeddings_v3?select=movie_id,title,original_title,language,overview,tr_overview,tr_title,poster_path");
 const selected = (retryFailed ? rows.filter(row => retryIds.has(row.movie_id)) : rows).slice(0, MAX);
-const translate = createTranslator();
+const translate = createTranslator({ maxUsd });
+report.unsuitable_source_ids = [];
 const failed = new Set();
 let completed = 0;
 function fail(row, error) {
@@ -72,7 +77,10 @@ await pool(selected, 6, async row => {
     }
     if (metadataChecked && metadataSaved && !dry) cached[row.movie_id] = new Date().toISOString();
     if (!existing && !textPatch.tr_overview && cleanOverview(row.overview)) {
-        if (dry || skipTranslation) {
+        if (translationSourceIssue(cleanOverview(row.overview))) {
+            report.unsuitable_source_ids.push(row.movie_id);
+            report.deferred++; report.deferred_ids.push(row.movie_id);
+        } else if (dry || skipTranslation) {
             report.deferred++; report.deferred_ids.push(row.movie_id);
         } else {
             try {
@@ -102,6 +110,7 @@ report.unresolved_ids = [...new Set([...retryIds].filter(id => !selectedIds.has(
 report.remaining_turkish = missing.filter(r => cleanOverview(r.overview) && !turkishOverview(r.tr_overview, r.overview, r.language)).length;
 report.status = report.failed ? "failed" : report.remaining_turkish || report.unresolved_ids.length ? "partial" : "complete";
 report.updated_at = new Date().toISOString();
+report.translation_usage = translate.stats();
 if (!dry) {
     mkdirSync("docs", { recursive: true });
     writeFileSync(reportPath, JSON.stringify(report, null, 2) + "\n");

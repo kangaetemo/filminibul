@@ -37,9 +37,11 @@ function runMaintenance(mode) {
         import {mkdirSync,writeFileSync,readFileSync} from 'node:fs';
         process.env.SUPABASE_URL='https://db.invalid'; process.env.SUPABASE_SERVICE_ROLE_KEY='fixture'; process.env.TMDB_API_KEY='fixture'; process.env.OPENAI_API_KEY='fixture';
         const mode=${JSON.stringify(mode)};
+        if(mode==='budget')process.argv.push('--max-usd=0');
         if(mode==='skip'){process.argv.push('--skip-translation','--retry-failed');mkdirSync('docs');writeFileSync('docs/content-maintenance-report.json',JSON.stringify({failed_ids:[1]}));}
         const english='When a young man returns home, he finds his family missing and must look for them.';
         const rows=[{movie_id:1,title:'One',original_title:'One',language:'ja',overview:english,tr_overview:null,tr_title:null,poster_path:'/english.jpg'}, {movie_id:2,title:'Two',language:'en',overview:english,tr_overview:'<p>Bir genç adam eve döner.</p>',poster_path:'/two.jpg'}];
+        if(mode==='source')rows[0].overview='Hong Kong movie';
         const writes=[]; let translated=0;
         globalThis.fetch=async (input,init={})=>{
             const url=new URL(input);
@@ -61,25 +63,27 @@ function runMaintenance(mode) {
             throw new Error('Unexpected host');
         };
         await import(${JSON.stringify(script)});
-        assert.equal(translated,mode==='skip'?0:1);
+        assert.equal(translated,['skip','budget','source'].includes(mode)?0:1);
         for(const write of writes){
             assert.equal('overview' in write.body,false);assert.equal('embedding' in write.body,false);
             assert.ok(write.url.searchParams.has(write.body.poster_path?'poster_path':'tr_overview'));
         }
         const report=JSON.parse(readFileSync('docs/content-maintenance-report.json','utf8'));
         assert.equal(report.original_posters,1);assert.equal(rows[0].poster_path,'/ja.jpg');
-        assert.equal(report.translated,['quota','skip','conflict'].includes(mode)?0:1);
+        assert.equal(report.translated,['quota','skip','conflict','budget','source'].includes(mode)?0:1);
         assert.equal(report.failed,0);
         assert.equal(report.remaining_turkish,mode==='success'?0:1);
         assert.equal(report.status,mode==='success'?'complete':'partial');
         if(mode==='quota'){assert.equal(report.stop_reason,'insufficient_quota');assert.equal(report.deferred,1);}
         if(mode==='conflict')assert.equal(report.conflicts,2);
         if(mode==='skip'){assert.equal(report.scanned,1);assert.deepEqual(report.unresolved_ids,[1]);}
+        if(mode==='budget'){assert.equal(report.stop_reason,'budget_limit');assert.equal(report.translation_usage.requests,0);assert.equal(report.translation_usage.max_usd,0);}
+        if(mode==='source'){assert.deepEqual(report.unsuitable_source_ids,[1]);assert.equal(report.translation_usage.requests,0);assert.equal(rows[0].tr_overview,null);}
         assert.ok(report.updated_at>=report.started_at);
     `;
     try { const result = spawnSync(process.execPath, ["--input-type=module", "-e", fixture], { cwd: dir, encoding: "utf8" }); assert.equal(result.status, 0, result.stderr); }
     finally { rmSync(dir, { recursive: true, force: true }); }
 }
-for (const mode of ["success", "quota", "conflict", "skip"]) {
+for (const mode of ["success", "quota", "conflict", "skip", "budget", "source"]) {
     test(`catalog maintenance: ${mode}; independent metadata and accurate persisted counts`, () => runMaintenance(mode));
 }

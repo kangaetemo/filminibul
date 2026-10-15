@@ -1,0 +1,793 @@
+{
+  "checked_at": "2026-10-15T13:53:36.460258+00:00",
+  "production_queries": [
+    {
+      "query": "Zaman döngüsünde kalan bir karakter ve giderek büyüyen bir gizem",
+      "status": 200,
+      "duration_ms": 21859,
+      "results": 24,
+      "top5": [
+        {
+          "id": 410199,
+          "title": "ARQ",
+          "title_en": "ARQ",
+          "matched": [
+            "zaman döngüsü"
+          ],
+          "matched_en": [
+            "time loop"
+          ]
+        },
+        {
+          "id": 440021,
+          "title": "Ölüm Günün Kutlu Olsun",
+          "title_en": "Happy Death Day",
+          "matched": [
+            "zaman döngüsü"
+          ],
+          "matched_en": [
+            "time loop"
+          ]
+        },
+        {
+          "id": 1954,
+          "title": "Kelebek Etkisi",
+          "title_en": "The Butterfly Effect",
+          "matched": [],
+          "matched_en": []
+        },
+        {
+          "id": 376134,
+          "title": "Keşif",
+          "title_en": "The Discovery",
+          "matched": [],
+          "matched_en": []
+        },
+        {
+          "id": 430231,
+          "title": "Sonsuz",
+          "title_en": "The Endless",
+          "matched": [
+            "zaman döngüsü"
+          ],
+          "matched_en": [
+            "time loop"
+          ]
+        }
+      ]
+    },
+    {
+      "query": "A lonely astronaut stranded on Mars trying to survive and return home",
+      "status": 200,
+      "duration_ms": 12550,
+      "results": 24,
+      "top5": [
+        {
+          "id": 286217,
+          "title": "Marslı",
+          "title_en": "The Martian",
+          "matched": [
+            "izolasyon",
+            "hayatta kalma"
+          ],
+          "matched_en": [
+            "isolation",
+            "survival"
+          ]
+        },
+        {
+          "id": 419704,
+          "title": "Yıldızlara Doğru",
+          "title_en": "Ad Astra",
+          "matched": [],
+          "matched_en": []
+        },
+        {
+          "id": 49047,
+          "title": "Yerçekimi",
+          "title_en": "Gravity",
+          "matched": [],
+          "matched_en": []
+        },
+        {
+          "id": 395992,
+          "title": "Hayat",
+          "title_en": "Life",
+          "matched": [],
+          "matched_en": []
+        },
+        {
+          "id": 2067,
+          "title": "Görev: Mars",
+          "title_en": "Mission to Mars",
+          "matched": [],
+          "matched_en": []
+        }
+      ]
+    }
+  ],
+  "input_validation": [
+    {
+      "length": 0,
+      "http_status": 400,
+      "duration_ms": 11653,
+      "response": {
+        "error": "Biraz daha ayrıntı yaz.",
+        "code": "vibe_search_failed"
+      }
+    },
+    {
+      "length": 241,
+      "http_status": 400,
+      "duration_ms": 11885,
+      "response": {
+        "error": "En fazla 240 karakter yazabilirsin.",
+        "code": "vibe_search_failed"
+      }
+    }
+  ],
+  "browser": {
+    "tr_and_en_forms": true,
+    "en_film_detail_links": 24,
+    "clicked_film_id": 286217,
+    "clicked_url": "https://filminibul.com/film/286217-marsli",
+    "private_account_actions_tested": false
+  },
+  "production_token_usage_available": false,
+  "content_estimate": {
+    "measured_at": "2026-10-15",
+    "tokenizer": "o200k_base",
+    "model": "gpt-4.1-mini",
+    "films": 1903,
+    "source_chars": 498326,
+    "source_tokens": 107725,
+    "input_tokens_estimate_excluding_response_schema": 265727,
+    "min_source_tokens": 1,
+    "max_source_tokens": 230,
+    "missing_from_retry_ids": 0,
+    "historical_retry_ids": 1903,
+    "input_usd_per_million": 0.4,
+    "output_usd_per_million": 1.6,
+    "input_tokens_with_schema_allowance": 551177,
+    "estimated_one_pass_usd_range": [
+      0.479,
+      0.6514
+    ],
+    "worst_case_three_attempts_at_max_output_usd": 17.1033,
+    "unsuitable_sources": 156,
+    "translation_candidates": 1747,
+    "unsuitable_source_ids": [
+      {
+        "movie_id": 933026,
+        "reason": "empty_source"
+      },
+      {
+        "movie_id": 1209168,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1209204,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1209206,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1209208,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1209211,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1209526,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1214634,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1222975,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1223105,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1224344,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1224955,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1224959,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1227127,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1227857,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1228043,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1242506,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1242514,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1242986,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1243005,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1244262,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1244602,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1246288,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1250666,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1250668,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1250675,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1253973,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1256323,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1257270,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1258229,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1258233,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1258236,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1258246,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1258252,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1258268,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1258274,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1258282,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1258286,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1258306,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1259275,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1259564,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1260904,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1260907,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1260911,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1261883,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1262147,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1263307,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1263408,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1266090,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1268262,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1280456,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1286380,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1310231,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1316581,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1316634,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1321053,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1328663,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1328668,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1328674,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1328892,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1329293,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1329299,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1329316,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1329618,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1329620,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1332386,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1375073,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1375232,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1382339,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1384383,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1384896,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1386689,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1392691,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1394567,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1394606,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1394609,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1394615,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1394706,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1394713,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1394718,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1394723,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1395450,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1398732,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1401549,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1409425,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1429681,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1430763,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1437177,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1437183,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1437413,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1437417,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1437419,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1437422,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1437425,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1437426,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1441373,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1441503,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1442267,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1443828,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1444447,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1444448,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1445494,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1445496,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1448784,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1449368,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1449371,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1450304,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1456344,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1457399,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1457410,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1457418,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1459299,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1463230,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1463642,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1469741,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1469848,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1472370,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1475083,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1483426,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1483582,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1487801,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1488072,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1491873,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1514115,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1514159,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1515267,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1517115,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1522349,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1525521,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1526610,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1529513,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1529653,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1530643,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1532433,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1532494,
+        "reason": "placeholder_source"
+      },
+      {
+        "movie_id": 1533207,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1533240,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1533241,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1533332,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1533333,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1533336,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1533348,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1533358,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1535564,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1538132,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1539459,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1541315,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1542245,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1543435,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1544947,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1545321,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1549519,
+        "reason": "placeholder_source"
+      },
+      {
+        "movie_id": 1550981,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1551983,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1552177,
+        "reason": "metadata_only_source"
+      },
+      {
+        "movie_id": 1564939,
+        "reason": "placeholder_source"
+      }
+    ],
+    "eligible_source_tokens": 106726,
+    "eligible_estimated_one_pass_usd_range": [
+      0.4766,
+      0.6474
+    ]
+  },
+  "content_workflow_started": false,
+  "database_writes": false
+}
