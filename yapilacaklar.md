@@ -144,7 +144,7 @@ Kullanıcı API-01 → AR-02 → İÇ-01 → SEO-02 sırasıyla uygulamayı ve t
 - [x] Onaylı 30 yıl/tür kombinasyonunun manifesti, /listeler dizini ve deterministik 24 kart sayfalama kodu.
 - [x] İlk HTML kartları / bağlantıları, ItemList + BreadcrumbList, self canonical, page=1 yönlendirmesi, geçersiz / taşan sayfa 404, upstream hata 500 ve preview noindex yerel fixture ile doğrulandı.
 - [x] Footer bağlantısı, sitemap pilot girişleri ve liste / kişi ölçüm bağlamı.
-- [ ] Gerçek katalogla salt okunur SSR workflow sonucunu doğrula; uygulama henüz üretime alınmadı.
+- [x] Gerçek katalogla salt okunur SSR workflow #38808521199 başarılı; uygulama henüz üretime alınmadı.
 - [ ] 50 kişinin TMDB kimliklerini katalog film çapalarıyla doğrula, kişi / kredi modeli ve oyuncu / yönetmen sayfalarını uygula (SEO-02 / Kİ-01). İsimler veya ilk beş oyuncu listesi kimlik sayılmadı.
 - [ ] Kİ-02 gerçek yazarlık rolleri ve SEO-02 tematik ikinci aşama mevcut planda açık.
 
@@ -155,6 +155,11 @@ Not: önceki bütçe onayı ve içerik işi mevcut branch kaydında korunur. SEO
 
 - [x] Kaynağı kullanılabilir özetlerin çeviri turu: 1.903 kontrol, 1.746 TR özet / 3 afiş gerçekten kaydedildi, sıfır çakışma. Usage: 1.749 istek, 302.578 girdi / 151.260 çıktı tokenı; standart fiyatla **0,3630472 USD**, belirsiz ücretli istek yok. 4 USD onaylı tavan aşılmadı.
 - [ ] Kalan 157 kaynak: 156 metadata/yer tutucu + 1 DVD şarkı listesi (784161). Hikâye uydurulmadan gerçek kaynak bulunmalı; bunlar çeviri kuyruğuna körlemesine gönderilmemeli.
-- [ ] Şarkı listesi kaynak sınıflandırmasıyla sıfır OpenAI bütçeli son metadata raporunu doğrula.
+- [x] Şarkı listesi kaynak sınıflandırmasıyla sıfır OpenAI bütçeli son metadata raporu #38808833812 başarılı: 157 kontrol / 157 uygun olmayan kaynak / 0 hata / 0 ücretli istek; cache yenilendi.
 
 İlk ücretli run #38807465092 bir kaydın doğal Türkçe doğrulaması nedeniyle failure olarak sonuçlandı; 1.746 gerçek kayıt ve cache yenileme başarılıdır. Başarısızlığı gizleyen complete etiketi kullanılmadı. Ücretli çıktı docs/content-maintenance-paid-report-20261016.json dosyasında korunur.
+
+
+### Son durum · 16.10.2026 00:20 Türkiye saati
+
+İÇ-01 kapsamında kullanılabilir 1.746 aday tamamlandı; ana madde 157 kaynak eksikliği nedeniyle açık tutulur. Yeni tekrar çeviri çağrısı gerekmez. SEO-02 adım 1 kodu ve canlı katalog testi tamam; 50 kimlikli kişi / kredi / filmografi ve kontrollü yayın sonraki açık adımlar. [PR #3](https://github.com/kangaetemo/filminibul/pull/3) incelemeye hazır; main değişmedi. API-01 hesap/proje/bakiye uyarı ekranı doğrulaması hâlâ açık; işlevsel chat/embedding ve AR-02 testleri yeniden ücretlendirilmedi.

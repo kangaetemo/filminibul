@@ -1,0 +1,52 @@
+{
+  "recorded_at": "2026-10-15T21:20:17.525Z",
+  "paid_run": {
+    "id": 38807465092,
+    "translated": 1746,
+    "original_posters": 3,
+    "reported_status": "failed",
+    "failed_source_id": 784161,
+    "usage": {
+      "max_usd": 4,
+      "requests": 1749,
+      "prompt_tokens": 302578,
+      "completion_tokens": 151260,
+      "estimated_usd": 0.3630472,
+      "reserved_usd": 0,
+      "uncertain_requests": 0,
+      "pricing": "gpt-4.1-mini standard 0.40 input / 1.60 output USD per million; cached discount ignored"
+    }
+  },
+  "final_metadata_run": {
+    "id": 38808833812,
+    "status": "partial",
+    "failed": 0,
+    "deferred": 157,
+    "usage": {
+      "max_usd": 0,
+      "requests": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "estimated_usd": 0,
+      "reserved_usd": 0,
+      "uncertain_requests": 0,
+      "pricing": "gpt-4.1-mini standard 0.40 input / 1.60 output USD per million; cached discount ignored"
+    }
+  },
+  "remaining_source_issues": 157,
+  "paid_synopsis_candidates_completed": 1746,
+  "live_missing_count_verified": 157,
+  "seo_pilot": {
+    "run_id": 38808521199,
+    "lists": 30,
+    "quality": {
+      "lists": 30,
+      "smallest_list": 20,
+      "memberships": "3132",
+      "lists_meeting_threshold": 30
+    },
+    "published": false,
+    "pull_request": "https://github.com/kangaetemo/filminibul/pull/3"
+  },
+  "account_dashboard_verified": false
+}
