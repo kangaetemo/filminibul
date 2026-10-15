@@ -1,0 +1,38 @@
+name: SEO pilot kişi kimliklerini doğrula
+on:
+  push:
+    branches: [feat/seo-pilot]
+    paths:
+      - .github/workflows/collect-seo-people.yml
+      - scripts/catalog/refresh_people.mjs
+      - src/lib/catalog/peopleModel.mjs
+permissions:
+  contents: read
+concurrency:
+  group: seo-people-maintenance
+  cancel-in-progress: false
+jobs:
+  people:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - run: node --test scripts/tests/people-model.test.mjs
+      - name: Katalog çapalarıyla 50 kişi kimliği, salt okunur
+        run: node scripts/catalog/refresh_people.mjs
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: seo-people-identity-report
+          path: |
+            docs/seo-02-people-report.json
+            data/seo-people/checkpoint.json
