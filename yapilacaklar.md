@@ -1,14 +1,22 @@
 # Filminibul — yapılacaklar
 
-Son güncelleme: 14 Ekim 2026 (Türkiye saati).
+Son güncelleme: 15 Ekim 2026 (Türkiye saati).
 
 Bu dosya, konuşulan geliştirmeleri ve açık işleri takip eder. Öncelikler istişarede önerilen sıradır; uygulama kapsamı yeni kararlarla güncellenir. Tamamlanan maddeler burada `[x]` olarak işaretlenir, tarih ve doğrulama bilgileriyle `yapilanlar.md` dosyasına eklenir. Başlatılmış ama bitmemiş işler açık kalır.
 
-## Devam eden içerik işi
+## P0 — OpenAI bakiyesi yüklendi: ilk öncelikli işler (15 Ekim 2026)
 
-- [ ] **İÇ-01 — Toplu Türkçeleştirme ve orijinal afiş taramasının sonucunu doğrula.** İlk çalışma: [GitHub Actions #38304738851](https://github.com/kangaetemo/filminibul/actions/runs/38304738851). İlk çalışma kota nedeniyle kısmi tamamlandı: raporda 13.526 çeviri ve 1.903 eksik Türkçe özet var. Afiş sayacı eski kodda yazmadan önce artırıldığı için 8.613 seçimin tamamının kaydedildiği varsayılmıyor. Kalan çeviriler API kotasının açılmasını bekliyor. Çevrilen / temizlenen özet, değişen afiş, kalan özet ve hata sayılarını raporla. Hataları ve kalan kayıtları ele al; sonucu `yapilanlar.md` dosyasına işle.
+Kullanıcı 15 Ekim'de OpenAI API hesabına bakiye yüklediğini bildirdi. Bu **kullanıcı beyanıdır**; uygulamanın kullandığı doğru OpenAI proje/anahtarında kredinin etkin olduğu, limitler ve ücretli uç noktaların çalıştığı henüz teknik olarak doğrulanmadı. Aşağıdaki işler SEO-02'nin geliştirme aşamasından önce değerlendirilir. Bu öncelik güncellemesi ücretli bir çalışmayı başlatmaz.
 
-- [x] **İÇ-03 — Başarısız içerik işini onar ve doğrula.** Kota / kimlik sorununu tek duraklama nedeni olarak raporla; çeviri hatasında afiş / başlık güncellemesini koru. Yalnızca veritabanına yazılan değişiklikleri say; başarısız çalışmada kontrol önbelleğini sakla. Kalan kayıtları çeviri harcaması yapmadan tekrar kontrol et. Doğrulama: [#38311949271](https://github.com/kangaetemo/filminibul/actions/runs/38311949271) başarılı; 1.903 film kontrol edildi, 526 afiş kaydedildi, sıfır hata / çakışma. Rapor ve kontrol önbelleği saklandı; site önbelleği yenilendi. OpenAI çağrısı yapılmadı. İÇ-01 kapsamında kalan 1.903 çeviri kota bekliyor.
+- [ ] **API-01 — OpenAI API bakiyesini ve kota durumunu güvenli biçimde doğrula.** Üretimde / GitHub Actions'ta kullanılan API anahtarının doğru projeye ait olduğunu, faturalandırmanın etkinliğini, kalan proje limitini ve harcama uyarılarını anahtarı ifşa etmeden kontrol et. Mümkünse tek küçük, ölçülü test çağrısı ile `insufficient_quota` durumunun giderildiğini doğrula; harcama / token bilgisini raporla. Kullanıcıdan açık onay almadan büyük toplu çeviri veya başka ücretli işlem başlatma. Hata devam ederse proje / anahtar / bütçe nedenini ayır.
+
+- [ ] **AR-02 — "Tarif et" doğal dille film aramasının yeniden çalıştığını doğrula.** AR-01'de kota kaynaklı 429 için eklenen güvenli hata yönetimi tamamlandı; bakiye sonrası asıl aramanın yeniden öneri üretmesi ayrıca doğrulanmalı. API-01'den sonra birkaç kontrollü TR / EN tarif sorgusunu canlı / güvenli ortamda dene. Çalışan sonuç, yanıt süresi, öneri ilgisi ve çağrı maliyetini raporla; gereksiz tekrar ve sınırsız ücretli test yapma. Başarılı gerçek sonuç görülmeden bu maddeyi kapatma.
+
+- [ ] **İÇ-01 — Kalan Türkçe film özetlerini kontrollü biçimde tamamla ve afiş bakımının sonucunu doğrula.** İlk çalışma [GitHub Actions #38304738851](https://github.com/kangaetemo/filminibul/actions/runs/38304738851) raporunda 13.526 çeviri ve **1.903 eksik Türkçe özet** vardı; bunlar 13 Ekim snapshot'ıdır, bugünkü kalan sayısı diye varsayma. İÇ-03 onarımında 1.903 film yeniden kontrol edildi, 526 afiş gerçekten kaydedildi; önceki 8.613 afiş seçiminin tümü yazılmış sayılmaz. Önce güncel eksikleri ve tahmini token / API harcamasını hesapla, kontrol önbelleğini ve `--retry-failed` / `--skip-translation` davranışını doğrula. API-01 tamamlandıktan ve toplam ücretli çalışma bütçesi kullanıcı tarafından onaylandıktan sonra **yalnız eksik kayıtları** sınırlı partilerle sürdür; mevcut Türkçe metni / İngilizce kaynağı / embedding'i koru. Çevrilen / temizlenen özet, gerçekten değişen afiş, kalan özet, hata, maliyet ve önbellek yenileme sonuçlarını raporla; tamamlanmadan `[x]` yapma.
+
+### Önceden tamamlanan bakım onarımı
+
+- [x] **İÇ-03 — Başarısız içerik işini onar ve doğrula.** Kota / kimlik sorununu tek duraklama nedeni olarak raporla; çeviri hatasında afiş / başlık güncellemesini koru. Yalnızca veritabanına yazılan değişiklikleri say; başarısız çalışmada kontrol önbelleğini sakla. Kalan kayıtları çeviri harcaması yapmadan tekrar kontrol et. Doğrulama: [#38311949271](https://github.com/kangaetemo/filminibul/actions/runs/38311949271) başarılı; 1.903 film kontrol edildi, 526 afiş kaydedildi, sıfır hata / çakışma. Rapor ve kontrol önbelleği saklandı; site önbelleği yenilendi. OpenAI çağrısı yapılmadı. İÇ-01 kapsamındaki çeviriler henüz tamamlanmadı.
 
 ## 13 Ekim 2026 — Yeni istekler ve istişare notları
 
