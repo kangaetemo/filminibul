@@ -186,3 +186,6 @@ Oyuncu/yönetmen route'ları, manifest, kişi fotoğrafı/fallback, gerçek kara
 
 
 SEO-02 CI #38859594490: 13 model/liste/ölçüm testi geçti. İlk build eski TypeScript hedefi nedeniyle Set/Map iterator spread sözdizimini reddetti; ilgili kullanımlar Array.from ile aynı davranışı koruyarak düzeltildi. Bağımsız tsc kontrolü build öncesine alındı. Gerçek SSR sonucu henüz bekleniyor.
+
+
+SEO-02 #38859793468: 13 test, tsc, üretim build, yıl/tür fixture ve canlı katalog SSR başarılı. Kişi fixture kontrolü embedding sütunu yerine film_embeddings_v3 tablo adını da eşleştiren fazla geniş test kuralı nedeniyle durdu; alan sınırı kontrolüyle düzeltildi. Uygulamanın sorgusu yalnız kart kolonlarını seçiyordu. Sonraki run tüm kişi SSR senaryolarını tamamlayacak.

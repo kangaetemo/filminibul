@@ -18,7 +18,7 @@ if(!live){
         if(url.pathname.endsWith("/film_people"))rows=[{person_id:6384,name:"Keanu Reeves",display_name:"Keanu Reeves",profile_path:null,pilot_role:"actor",published:true,updated_at:"2026-10-16T00:00:00Z"}];
         else if(url.pathname.endsWith("/film_person_credits")){
             assert.equal(url.searchParams.get("kind"),"eq.cast");
-            assert.ok(!url.searchParams.get("select").includes("embedding"));
+            assert.ok(!/(^|[, (])embedding([, )]|$)/.test(url.searchParams.get("select")));
             rows=fixtureFilms.map(f=>({movie_id:f.movie_id,kind:"cast",job:"Actor",character_name:"Karakter "+f.movie_id,film:f}));
             const offset=Number(url.searchParams.get("offset"));rows=rows.slice(offset,offset+1000);
         }

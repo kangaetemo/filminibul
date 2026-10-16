@@ -394,3 +394,8 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 ### SEO-02 derleme uyumluluğu düzeltmesi · 16 Ekim 2026
 
 #38859594490 model/liste/ölçüm testlerinde 13/13 başarılı, build TS2802 ile başarısız: mevcut tsconfig hedefi iterator spread'i desteklemiyor. Yeni filmografi Map/Set kullanımları Array.from ile değiştirildi; bütün uygulamanın derleme hedefi değiştirilmedi. Film Movie JSON-LD verisi okunabilir bir sabit nesneye taşındı, doğrulanmış yönetmen yoksa boş director alanı eklenmedi. Sonraki CI önce tsc ile tüm tip hatalarını, sonra build/SSR senaryolarını doğrulayacak. Üretim uygulaması veya kaydedilmiş 50 kişi verisi bu hata nedeniyle değiştirilmedi.
+
+
+### SEO-02 fixture doğrulama düzeltmesi · 16 Ekim 2026
+
+#38859793468 ile TypeScript uyumsuzluğu giderildi: 13 model/liste/ölçüm testi, bağımsız tsc, Next build ve hem fixture hem canlı yıl/tür SSR başarılı. Yeni kişi fixture'ında test kuralı select ifadesindeki film_embeddings_v3 ilişki adını embedding alanı sanarak yanlış pozitif verdi. Kural yalnız kolon tokenı embedding'i eşleştirecek şekilde düzeltildi; veri erişimi veya şema bu hatada değişmedi. Sonuç gerçek bir test hatası olarak kaydedilir, 50 canlı kişi SSR testi henüz başarılı sayılmaz.
