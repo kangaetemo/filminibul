@@ -19,7 +19,7 @@ if(!live){
         else if(url.pathname.endsWith("/film_person_credits")){
             assert.equal(url.searchParams.get("kind"),"eq.cast");
             assert.ok(!/(^|[, (])embedding([, )]|$)/.test(url.searchParams.get("select")));
-            rows=fixtureFilms.map(f=>({movie_id:f.movie_id,kind:"cast",job:"Actor",character_name:"Karakter "+f.movie_id,film:f}));
+            rows=fixtureFilms.map(f=>({movie_id:f.movie_id,kind:"cast",job:"Actor",character_name:"Karakter "+f.movie_id+(f.movie_id===800048?" (voice)":""),film:f}));
             const offset=Number(url.searchParams.get("offset"));rows=rows.slice(offset,offset+1000);
         }
         res.writeHead(200,{"Content-Type":"application/json"});res.end(JSON.stringify(rows));
@@ -61,10 +61,31 @@ try{
         await verifyPerson(manifest.find(p=>p.id===6384));
         const tail=await request("/oyuncu/6384-keanu-reeves?page=3");
         assert.equal(items(tail.html).length,1);
-        assert.ok(tail.html.includes("Karakter 800048"));
+        assert.ok(tail.html.includes("Karakter 800048 (seslendirme)"));
         assert.equal((await request("/yonetmen/525-christopher-nolan")).status,500);
         checks.push("fixture: missing photo fallback, character labels, single-card last page; upstream failure 500");
     }
+    const api=async(path,page)=>request("/api/catalog/page?"+new URLSearchParams({path,page:String(page)}));
+    const apiSecond=await api("/oyuncu/6384-keanu-reeves",2),apiTail=await api("/oyuncu/6384-keanu-reeves",3);
+    assert.equal(apiSecond.status,200);assert.equal(apiTail.status,200);
+    const chunk=JSON.parse(apiSecond.html),tailChunk=JSON.parse(apiTail.html);
+    assert.equal(chunk.page,2);assert.equal(chunk.films.length,24);
+    assert.equal(tailChunk.films.length,live?expected.get(6384).role_films-48:1);
+    assert.ok(chunk.films.every(f=>!("embedding" in f)));
+    assert.equal(Object.keys(chunk.notes).length,24);
+    assert.ok(chunk.films.every(f=>!tailChunk.films.some(t=>t.id===f.id)));
+    assert.match(apiSecond.headers.get("cache-control"),/s-maxage=3600/);
+    assert.equal(apiSecond.headers.get("x-robots-tag"),"noindex");
+    for(const [path,page,status] of [["/oyuncu/6384-keanu-reeves",0,400],["/oyuncu/6384-keanu-reeves",99999,404],["/oyuncu/6384-eski-ad",2,404],["/yonetmen/6384-keanu-reeves",2,404],["/film/603-matrix",2,404],["https://example.com",2,404]])assert.equal((await api(path,page)).status,status);
+    assert.equal((await request("/api/catalog/page?path=/oyuncu/6384-keanu-reeves&page=2&page=3")).status,400);
+    assert.equal((await request("/api/catalog/page?path=/oyuncu/6384-keanu-reeves&page=2&select=embedding")).status,400);
+    if(!live){
+        assert.equal(tailChunk.notes[800048],"Karakter 800048 (seslendirme)");
+        const unavailable=await api("/yonetmen/525-christopher-nolan",1);
+        assert.equal(unavailable.status,503);assert.equal(unavailable.headers.get("cache-control"),"no-store");
+        assert.ok(!unavailable.html.includes("Fixture unavailable"));
+    }
+    checks.push("infinite feed API: 24-card next page, deduped tail, scoped notes, Turkish voice, whitelist/validation, safe non-cached 503");
     const first=await request("/oyuncu/6384-keanu-reeves"),second=await request("/oyuncu/6384-keanu-reeves?page=2");
     assert.equal(second.status,200);assert.equal(items(second.html).length,24);assert.equal(items(second.html)[0].position,25);
     const ids=new Set(items(first.html).map(x=>x.url));

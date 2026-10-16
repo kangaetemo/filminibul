@@ -4,6 +4,15 @@ Son güncelleme: 16 Ekim 2026 (Türkiye saati).
 
 Bu dosya, konuşulan geliştirmeleri ve açık işleri takip eder. Öncelikler istişarede önerilen sıradır; uygulama kapsamı yeni kararlarla güncellenir. Tamamlanan maddeler burada `[x]` olarak işaretlenir, tarih ve doğrulama bilgileriyle `yapilanlar.md` dosyasına eklenir. Başlatılmış ama bitmemiş işler açık kalır.
 
+## Keşif arayüzü — 16 Ekim 2026
+
+- [ ] **KŞ-09 — Katalogda tekrar eden kaynak metinlerini sadeleştir.** Film kartlarında TMDB adı yerine puan; kaynak adı erişilebilir açıklama / araç ipucunda, tam atıf Hakkında bölümünde korunur. Liste / kişi açıklamaları sadeleşir.
+- [ ] **Kİ-03 — Filmografi ve seçkilerde aşağı kaydırdıkça yükleme.** İlk 24 film SSR olarak kalır, devamı 24'lü eklenir; tek eşzamanlı istek, iptal / zaman aşımı / yeniden deneme, son durum ve yinelenen film koruması. Canonical / JSON-LD ve gerçek sayfa bağlantıları korunur.
+- [ ] **Kİ-04 — Seslendirme kredi etiketini Türkçeleştir.** Sunumda `(voice)` → `(seslendirme)`; karakter adı ve ham veritabanı kredileri korunur.
+- [ ] **KŞ-10 — Film listeleri dizinini canlandır.** Renkli afişli yıl/tür kartları, portreli oyuncu/yönetmen bölümleri, bölüm kısayolları. Görseller iki sınırlı / önbellekli metadata okumasından; hata hâlinde 80 bağlantı ve görsel yer tutucular kalır. Yeni ücretli çağrı / migration yok.
+
+Uygulama sürüyor. Yerelde 14 test, TypeScript, üretim build ve yıl/tür + kişi SSR/API fixture kontrolleri başarılı. Canlı veri / tarayıcı / yayın kontrolü tamamlanınca maddeler kapatılacak.
+
 ## P0 — OpenAI bakiyesi yüklendi: ilk öncelikli işler (15 Ekim 2026)
 
 **15 Ekim kullanıcı sırası: API-01 → AR-02 → İÇ-01 → SEO-02.** Mevcut SEO-02 planı / ayrı salt okunur raporu korunur. API erişimi ve sınırlı canlı TR / EN arama kontrolü başlatıldı; toplu çeviri için güncel maliyet raporu hazırlanıyor.

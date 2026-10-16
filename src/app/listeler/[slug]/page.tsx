@@ -14,7 +14,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     if (!snapshot || !page || page > snapshot.pages) return { title: "Liste bulunamadı", robots: { index: false, follow: false } };
     const { list } = snapshot;
     const title = `${list.title}${page > 1 ? ` · Sayfa ${page}` : ""} · Filminibul`;
-    const description = `${list.year} yılına ait ${GENRES[list.genreId].name.toLocaleLowerCase("tr")} filmlerini katalogumuzdan keşfet. ${snapshot.total} film, TMDB oy sayısına göre sıralı.`;
+    const description = `${list.year} yılına ait ${GENRES[list.genreId].name.toLocaleLowerCase("tr")} filmlerini katalogumuzdan keşfet. ${snapshot.total} film, en çok oylananlardan başlayarak.`;
     const path = pagePath(`/listeler/${list.slug}`, page);
     return { title, description, alternates: { canonical: path },
         robots: { index: process.env.VERCEL_ENV !== "preview" && Object.keys(searchParams ?? {}).every(k => k === "page"), follow: true },
@@ -29,6 +29,6 @@ export default async function ListPage({ params, searchParams }: Props) {
     const snapshot = await getListSnapshot(params.slug);
     if (!snapshot || !snapshot.total || page > snapshot.pages) notFound();
     return <CatalogList title={snapshot.list.title} path={path} page={page} pages={snapshot.pages} total={snapshot.total}
-        description={`${GENRES[snapshot.list.genreId].description} Buradaki yıl, TMDB kaynaklı çıkış yılıdır; Türkiye vizyon tarihi anlamına gelmez.`}
+        description={`${GENRES[snapshot.list.genreId].description} Listeler filmin çıkış yılına göredir; Türkiye vizyon tarihi anlamına gelmez.`}
         films={snapshot.films.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)} />;
 }
