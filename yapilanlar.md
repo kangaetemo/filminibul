@@ -474,3 +474,13 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Düşük etkili arayüz değişikliği; yeni DB okuma / yazma, migration veya ücretli API çağrısı yok. Mevcut SSR fixture görünür Sayfalar nav'ını artık beklemeyecek şekilde uyarlandı. Tip / build / SSR ve canlı görsel doğrulama bekleniyor; henüz tamamlandı sayılmadı.
 
 - Yerel tsc, Next üretim build ve yıl/tür + kişi SSR/API fixture kontrolleri başarılı. Veri / sayfa URL mantığı değiştirilmediği için 50 kişilik canlı veri taraması yeniden çalıştırılmadı; bu branch mevcut SEO CI tetikleyicisine eklenmedi. Yerel build canlı sırları kullanmaz; mevcut ana sayfa fallback kaydı beklendi. Canlı görsel doğrulama yayın sonrasında yapılacak.
+
+
+## KŞ-12 — Yayın ve görsel doğrulama · 16 Ekim 2026 12:05 Türkiye saati
+
+- [PR #6](https://github.com/kangaetemo/filminibul/pull/6), kaynak 7ae095bc02bebe5c1e0efa1079de7395ac877549; main merge f98d808053608808e90fce70dbd027dfc4a54906. Vercel filminibul / production dpl_FZ1uZig8tuc28LQdGckrACXJZoSG READY, filminibul.com / www alias'ları doğrulandı.
+- Chrome'da ana sayfanın Ana menü > Film listeleri bağlantısı tıklanarak /listeler açıldı. Beş menü linki ve arama alanı 1348 px genişlikte tek satırda, header 95 px, yatay taşma yok. Görseller yüklenmiş ekran görüntüsü docs/film-listeleri-ust-menu-2026-10-16.jpg. Gerçek mobil cihaz testi yapılmadı.
+- Canlı Keanu ilk 24 kart / taranabilir sonraki href page=2; aşağı kaydırınca 48 / page=2, ikinci kaydırmada 50 / page=3. Canonical aynı üçüncü URL; Sayfalar nav adedi 0 ve görünür sayfa sayacı yok. Durum / bitiş bildirimi korunuyor.
+- / ve Keanu page=2 HTTP200: üst menüde /listeler, ana sayfanın main alanında yeni /listeler bölümü yok, filmografide görünür pager yok ve sonraki page=3 href'i var. Yerel tsc / üretim build / iki SSR fixture başarılı; aynı veri okumalarını genişleten CI taraması eklenmedi. Ücretli çağrı / DB yazma / migration 0.
+- Tarayıcı aracında bir exec-server transport kesintisi oldu; sorun giderme yönergesi okunduktan sonra aynı tab yeniden gözlemlendi, bağlantı döndü ve doğrulama tamamlandı. Başka tarayıcı kontrol yöntemi veya koruma bypass'ı kullanılmadı.
+- KŞ-12 [x] yapıldı. Bu son kayıt ve görsel commit'i yalnız dokümantasyon; uygulama kaynakları doğrulanan merge ile aynı.
