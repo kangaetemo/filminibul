@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-10-16T07:56:00.556Z",
+  "checked_at": "2026-10-16T08:46:53.126Z",
   "mode": "fixture",
   "checks": [
     "hub: 30 actor and 20 director links in initial HTML",
@@ -8,7 +8,7 @@
     "role mismatch/unknown/invalid/overflow pages 404; old slug/page=1 308; page 2 self canonical and non-overlap; language variant noindex"
   ],
   "pages_checked": 1,
-  "cold_p95_ms": 203,
+  "cold_p95_ms": 158,
   "cached_p95_ms": null,
   "paid_api_calls": 0
 }

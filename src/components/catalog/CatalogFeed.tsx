@@ -1,15 +1,21 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import FilmCard from "@/components/film/FilmCard";
 import type { FilmDTO } from "@/lib/recommend/types";
+import { filmPath } from "@/lib/filmUrl";
+import { jsonLd, pagePath, PAGE_SIZE } from "@/lib/catalog/pilot";
+import { pageAddress, pageAtViewport } from "@/lib/catalog/scrollPage.mjs";
 
 export type CatalogChunk = { page: number; pages: number; total: number; films: FilmDTO[]; notes?: Record<number, string> };
 
-export default function CatalogFeed({ initial, path, context }: { initial: CatalogChunk; path: string; context: "list" | "person" }) {
+export default function CatalogFeed({ initial, path, title, structuredData, context }: { initial: CatalogChunk; path: string; title: string; structuredData: Record<string, unknown>[]; context: "list" | "person" }) {
     const [chunks, setChunks] = useState([initial]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
+    const [currentPage, setCurrentPage] = useState(initial.page);
+    const grid = useRef<HTMLUListElement>(null);
     const sentinel = useRef<HTMLDivElement>(null);
     const request = useRef<AbortController | null>(null);
     const mounted = useRef(false);
@@ -57,13 +63,67 @@ export default function CatalogFeed({ initial, path, context }: { initial: Catal
         return () => observer.disconnect();
     }, [hasMore, loading, error, loadMore]);
 
+    useEffect(() => {
+        const starts = Array.from(grid.current?.querySelectorAll<HTMLLIElement>("li[data-catalog-start]") ?? []);
+        let frame = 0;
+        const update = () => {
+            frame = 0;
+            setCurrentPage(pageAtViewport(starts.map(element => ({ page: Number(element.dataset.catalogStart), top: element.getBoundingClientRect().top })), window.innerHeight, initial.page));
+        };
+        const schedule = () => { if (!frame) frame = window.requestAnimationFrame(update); };
+        update();
+        window.addEventListener("scroll", schedule, { passive: true });
+        window.addEventListener("resize", schedule);
+        return () => { window.removeEventListener("scroll", schedule); window.removeEventListener("resize", schedule); window.cancelAnimationFrame(frame); };
+    }, [chunks, initial.page]);
+
+    useEffect(() => {
+        if (window.location.pathname !== path) return;
+        const address = pageAddress(window.location.href, currentPage);
+        if (address !== window.location.pathname + window.location.search + window.location.hash) {
+            // Next's native History integration retains the loaded cards and scroll position.
+            // Replace the current entry so ordinary scrolling does not fill browser history.
+            window.history.replaceState(null, "", address);
+        }
+        const canonical = "https://filminibul.com" + pagePath(path, currentPage);
+        const pageTitle = `${title}${currentPage > 1 ? ` · Sayfa ${currentPage}` : ""} · Filminibul`;
+        document.title = pageTitle;
+        document.querySelector('link[rel="canonical"]')?.setAttribute("href", canonical);
+        document.querySelector('meta[property="og:url"]')?.setAttribute("content", canonical);
+        document.querySelector('meta[property="og:title"]')?.setAttribute("content", pageTitle);
+    }, [currentPage, path, title]);
+
+    const current = chunks.find(chunk => chunk.page === currentPage) ?? initial;
+    const site = "https://filminibul.com";
+    const url = site + pagePath(path, current.page);
+    const structured = { "@context": "https://schema.org", "@graph": [
+        ...structuredData,
+        { "@type": "BreadcrumbList", itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Filminibul", item: site },
+            { "@type": "ListItem", position: 2, name: "Film listeleri", item: `${site}/listeler` },
+            { "@type": "ListItem", position: 3, name: title, item: url },
+        ] },
+        { "@type": "ItemList", name: title, url, numberOfItems: current.films.length,
+            itemListElement: current.films.map((film, i) => ({ "@type": "ListItem", position: (current.page - 1) * PAGE_SIZE + i + 1, name: film.title, url: site + filmPath(film.id, film.title) })) },
+    ] };
+    const pageButton = "flex h-12 w-full items-center justify-center rounded-lg border border-line bg-card px-2 text-xs font-semibold text-ink transition-colors hover:border-ink/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent sm:text-sm";
+
     return <>
-        <ul className="movie-grid" aria-label="Filmler" aria-busy={loading}>
+        <ul ref={grid} className="movie-grid" aria-label="Filmler" aria-busy={loading}>
             {chunks.flatMap(chunk => chunk.films.map((film, index) => <FilmCard key={film.id} film={film} index={index} page={chunk.page} context={context} creditLabel={chunk.notes?.[film.id]} />))}
         </ul>
-        <div ref={sentinel} className="mt-8 flex min-h-16 flex-col items-center gap-3 text-center">
-            <p role="status" aria-live="polite" className="text-sm text-muted">{loading ? "Sıradaki filmler yükleniyor…" : error ? "Sıradaki filmler yüklenemedi. Yeniden deneyebilirsin." : hasMore ? `${shown} film gösteriliyor · Aşağı indikçe devamı yüklenir` : "Bu seçkinin sonuna geldin. Yeni bir hikâye keşfet!"}</p>
+        <div ref={sentinel} className="mt-6 flex flex-col items-center gap-3 text-center">
+            <p role="status" aria-live="polite" className="text-sm text-muted">{loading ? "Sıradaki filmler yükleniyor…" : error ? "Sıradaki filmler yüklenemedi. Yeniden deneyebilirsin." : hasMore ? `${shown} film gösteriliyor · Aşağı indikçe devamı yüklenir` : `${shown} film gösteriliyor · Seçkinin sonuna geldin.`}</p>
             {hasMore && <button type="button" onClick={() => void loadMore()} disabled={loading} className="button-secondary disabled:opacity-50">{error ? "Yeniden dene" : "Daha fazla film"}</button>}
         </div>
+        <nav aria-label="Sayfalar" className="mx-auto mt-5 max-w-md border-t border-line pt-4">
+            <p className="mb-3 text-center text-sm text-muted" aria-live="polite">Sayfa {currentPage} / {last.pages}</p>
+            <div className="grid grid-cols-3 gap-2">
+                {currentPage > 1 ? <Link href={path} prefetch={false} className={pageButton}>İlk sayfa</Link> : <span aria-disabled="true" className={`${pageButton} opacity-40`}>İlk sayfa</span>}
+                {currentPage > 1 ? <Link href={pagePath(path, currentPage - 1)} prefetch={false} rel="prev" aria-label="Önceki sayfa" className={pageButton}>Önceki</Link> : <span aria-disabled="true" className={`${pageButton} opacity-40`}>Önceki</span>}
+                {currentPage < last.pages ? <Link href={pagePath(path, currentPage + 1)} prefetch={false} rel="next" aria-label="Sonraki sayfa" className={pageButton}>Sonraki</Link> : <span aria-disabled="true" className={`${pageButton} opacity-40`}>Sonraki</span>}
+            </div>
+        </nav>
+        <script id="catalog-structured-data" type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(structured) }} />
     </>;
 }

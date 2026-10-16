@@ -4,6 +4,13 @@ Son güncelleme: 16 Ekim 2026 (Türkiye saati).
 
 Bu dosya, konuşulan geliştirmeleri ve açık işleri takip eder. Öncelikler istişarede önerilen sıradır; uygulama kapsamı yeni kararlarla güncellenir. Tamamlanan maddeler burada `[x]` olarak işaretlenir, tarih ve doğrulama bilgileriyle `yapilanlar.md` dosyasına eklenir. Başlatılmış ama bitmemiş işler açık kalır.
 
+## Kaydırma adresi ve sayfalama düzeltmesi — 16 Ekim 2026
+
+- [ ] **Kİ-05 — Görünen film grubunu URL / SEO bilgisiyle eşitle.** Yeni grup önceden yüklenince değil ekranda okunan bölüm olunca `?page=2/3` güncellensin; yukarı kaydırınca önceki gruba dönsün, ilk sayfada page parametresi kaldırılsın. Başlık, canonical, OG ve ItemList / breadcrumb aktif grupla tutarlı olsun. SSR doğrudan sayfalar / gerçek önceki-sonraki linkleri, dil / diğer URL parametreleri korunsun. History replaceState kaydırma geçmişini şişirmesin.
+- [ ] **KŞ-11 — Alt sayfalamayı tutarlı ve kompakt yap.** Ekran görüntüsündeki farklı stiller / gereksiz boşluklar ve “Başlangıç sayfası” kaldırılır; güncel “Sayfa 2 / 3”, eşit genişlik / 48 px yükseklikte İlk sayfa, Önceki, Sonraki; sınırdaki kontroller devre dışı.
+
+Google Search Central lazy-loading yönergesindeki görünür chunk / History API yaklaşımı temel alınır. Bu işlem tek başına sıralama artışı sözü değildir. Uygulama / tarayıcı ve yayın doğrulaması sürüyor.
+
 ## Keşif arayüzü — 16 Ekim 2026
 
 - [x] **KŞ-09 — Katalogda tekrar eden kaynak metinlerini sadeleştir.** Film kartlarında TMDB adı yerine puan; kaynak adı erişilebilir açıklama / araç ipucunda, tam atıf Hakkında bölümünde korunur. Liste / kişi açıklamaları sadeleşir.

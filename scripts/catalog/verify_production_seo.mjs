@@ -4,7 +4,7 @@ const base="https://filminibul.com";
 const results=[];
 function canonical(html){return html.match(/<link[^>]*rel="canonical"[^>]*href="([^"]+)"/)?.[1];}
 function robots(html){return html.match(/<meta[^>]*name="robots"[^>]*content="([^"]+)"/)?.[1] || "";}
-function graph(html){return [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].flatMap(m=>{const data=JSON.parse(m[1]);return data["@graph"]||[data];});}
+function graph(html){return [...html.matchAll(/<script\b(?=[^>]*\btype="application\/ld\+json")[^>]*>([\s\S]*?)<\/script>/g)].flatMap(m=>{const data=JSON.parse(m[1]);return data["@graph"]||[data];});}
 function items(html){return graph(html).find(x=>x["@type"]==="ItemList")?.itemListElement;}
 function links(html){return [...html.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map(m=>m[1].replaceAll("&amp;","&"));}
 async function get(path,expected=200){
