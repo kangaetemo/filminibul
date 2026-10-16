@@ -15,7 +15,7 @@ import type { Platform } from "@/lib/recommend/providers";
 // Poster kartı: benzer filmler, mod ve tarif sonuçlarında ortak.
 // reasons verilirse "neden önerildi?" satırlarının ilk 2'si gösterilir, tamamı tooltip'te.
 // platforms verilirse Türkiye'de izlenebildiği platformların logoları (en fazla 3).
-export default function FilmCard({ film, reasons, reasonsEn, platforms, index = 0, context, sourceFilmId }: { film: FilmDTO; reasons?: string[]; reasonsEn?: string[]; platforms?: Platform[]; index?: number; context?: "similar" | "vibe" | "blend" | "mood"; sourceFilmId?: number }) {
+export default function FilmCard({ film, reasons, reasonsEn, platforms, index = 0, context, sourceFilmId, page, creditLabel }: { film: FilmDTO; reasons?: string[]; reasonsEn?: string[]; platforms?: Platform[]; index?: number; context?: "similar" | "vibe" | "blend" | "mood" | "list" | "person"; sourceFilmId?: number; page?: number; creditLabel?: string }) {
     const { language, t } = useLanguage();
     const title = language === "en" ? film.titleEn || film.title : film.title;
     const displayedReasons = language === "en" ? reasonsEn || reasons : reasons;
@@ -44,7 +44,7 @@ export default function FilmCard({ film, reasons, reasonsEn, platforms, index = 
         document.addEventListener("visibilitychange", visibility);
         return () => { observer.disconnect(); if (timer) clearTimeout(timer); document.removeEventListener("visibilitychange", visibility); };
     }, [film.id, sourceFilmId, index, context, pathname, params]);
-    const onClick = () => track(context === "similar" && sourceFilmId ? "recommendation_clicked" : "film_clicked", { film_id: film.id, source_film_id: sourceFilmId, rank: index + 1, context });
+    const onClick = () => track(context === "similar" && sourceFilmId ? "recommendation_clicked" : "film_clicked", { film_id: film.id, source_film_id: sourceFilmId, rank: index + 1, context, page });
     return (
         <li ref={ref} className="min-w-0">
             <div className="group relative">
@@ -61,6 +61,7 @@ export default function FilmCard({ film, reasons, reasonsEn, platforms, index = 
             {film.genres.length > 0 && <p className="mt-1 text-[11px] leading-relaxed text-muted">{film.genres.slice(0, 2).map(t).join(" · ")}</p>}
             {platforms && platforms.length > 0 && <div className="mt-2 flex items-center gap-1" title={platforms.map(p => p.name).join(", ")}>{platforms.slice(0, 3).map(p => p.logoUrl ? <Image key={p.id} src={p.logoUrl} alt={p.name} width={20} height={20} className="rounded" /> : <span key={p.id} className="text-[10px] text-muted">{p.name}</span>)}{platforms.length > 3 && <span className="text-[10px] text-muted">+{platforms.length - 3}</span>}</div>}
             {displayedReasons && displayedReasons.length > 0 && <div className="mt-3 border-t border-line pt-2.5"><p className="mb-1 text-[9px] font-extrabold uppercase tracking-wider text-accent-ink"><T text={"Neden bu film?"} /></p><ul className="space-y-1 text-[11px] leading-relaxed text-muted">{displayedReasons.slice(0, 2).map(r => <li key={r}><T text={r} /></li>)}</ul></div>}
+            {creditLabel && <p className="mt-2 text-xs leading-relaxed text-muted">{creditLabel}</p>}
         </li>
     );
 }

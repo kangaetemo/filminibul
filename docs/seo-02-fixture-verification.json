@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-10-16T06:15:03.951Z",
+  "mode": "fixture",
+  "checks": [
+    "hub: 30 real links in initial HTML",
+    "pages 1–2: SSR 24 cards, deterministic non-overlap, self canonical and JSON-LD positions",
+    "invalid/overflow/duplicate page and unknown combination: real 404; page=1: 308",
+    "preview and language variants: noindex",
+    "49-row fixture last page: one card; upstream failure: 500 rather than empty/404"
+  ],
+  "fixture_queries": 3,
+  "paid_api_calls": 0
+}

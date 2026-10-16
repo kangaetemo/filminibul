@@ -1,0 +1,11 @@
+{
+  "checked_at": "2026-10-16T06:15:07.187Z",
+  "mode": "live_read_only",
+  "checks": [
+    "hub: 30 real links in initial HTML",
+    "pages 1–2: SSR 24 cards, deterministic non-overlap, self canonical and JSON-LD positions",
+    "invalid/overflow/duplicate page and unknown combination: real 404; page=1: 308",
+    "preview and language variants: noindex"
+  ],
+  "paid_api_calls": 0
+}

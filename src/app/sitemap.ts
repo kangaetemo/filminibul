@@ -1,3 +1,5 @@
+import { PILOT_LISTS } from "@/lib/catalog/pilot";
+import { PILOT_PEOPLE, personPath } from "@/lib/catalog/peopleManifest";
 import type { MetadataRoute } from "next";
 import { filmPath } from "@/lib/filmUrl";
 import { MOODS } from "@/lib/recommend/moods";
@@ -35,6 +37,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return [
         { url: SITE, changeFrequency: "weekly", priority: 1 },
         { url: `${SITE}/karistir`, changeFrequency: "monthly", priority: 0.6 },
+        { url: `${SITE}/listeler`, changeFrequency: "weekly", priority: 0.7 },
+        ...PILOT_LISTS.map(list => ({ url: `${SITE}/listeler/${list.slug}`, changeFrequency: "weekly" as const, priority: 0.6 })),
+        ...PILOT_PEOPLE.map(person => ({ url: SITE + personPath(person), changeFrequency: "weekly" as const, priority: 0.6 })),
         ...MOODS.map((m) => ({ url: `${SITE}/mod/${m.id}`, changeFrequency: "weekly" as const, priority: 0.6 })),
         ...films.map((f) => ({ url: SITE + filmPath(f.movie_id, displayTitle(f)), changeFrequency: "monthly" as const, priority: 0.5 })),
     ];

@@ -1,0 +1,15 @@
+{
+  "checked_at": "2026-10-16T06:15:25.582Z",
+  "mode": "live_read_only",
+  "checks": [
+    "hub: 30 actor and 20 director links in initial HTML",
+    "50/50 real catalog role pages: count, SSR cards, no duplicates, canonical and Person JSON-LD",
+    "role mismatch/unknown/invalid/overflow pages 404; old slug/page=1 308; page 2 self canonical and non-overlap; language variant noindex",
+    "Matrix detail: verified Keanu actor link and safe Movie structured data",
+    "five concurrent cold person pages and five cached requests completed"
+  ],
+  "pages_checked": 50,
+  "cold_p95_ms": 1831,
+  "cached_p95_ms": 119,
+  "paid_api_calls": 0
+}

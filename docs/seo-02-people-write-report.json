@@ -1,0 +1,312 @@
+{
+  "started_at": "2026-10-16T06:02:43.142Z",
+  "status": "complete",
+  "source_run": 38812137450,
+  "saved": [
+    {
+      "person_id": 556475,
+      "role_films": 44,
+      "credit_rows": 49,
+      "pilot_bytes": 131072
+    },
+    {
+      "person_id": 97272,
+      "role_films": 82,
+      "credit_rows": 89,
+      "pilot_bytes": 163840
+    },
+    {
+      "person_id": 77349,
+      "role_films": 47,
+      "credit_rows": 47,
+      "pilot_bytes": 180224
+    },
+    {
+      "person_id": 142766,
+      "role_films": 38,
+      "credit_rows": 38,
+      "pilot_bytes": 188416
+    },
+    {
+      "person_id": 145409,
+      "role_films": 39,
+      "credit_rows": 39,
+      "pilot_bytes": 229376
+    },
+    {
+      "person_id": 97274,
+      "role_films": 50,
+      "credit_rows": 50,
+      "pilot_bytes": 245760
+    },
+    {
+      "person_id": 556047,
+      "role_films": 32,
+      "credit_rows": 34,
+      "pilot_bytes": 262144
+    },
+    {
+      "person_id": 228611,
+      "role_films": 28,
+      "credit_rows": 28,
+      "pilot_bytes": 278528
+    },
+    {
+      "person_id": 556048,
+      "role_films": 49,
+      "credit_rows": 49,
+      "pilot_bytes": 311296
+    },
+    {
+      "person_id": 121423,
+      "role_films": 50,
+      "credit_rows": 50,
+      "pilot_bytes": 335872
+    },
+    {
+      "person_id": 74376,
+      "role_films": 22,
+      "credit_rows": 57,
+      "pilot_bytes": 352256
+    },
+    {
+      "person_id": 31,
+      "role_films": 57,
+      "credit_rows": 77,
+      "pilot_bytes": 393216
+    },
+    {
+      "person_id": 380,
+      "role_films": 68,
+      "credit_rows": 85,
+      "pilot_bytes": 417792
+    },
+    {
+      "person_id": 2231,
+      "role_films": 90,
+      "credit_rows": 93,
+      "pilot_bytes": 450560
+    },
+    {
+      "person_id": 6193,
+      "role_films": 27,
+      "credit_rows": 40,
+      "pilot_bytes": 483328
+    },
+    {
+      "person_id": 2963,
+      "role_films": 64,
+      "credit_rows": 78,
+      "pilot_bytes": 507904
+    },
+    {
+      "person_id": 287,
+      "role_films": 52,
+      "credit_rows": 92,
+      "pilot_bytes": 540672
+    },
+    {
+      "person_id": 500,
+      "role_films": 43,
+      "credit_rows": 62,
+      "pilot_bytes": 573440
+    },
+    {
+      "person_id": 524,
+      "role_films": 32,
+      "credit_rows": 38,
+      "pilot_bytes": 581632
+    },
+    {
+      "person_id": 59754,
+      "role_films": 24,
+      "credit_rows": 24,
+      "pilot_bytes": 589824
+    },
+    {
+      "person_id": 3894,
+      "role_films": 33,
+      "credit_rows": 35,
+      "pilot_bytes": 606208
+    },
+    {
+      "person_id": 112,
+      "role_films": 43,
+      "credit_rows": 46,
+      "pilot_bytes": 630784
+    },
+    {
+      "person_id": 6384,
+      "role_films": 50,
+      "credit_rows": 57,
+      "pilot_bytes": 663552
+    },
+    {
+      "person_id": 5064,
+      "role_films": 36,
+      "credit_rows": 36,
+      "pilot_bytes": 671744
+    },
+    {
+      "person_id": 204,
+      "role_films": 33,
+      "credit_rows": 36,
+      "pilot_bytes": 671744
+    },
+    {
+      "person_id": 1245,
+      "role_films": 49,
+      "credit_rows": 54,
+      "pilot_bytes": 696320
+    },
+    {
+      "person_id": 5292,
+      "role_films": 38,
+      "credit_rows": 50,
+      "pilot_bytes": 720896
+    },
+    {
+      "person_id": 36592,
+      "role_films": 18,
+      "credit_rows": 18,
+      "pilot_bytes": 761856
+    },
+    {
+      "person_id": 1337,
+      "role_films": 54,
+      "credit_rows": 55,
+      "pilot_bytes": 753664
+    },
+    {
+      "person_id": 18897,
+      "role_films": 74,
+      "credit_rows": 164,
+      "pilot_bytes": 835584
+    },
+    {
+      "person_id": 121422,
+      "role_films": 37,
+      "credit_rows": 68,
+      "pilot_bytes": 868352
+    },
+    {
+      "person_id": 142857,
+      "role_films": 16,
+      "credit_rows": 38,
+      "pilot_bytes": 884736
+    },
+    {
+      "person_id": 56214,
+      "role_films": 10,
+      "credit_rows": 46,
+      "pilot_bytes": 909312
+    },
+    {
+      "person_id": 145518,
+      "role_films": 12,
+      "credit_rows": 54,
+      "pilot_bytes": 933888
+    },
+    {
+      "person_id": 228610,
+      "role_films": 16,
+      "credit_rows": 31,
+      "pilot_bytes": 942080
+    },
+    {
+      "person_id": 97278,
+      "role_films": 40,
+      "credit_rows": 60,
+      "pilot_bytes": 958464
+    },
+    {
+      "person_id": 145352,
+      "role_films": 10,
+      "credit_rows": 44,
+      "pilot_bytes": 974848
+    },
+    {
+      "person_id": 109083,
+      "role_films": 25,
+      "credit_rows": 37,
+      "pilot_bytes": 983040
+    },
+    {
+      "person_id": 525,
+      "role_films": 12,
+      "credit_rows": 44,
+      "pilot_bytes": 999424
+    },
+    {
+      "person_id": 138,
+      "role_films": 12,
+      "credit_rows": 66,
+      "pilot_bytes": 1032192
+    },
+    {
+      "person_id": 7467,
+      "role_films": 12,
+      "credit_rows": 27,
+      "pilot_bytes": 1040384
+    },
+    {
+      "person_id": 578,
+      "role_films": 27,
+      "credit_rows": 76,
+      "pilot_bytes": 1073152
+    },
+    {
+      "person_id": 2636,
+      "role_films": 26,
+      "credit_rows": 70,
+      "pilot_bytes": 1105920
+    },
+    {
+      "person_id": 488,
+      "role_films": 32,
+      "credit_rows": 134,
+      "pilot_bytes": 1163264
+    },
+    {
+      "person_id": 240,
+      "role_films": 11,
+      "credit_rows": 36,
+      "pilot_bytes": 1171456
+    },
+    {
+      "person_id": 5026,
+      "role_films": 17,
+      "credit_rows": 84,
+      "pilot_bytes": 1196032
+    },
+    {
+      "person_id": 608,
+      "role_films": 16,
+      "credit_rows": 76,
+      "pilot_bytes": 1228800
+    },
+    {
+      "person_id": 137427,
+      "role_films": 10,
+      "credit_rows": 17,
+      "pilot_bytes": 1228800
+    },
+    {
+      "person_id": 5655,
+      "role_films": 15,
+      "credit_rows": 53,
+      "pilot_bytes": 1253376
+    },
+    {
+      "person_id": 1032,
+      "role_films": 23,
+      "credit_rows": 79,
+      "pilot_bytes": 1286144
+    }
+  ],
+  "failed": [],
+  "paid_api_calls": 0,
+  "tmdb_calls": 0,
+  "idempotence_verified": true,
+  "finished_at": "2026-10-16T06:02:47.160Z"
+}

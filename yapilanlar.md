@@ -308,3 +308,111 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - `yapilacaklar.md` dosyasının en üstüne P0 OpenAI işleri taşındı: **API-01** (doğru proje, kota ve düşük maliyetli doğrulama), **AR-02** (Tarif et aramasının gerçek sonuçlarla yeniden doğrulanması) ve mevcut **İÇ-01** (13 Ekim raporunda eksik 1.903 Türkçe özeti kontrollü partilerle tamamlama). Tamamlanan AR-01 / İÇ-03 düzeltmeleri açık göreve dönüştürülmedi.
 - İş sırası ve harcama kapısı: önce doğru anahtar / proje ve kredi doğrulaması, sonra birkaç sınırlı canlı arama; toplu çeviri için güncel eksik sayısı, maliyet tahmini ve kullanıcı harcama onayı. SEO-02 geliştirme planı / görevleri korunur.
 - Yalnızca takip dosyaları düzenlendi; ücretli OpenAI çağrısı, GitHub Actions çalıştırma, veritabanı yazımı, uygulama kodu değişikliği veya canlı yayın yapılmadı.
+
+
+## API-01 / AR-02 / İÇ-01 — Sıralı doğrulama · 15.10.2026 16:41 Türkiye saati
+
+- Kullanıcı API-01 → AR-02 → İÇ-01 → SEO-02 sırasını istedi; SEO görevi zaten mevcut ve sonraki sıraya kaydedildi. Önceki ayrı salt okunur SEO raporu korunur.
+- Canlı TR / EN tarif testleri HTTP200 / 24 film verdi. Üretim anahtarı dışarı alınmadı. OpenAI faturalama / limit ekranı giriş istediğinden bakiye tutarı ve proje kimliği doğrulanmış sayılmaz.
+- Mevcut GitHub Actions anahtarını iki küçük çağrıyla (chat max_tokens=8, mevcut text-embedding-3-large/1536) kontrol eden verify_openai.mjs ve yalnız doğrulama branch'i için workflow hazırlandı. Retry, Supabase/TMDB erişimi ve DB yazımı yok; yalnız kullanım / güvenli durum raporu. Üç doğrulama testi + mevcut kota/içerik akışlarında 17 test geçti. Runner sonucu bekleniyor; hiçbir görev salt kod yazıldı diye tamamlanmadı.
+- Canlı eksikler hâlâ 1.903; eski retry ID kümesiyle aynı. Gerçek kaynaklar o200k_base ile 107.725 token; schema paylı tahmini girdi 551.177 token. Tek geçiş için çıktı varsayımına göre yaklaşık 0,48–0,65 USD. Gerçek kullanım değildir. Toplu çeviri / üretim yayını başlatılmadı.
+
+
+## API-01 / AR-02 / İÇ-01 — Canlı sonuçlar ve harcama sınırlı hazırlık · 15.10.2026 16:54 Türkiye saati
+
+- Kullanıcı sırası API-01 → AR-02 → İÇ-01 → SEO-02 korundu. API-01 üretim/runner bağlantısı doğrulandı; OpenAI hesap ekranı giriş istediği için proje kimliği, kalan bakiye, aylık limit ve harcama uyarıları doğrulanmadı. API-01 bu alt kapsamla açık; AR-02 gerçek sonuç/arayüz kontrolüyle tamamlandı; İÇ-01 bütçe ve gerçek çalışma sonucu bekliyor.
+- Yerel git push kimlik bilgisi olmadığından başarısız oldu; GitHub bağlantısıyla yalnız verify/openai-credit-20261015 branch'i oluşturuldu. main değiştirilmedi. e0652a9 ilk probe chat HTTP200 / 10 input+2 output tokenı aldığı halde dar OK doğrulamasını geçmedi; kota hatası sayılmadı. İstem/zararsız noktalama doğrulaması düzeltildikten sonra 3d4e6dcb4c596289be463bf5b60a05d801480b31 ile #38745740817 tüm adımları başarılı. Tekrarlama yok: son çalışmada chat 15 input+1 output, embedding 4 token; standart fiyatla 0,00000812 USD, ilk çağrı dahil runner toplam 0,00001532 USD. Anahtar, prompt yanıtı ve vektörler log/artifact'e çıkmadı; yalnız güvenli usage/rate başlıkları raporlandı.
+- Üretim TR sorgusu 21.859 ms, EN sorgusu 12.550 ms; her biri HTTP200 / 24 sonuç. Üst sonuçlar ARQ / Ölüm Günün Kutlu Olsun ve Marslı / Yıldızlara Doğru. Tarayıcıda TR ve EN formdan gönderim, İngilizce 24 film-detail bağlantısı, Marslı filmine doğru geçiş doğrulandı; kullanıcı kayıt/tercihi yazılmadı. İlk DOM okuması gezinmeden önce döndüğünde beklenen yeni URL / sonuç DOM'u ayrıca kontrol edildi. 0 ve 241 karakter sorgular 400. Tek örnek süreleri p95 sayılmadı, üretim usage API'de olmadığı için gerçek toplam arama maliyeti uydurulmadı. Son 30 dakikalık vibe_provider_unavailable log araması boş.
+- Salt okunur 1.903 eksik kaynağın 498.326 karakter / 107.725 token envanteri; açık yer tutucu/metadata örüntülü 156 kaynak ayrıldı, kalan 1.747 adayın kaynak tokenı 106.726. Diğer kısa özetler sırf kısa diye reddedilmedi. Kaynak veriler silinmedi veya değiştirilmedi. Şema payıyla tek geçiş ~0,48–0,65 USD, teorik üç tam-output deneme ~17,10 USD; bu son sayı beklenen maliyet değil. Önerilen toplam 2 USD henüz onaylı değil; hiçbir toplu çeviri/afiş işi başlatılmadı.
+- İÇ-01 hazırlığı: content_budget.mjs eşzamanlı/yeniden deneme öncesi muhafazakâr maliyet rezervasyonu, usage ile uzlaşma; timeout veya kullanım bilgisi olmayan çağrıyı ücretsiz saymama. refresh_content --max-usd ve usage / unsuitable_source_ids raporu; kesilmiş model çıktısını reddetme. Taslak workflow bütçe varsayılanı 0, açık onay olmadan otomatik ücretli çeviri başlamaz; metadata bakımı ayrı. Taslak üretim main'ine alınmadı. Mevcut İngilizce kaynak / embedding, CAS koruması, retry-failed, skip-translation, bağımsız afiş sayacı korunuyor.
+- 94 testin tamamı başarılı; sonrasında gerçek bakım script'inde sıfır bütçede sıfır OpenAI çağrısı ve kaynak etiketi dışlama için iki ek entegrasyon senaryosu da başarılı (toplam 96 farklı test). JS sözdizimi / git diff --check başarılı. Uygulama UI kodu değişmediğinden web build tekrarlanmadı. Kanıtlar docs/openai-verification-report.json ve docs/openai-recovery-checks.json; rapor docs/api-openai-kurtarma-2026-10-15.md. Kullanıcı verisi, DB migration/yazımı veya üretim uygulama yayını yok; içerik / cache yenileme sonuçları henüz oluşmadı.
+
+
+### 15 Ekim 2026 16:55 — Taslakların kaydı
+
+- Doğrulama ve hazırlık dosyaları yalnız `verify/openai-credit-20261015` branch'inde [ae5c804](https://github.com/kangaetemo/filminibul/commit/ae5c804981319e2d6afa1da6dae28c43204de0cd) ile kaydedildi. Yeni/yenilenen 11 dosyanın blob SHA'ları uzak tree üzerinden doğrulandı. main'e merge/push ve üretim uygulama yayını yapılmadı; toplu içerik işi başlamadı. Yerel SEO audit geçmişi ve kanıt dosyaları korunur; bunlar bu doğrulama branch'ine topluca yüklenmedi.
+
+
+## İÇ-01 — Kullanıcı bütçe onayı ve gerçek işin başlatılması · 16 Ekim 2026 00:04 Türkiye saati
+
+- Kullanıcı toplam 3–4 USD kullanımına izin verdi; muhafazakâr rezervasyonlu azami 4 USD tavan seçildi. Ek onay gerekmez.
+- Mevcut test edilmiş script'ler yalnız 1.903 eksik retry kaydında çalışacak. Tek seferlik branch workflow'u anahtarları runner dışına çıkarmadan çeviri/metadata bakımını yapar; sonuç artifact/log olarak korunur ve katalog cache yenilenir. Ana uygulama main'ine otomatik rapor commit/deploy eklenmedi.
+- Bu kayıt çalışma komutunu somutlaştırır; henüz başarılı sonuç veya tamamlanan çeviri iddiası değildir. Gerçek run bağlantısı ve sonuçlar eklenecek.
+
+
+## SEO-02 — Yıl/tür pilotunun uygulanması · 16 Ekim 2026 00:15 Türkiye saati
+
+- Auditte seçilen 30 kombinasyon tek yayın manifestine alındı; /listeler ve /listeler/[slug] eklendi. Katalog yalnız gerekli kart metadatasını okur; vektör / kaynak özet seçilmez. Günlük katalog etiketli cache, vote_count DESC NULLS LAST + movie_id ASC sırası ve 24 kart kullanılır; toplam ve kartlar aynı üyelik snapshotından çıkarılır.
+- Canonical / OG, güvenli JSON-LD ItemList ve BreadcrumbList; page=1 için 308, bilinmeyen kombinasyon / geçersiz veya taşan sayfa için 404, DB kesintisinde 500. Devam sayfası kendi canonicalını taşır; preview ve dil/filtre varyantı noindex. Footer dizin bağlantısı ve manifest temelli sitemap girişleri eklendi; kart ölçümü list/person ve sınırlı page alanını kabul eder.
+- 10 ilgili test başarılı; TypeScript ve Next 14 üretim build başarılı. Fixture üzerinde gerçek Next sunucusu: dizinde 30 bağlantı; ilk iki sayfada 24 SSR kart, çakışmasız film URLleri, doğru JSON-LD konumları, 49. kayıtta tek kart; bozuk sayfalama/taşma 404, page=1 308, upstream 503 cevabında uygulama 500. Kanıt docs/seo-02-fixture-verification.json. Build sırasında mevcut anasayfa öneri bileşeni yerel DB sırrı olmadığı için fallback logu üretti; build başarılıdır, bu gerçek canlı veri testi sayılmadı.
+- 50 kişi adayı için mevcut katalogdaki rol ile en çok oy alan filmden kimlik doğrulama çapaları çıkarıldı; docs/seo-02-kisi-dogrulama-capalari.json henüz doğrulanmış kişi IDsi içermez. Kişi tablosu / migration / backfill ve filmografi sayfaları sonraki uygulama adımları olarak açık.
+- Canlı salt okunur SSR doğrulaması GitHub runner sırlarıyla yapılacak; henüz sonucu yok. Bu aşamada uygulama main/publish veya yeni DB şeması değişikliği yok.
+
+
+## İÇ-01 — Canlı kayıtlar, gerçek kullanım ve kaynak hatasının ayrılması · 16 Ekim 2026 00:18 Türkiye saati
+
+- [#38807465092](https://github.com/kangaetemo/filminibul/actions/runs/38807465092): 1.903 kontrol; 1.746 çeviri ve 3 afiş yazıldı. Sıfır CAS çakışması. Runner kullanımına göre 1.749 ücretli istek / 302.578 input + 151.260 output; standart fiyat tahmini **0,3630472 USD**, pending rezervasyon / belirsiz ücretli istek yok. Kesin hesap faturası erişilmedi; bu usage temelli üst muhafazakâr tahmindir. Önceki runner probe toplamı 0,00001532 USD ayrı; bu tur yeni arama/probe ücreti yok.
+- Canlı salt okunur son sayım kaynak varken eksik TR özetin 1.903 → 157 olduğunu doğruladı. İngilizce kaynak ve embedding değiştirilmedi. 156 uygun olmayan kaynağa ücretli istek yapılmadı. Tek hata movie_id=784161: Ernie Haase and Signature Sound DVD çıkış / track listesi, olay örgüsü değil. Şarkı adlarını koruyan çeviri mevcut doğal dil kontrolünden geçmedi; üç denemenin ücreti toplam usage içinde. Bu nedenle ilk run ve ham raporun failed durumu korunur.
+- Kaynak kontrolü DVD RELEASE DATE + Track Listing birlikteliğini metadata sayacak biçimde düzeltildi; gerçek DVD hikâyesini dışlamayan regresyon testi eklendi. Son 157 kaydı OpenAI sırrı bile verilmeden --skip-translation --max-usd=0 ile yeniden sınıflandıran workflow hazırlandı. Tamamlanma sonucu henüz bekleniyor; İngilizce/embedding veya uydurma Türkçe yazımı yok.
+- Ana run raporu / artifact / kontrol cache saklandı, Catalog cache refreshed logu görüldü. SEO pilot kodu e3293506890090bf8e7957c068ea037242fa1963 ile yalnız feat/seo-pilot branchine gönderildi; canlı katalog SSR testi #38808521199 devam ediyor. Uygulama üretim main değişikliği yok.
+
+
+## İÇ-01 / SEO-02 — Son doğrulama ve teslim · 16.10.2026 00:20 Türkiye saati
+
+- Sıfır bütçeli [#38808833812](https://github.com/kangaetemo/filminibul/actions/runs/38808833812) tüm adımları başarılı. Kalan 157 kaynak metadata/yer tutucu/şarkı listesi olarak sınıflandı; 0 hata, 0 çakışma, 0 OpenAI çağrısı / ücret. Son rapor partial: özetler tamamlanmış gibi gösterilmedi. Artifact ve kontrol cache saklandı, Catalog cache refreshed doğrulandı. İlk ücretli rapor ayrı dosyada korunur; toplam gerçek yazım 1.746 TR özet / 3 afiş, usage tahmini 0,3630472 USD. Toplu özet raporu docs/content-maintenance-summary-20261016.json.
+- SEO [#38808521199](https://github.com/kangaetemo/filminibul/actions/runs/38808521199) testler, build, fixture SSR ve mevcut Supabase sırlarıyla gerçek katalog SSR adımları başarılı. Sunucu kart HTMLsi, canonical, 24+24 çakışmasız kart, page=1 308, geçersiz/taşan/çoğul page için 404 ve preview noindex doğrulandı. Tüm 30 manifest listesi ayrıca canlı SQL ile sayıldı: 3.132 üyelik, en küçük liste 20 film, 30/30 liste asgari 10 film eşiğini sağlıyor. Yeni ücretli provider çağrısı ve DB yazımı yok.
+- Bu değişiklik turunda 10 SEO/ölçüm + 14 içerik testi başarılı; mevcut 96 testin hepsi gereksiz yere tekrarlanmadı. TypeScript / Next üretim derlemesi / git diff --check başarılı. React kontrolü: yeni veri sunucuda, kart başına ağ isteği yok, kararlı film ID anahtarları, gerçek a/Link sayfalama, erişilebilir başlık/nav etiketleri, üçüncü taraf JSON-LD kaçışları. Mobil CSS mevcut movie-grid/buton sistemiyle uyumlu; gerçek cihaz görsel kontrolü ve yayın sonrası Search Console henüz yapılmadı.
+- [PR #3](https://github.com/kangaetemo/filminibul/pull/3) açıldı; ilk kaynak commit e329350, içerik sonuçları / koruması 4956acb. PR head/main karşılaştırması mergeable=true / clean görüldü. Ana uygulama üretime yayımlanmadı, migration uygulanmadı. Kişi ID/kredi sayfaları, Kİ-02 ve tematik ikinci aşama tamamlanmış sayılmadı.
+
+
+## İÇ-01 kapatma kararı / SEO-02 kişi pilotu başlangıcı · 16 Ekim 2026 00:41 Türkiye saati
+
+- Kullanıcı 157 kaydı şimdilik bırakarak İÇ-01'in tamamlanmış sayılmasını açıkça istedi; ana görev [x] yapıldı, geçmiş eksik/kullanım kanıtları silinmedi. Yeni çeviri/harcama yapılmadı.
+- 50 kişinin kimliği yalnız isimle atanmaz: katalog film çapası üzerindeki cast veya tam Director kredisi, kişi detay adı/alternatif adı ve person movie_credits içindeki aynı film/rol birlikte kontrol edilir. Tüm katalog kadrosu taranmaz; yalnız 50 kişi ve 2025/öncesi mevcut katalog filmleri kapsanır. Ham Writing job/department gelecekteki Kİ-02 için korunur; yeni senarist sayfası bu pilotta açılmaz.
+- Ortam terminali kullanılamadığından kaynaklar GitHub branch'i üzerinden hazırlanır, test ve veri işi mevcut GitHub runner sırlarıyla yürütülür. Kimlik toplayıcı ilk geçişte salt okunur; model rol/isim/dedup testleri ve rapor/artifact hazır. Çalışma başlatmak tamamlanma sayılmadı; gerçek sonuç eklenecek.
+
+
+## SEO-02 / Kİ-01 — Kimlik sonucu ve sınırlı metadata şeması · 16 Ekim 2026
+
+- Salt okunur kimlik run #38812137450 başarılı: 50/50, 0 hata, 2.810 tüm-rol kredi satırı. Ana rol film adetleri 10–90; yeni katalog filmi / embedding / OpenAI işlemi yok. Public kimlik raporu docs/seo-02-people-identity-report.json.
+- Canlı DB 421.956.755 byte; iki yeni tablo ve role/film indeksleri ile service_role'a özel SECURITY INVOKER atomik snapshot RPC migration'ı uygulandı. İlk MCP denemesi expired requestState hatası verdi; salt okunur kontrolde nesneler yoktu, tek tekrar başarılı oldu. Schema SQL'i scripts/sql/seo_02_people.sql ile repoda saklanır; yerel runtime bulunmadığından CLI migration üretimi kullanılamadı, MCP migration geçmişine kaydedildi.
+- 50 kişi / en az 5 ana-rol filmi / onaylı çapası / 2025 ve öncesi katalog üyeliği / 10 MB metadata / 450 MB DB sınırları RPC'de doğrulanır. Bütün transaction geri alınacağı için yarım güncelleme mevcut kredileri silmez. Anon/authenticated tablo ve RPC hakları kaldırıldı, RLS açıldı.
+- Veriyi ikinci kez TMDB'den indirmek yerine aynı başarılı run'ın artifact'i indirilecek; 50 kimlik/sayım eşleşmesi kontrol edilerek servis bağlamında kaydedilecek ve ilk snapshot tekrar uygulanıp idempotence doğrulanacak. Henüz veri kaydının başarılı olduğu iddia edilmedi. Fotoğraf / rol manifesti doğrulanan 50 kimlikle hazırlandı; sayfa kodu sırada.
+
+
+## SEO-02 / Kİ-01 — Gerçek veri kaydı ve filmografi uygulaması · 16 Ekim 2026 09:08 Türkiye saati
+
+- #38858978659 tam başarılı: 50 kişi, 2.810 kredi. Idempotence=true; ilk snapshot ikinci kez kaydedildiğinde çoğalma olmadı. Canlı SQL 50 kişi / 2.810 kredi / 1.605 farklı film; tablolar+indeksler 1.302.528 byte, DB 423.390.355 byte. Yeni verinin depolama etkisi yaklaşık 1,3 MB; tüm katalog kadrosu indirilmedi.
+- RLS iki tabloda açık; anon ve authenticated SELECT kapalı, service_role INSERT açık. Snapshot RPC SECURITY INVOKER / sabit boş search_path, yalnız service_role EXECUTE. Advisor'daki RLS Enabled No Policy INFO, hizmete özel tasarımın sonucu; açık anon politikası eklenmedi (https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy). Yeni erişim ihlali bulunmadı.
+- Gerçek Keanu snapshotı, 201 karakterlik geçersiz job ile transaction içinde denenip check_violation aldı. Kredi JSON hash'i ve kişi JSON'u önce/sonra aynı; test transactionı geri alındı. Veri kaybı olmadan başarısız snapshot koruması doğrulandı.
+- 30 oyuncu / 20 yönetmen route'u, kişi dizini, fotoğraf ve fallback, karakter notları, sabit 24 kart, self canonical ve slug/page=1 yönlendirmesi kodlandı. Director yalnız tam Director job; yardımcı yönetmen/yazar oyunculuk listesine karışmaz. 2025 ve öncesi mevcut katalog kapsamı kullanıcıya yazıldı. Writing job/department saklandı; senarist route'u bu aşamada açılmadı.
+- Film kredilerinde yalnız gerçek film/kişi ilişkisi ve onaylı ana rolü olan kişiye bağlantı; kimliksiz eski adlar düz metin kalır. Aynı filmde çoklu doğrulanmış yönetmen desteklenir. Movie JSON-LD'de doğrulanmış Director ilişkileri, kişi sayfasında Person+ItemList+Breadcrumb kullanılır; JSON metni script enjeksiyonuna karşı kaçırılır. Yeni metadata sunucuda, fotoğraflar mevcut TMDB loader'dan, kart başına ek veri çağrısı yok.
+- Haftalık refresh 50 kişiyle sınırlı; snapshot başarısızsa eskisini korur, DB/pilot kapasite kontrolleri aktif. Katalog etiketli günlük cache ve refresh sonrası invalidation var. Yeni kullanıcı verisi veya OpenAI çağrısı yok.
+- Sayfa/model ve gerçek SSR testleri CI'da başlatılacak; test geçmeden SEO-02 / Kİ-01 ana görevi bitmiş sayılmadı. Üretim uygulaması yayımlanmadı.
+
+
+### SEO-02 derleme uyumluluğu düzeltmesi · 16 Ekim 2026
+
+#38859594490 model/liste/ölçüm testlerinde 13/13 başarılı, build TS2802 ile başarısız: mevcut tsconfig hedefi iterator spread'i desteklemiyor. Yeni filmografi Map/Set kullanımları Array.from ile değiştirildi; bütün uygulamanın derleme hedefi değiştirilmedi. Film Movie JSON-LD verisi okunabilir bir sabit nesneye taşındı, doğrulanmış yönetmen yoksa boş director alanı eklenmedi. Sonraki CI önce tsc ile tüm tip hatalarını, sonra build/SSR senaryolarını doğrulayacak. Üretim uygulaması veya kaydedilmiş 50 kişi verisi bu hata nedeniyle değiştirilmedi.
+
+
+### SEO-02 fixture doğrulama düzeltmesi · 16 Ekim 2026
+
+#38859793468 ile TypeScript uyumsuzluğu giderildi: 13 model/liste/ölçüm testi, bağımsız tsc, Next build ve hem fixture hem canlı yıl/tür SSR başarılı. Yeni kişi fixture'ında test kuralı select ifadesindeki film_embeddings_v3 ilişki adını embedding alanı sanarak yanlış pozitif verdi. Kural yalnız kolon tokenı embedding'i eşleştirecek şekilde düzeltildi; veri erişimi veya şema bu hatada değişmedi. Sonuç gerçek bir test hatası olarak kaydedilir, 50 canlı kişi SSR testi henüz başarılı sayılmaz.
+
+
+## SEO-02 / Kİ-01 — İlk 80 sayfalık pilot doğrulandı · 16 Ekim 2026 09:18 Türkiye saati
+
+- [#38860035895](https://github.com/kangaetemo/filminibul/actions/runs/38860035895) tüm adımları başarılı. Test edilmiş kaynak 27b777fae4e7e9963dd5b25282531def834f8e61: 13 model/liste/ölçüm testi, tsc, Next 14 üretim build, yıl/tür fixture ve canlı SSR, kişi fixture ve 50/50 gerçek kişi sayfası SSR.
+- Dizin 30 oyuncu + 20 yönetmene gerçek bağlantı içeriyor. Her kişi sayfasında doğru ana-rol film adedi, en fazla 24 kart, tekilleştirme, canonical, Person/ItemList; Matrix detayında Keanu kişi linki / Movie JSON-LD doğrulandı. Page=2 ayrı canonical / çakışmasız kartlar; eski slug ve page=1 308; yanlış rol / bilinmeyen ID / geçersiz / taşan / çoğul page 404; preview/dil varyantı noindex. Fixture son sayfa tek kart / fotoğraf eksikliği / karakter notları / upstream 500 akışını geçti.
+- 50 cold sayfa p95 1.831 ms, 5 cache'li istek p95 119 ms; beş eşzamanlı cold ve beş cache'li istek başarılı. Bunlar runner/Next sunucusu ölçümü; Vercel üretim SLA'sı veya gerçek cihaz görsel kontrolü sayılmadı.
+- Kimlik #38812137450, kayıt #38858978659 ve son SSR #38860035895 raporları repo docs ve workflow artifact'lerinde korunur. Güvenlik/atomiklik/idempotence kanıtı docs/seo-02-people-safety-verification.json; yeni metadata yaklaşık 1,3 MB, 50 kişi / 2.810 kredi / 1.605 farklı film. Ücretli OpenAI çağrısı 0.
+- Kİ-01'in onaylı 50 kişilik pilotu [x] yapıldı; tüm TMDB kişileri kimliklendirilmiş sayılmadı. SEO-02 ilk 80 sayfa uygulaması tamam/yayına hazır; ana görev kontrollü yayın / tematik sonraki kapsamla açık. Kİ-02 writer ekranları, Search Console ve gerçek mobil görsel doğrulama ayrıca açık. İÇ-01 kapatma/kapsam kararı korundu; 157 kayıt için çalışma yok.
+- PR #3 güncelleniyor; main hâlâ 8afa195b70a6b4766eca7742154e7a7dc431baf3. Uygulama merge/deploy yapılmadı. Son kaynaklar GitHub üzerinden kalıcı; yerel çalışma ortamı kullanılamadığı için doğrulama runner'da yürütüldü. Gerçek run/commit sonuçları kaydedildi; başarısız iki doğrulama girişimi geçmişten silinmedi.
+
+
+## SEO-02 — Üretim yayın talimatı ve hedef doğrulaması · 16 Ekim 2026 10:29 Türkiye saati
+
+- Kullanıcı üretim yayınını açıkça istedi. PR #3 head 08d3c36794133f00fac1884562668413d20401b2, main 8afa195b70a6b4766eca7742154e7a7dc431baf3; mergeable=true. Son uygulama kaynak kontrolü #38860035895 / 27b777fa tüm adımları başarılı; sonraki commit yalnız rapor/takip dosyalarıydı.
+- Vercel team_665VlzWwrorfmvkLXKajR5sW / prj_UQOwvdOYEPcjl8mOfQlNQVN1pqSJ / filminibul / production doğrulandı; mevcut READY sürüm 8afa195 / dpl_8fvZ2pZJP7jawE8TXbUPXMj2rEY2. Standart Git entegrasyonuyla main merge yayını kullanılacak; sırlar yerel ortama alınmayacak.
+- Bu kayıt yayına geçiş onayıdır, henüz başarılı dağıtım iddiası değildir. Gerçek merge/deployment ve üretim kontrolleri sonraki kayda eklenecek. Kişi metadata migration'ı zaten hazır; tekrar uygulanmayacak.

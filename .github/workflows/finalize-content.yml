@@ -1,0 +1,53 @@
+name: Kalan içerik kaynaklarını ücretli çağrı yapmadan raporla
+on:
+  push:
+    branches: [feat/seo-pilot]
+    paths: [.github/workflows/finalize-content.yml]
+permissions:
+  contents: read
+concurrency:
+  group: catalog-maintenance
+  cancel-in-progress: false
+jobs:
+  content:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - uses: actions/cache/restore@v4
+        with:
+          path: data/content/checked.json
+          key: content-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: content-audit-
+      - name: Yalnız kalan kaynakları kontrol et (sıfır ücretli çağrı)
+        run: node scripts/catalog/refresh_content.mjs --retry-failed --max=30000 --skip-translation --max-usd=0
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - name: Güvenli sonuç raporu
+        if: always()
+        run: |
+          node --input-type=module -e "import {readFileSync} from 'node:fs'; const r=JSON.parse(readFileSync('docs/content-maintenance-report.json','utf8')); console.log('CONTENT_REPORT='+JSON.stringify(r));"
+      - name: Kontrol önbelleğini sakla
+        if: always() && hashFiles('data/content/checked.json') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: data/content/checked.json
+          key: content-audit-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Sonuç dosyasını sakla
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: final-content-maintenance-report
+          path: docs/content-maintenance-report.json
+      - name: Katalog önbelleğini yenile
+        if: always()
+        run: node scripts/catalog/revalidate_content.mjs
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

@@ -1,0 +1,38 @@
+name: SEO doğrulanmış kişi pilotunu kaydet
+on:
+  push:
+    branches: [feat/seo-pilot]
+    paths: [.github/workflows/persist-seo-people.yml]
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: seo-people-maintenance
+  cancel-in-progress: false
+jobs:
+  people:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        with:
+          name: seo-people-identity-report
+          run-id: 38812137450
+          github-token: ${{ github.token }}
+          path: data/seo-staging
+      - name: Doğrulanmış snapshotı atomik kişi işlemleriyle kaydet
+        run: node scripts/catalog/persist_people.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: seo-people-write-report
+          path: docs/seo-02-people-write-report.json

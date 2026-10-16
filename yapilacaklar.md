@@ -1,18 +1,20 @@
 # Filminibul — yapılacaklar
 
-Son güncelleme: 15 Ekim 2026 (Türkiye saati).
+Son güncelleme: 16 Ekim 2026 (Türkiye saati).
 
 Bu dosya, konuşulan geliştirmeleri ve açık işleri takip eder. Öncelikler istişarede önerilen sıradır; uygulama kapsamı yeni kararlarla güncellenir. Tamamlanan maddeler burada `[x]` olarak işaretlenir, tarih ve doğrulama bilgileriyle `yapilanlar.md` dosyasına eklenir. Başlatılmış ama bitmemiş işler açık kalır.
 
 ## P0 — OpenAI bakiyesi yüklendi: ilk öncelikli işler (15 Ekim 2026)
 
+**15 Ekim kullanıcı sırası: API-01 → AR-02 → İÇ-01 → SEO-02.** Mevcut SEO-02 planı / ayrı salt okunur raporu korunur. API erişimi ve sınırlı canlı TR / EN arama kontrolü başlatıldı; toplu çeviri için güncel maliyet raporu hazırlanıyor.
+
 Kullanıcı 15 Ekim'de OpenAI API hesabına bakiye yüklediğini bildirdi. Bu **kullanıcı beyanıdır**; uygulamanın kullandığı doğru OpenAI proje/anahtarında kredinin etkin olduğu, limitler ve ücretli uç noktaların çalıştığı henüz teknik olarak doğrulanmadı. Aşağıdaki işler SEO-02'nin geliştirme aşamasından önce değerlendirilir. Bu öncelik güncellemesi ücretli bir çalışmayı başlatmaz.
 
-- [ ] **API-01 — OpenAI API bakiyesini ve kota durumunu güvenli biçimde doğrula.** Üretimde / GitHub Actions'ta kullanılan API anahtarının doğru projeye ait olduğunu, faturalandırmanın etkinliğini, kalan proje limitini ve harcama uyarılarını anahtarı ifşa etmeden kontrol et. Mümkünse tek küçük, ölçülü test çağrısı ile `insufficient_quota` durumunun giderildiğini doğrula; harcama / token bilgisini raporla. Kullanıcıdan açık onay almadan büyük toplu çeviri veya başka ücretli işlem başlatma. Hata devam ederse proje / anahtar / bütçe nedenini ayır.
+- [ ] **API-01 — OpenAI API bakiyesini ve kota durumunu güvenli biçimde doğrula.** Üretimde / GitHub Actions'ta kullanılan API anahtarının doğru projeye ait olduğunu, faturalandırmanın etkinliğini, kalan proje limitini ve harcama uyarılarını anahtarı ifşa etmeden kontrol et. Mümkünse tek küçük, ölçülü test çağrısı ile `insufficient_quota` durumunun giderildiğini doğrula; harcama / token bilgisini raporla. Kullanıcıdan açık onay almadan büyük toplu çeviri veya başka ücretli işlem başlatma. Hata devam ederse proje / anahtar / bütçe nedenini ayır. **15 Ekim doğrulaması:** üretimde gerçek tarif sonucu ve GitHub Actions #38745740817 chat + embedding HTTP200 başarılı. Doğrulama kullanım raporu hazır; faturalama ekranı giriş istediği için proje kimliği / kalan bakiye / harcama uyarıları doğrulanmadı, bu alt kapsam açık.
 
-- [ ] **AR-02 — "Tarif et" doğal dille film aramasının yeniden çalıştığını doğrula.** AR-01'de kota kaynaklı 429 için eklenen güvenli hata yönetimi tamamlandı; bakiye sonrası asıl aramanın yeniden öneri üretmesi ayrıca doğrulanmalı. API-01'den sonra birkaç kontrollü TR / EN tarif sorgusunu canlı / güvenli ortamda dene. Çalışan sonuç, yanıt süresi, öneri ilgisi ve çağrı maliyetini raporla; gereksiz tekrar ve sınırsız ücretli test yapma. Başarılı gerçek sonuç görülmeden bu maddeyi kapatma.
+- [x] **AR-02 — "Tarif et" doğal dille film aramasının yeniden çalıştığını doğrula.** AR-01'de kota kaynaklı 429 için eklenen güvenli hata yönetimi tamamlandı; bakiye sonrası asıl aramanın yeniden öneri üretmesi ayrıca doğrulanmalı. API-01'den sonra birkaç kontrollü TR / EN tarif sorgusunu canlı / güvenli ortamda dene. Çalışan sonuç, yanıt süresi, öneri ilgisi ve çağrı maliyetini raporla; gereksiz tekrar ve sınırsız ücretli test yapma. Başarılı gerçek sonuç görülmeden bu maddeyi kapatma. **15 Ekim sonucu:** TR zaman döngüsü ve EN Mars astronotu sorguları HTTP200 / 24 sonuç; 21,859 ve 12,550 saniye. Canlı TR/EN form, 24 İngilizce film bağlantısı ve Marslı detayına geçiş; boş / 241 karakter sorguda 400 doğrulandı. Üretim token usage bulunmadığından gerçek toplam maliyet bilinmiyor; runner probe maliyeti arama maliyeti sayılmadı. Rapor: docs/api-openai-kurtarma-2026-10-15.md.
 
-- [ ] **İÇ-01 — Kalan Türkçe film özetlerini kontrollü biçimde tamamla ve afiş bakımının sonucunu doğrula.** İlk çalışma [GitHub Actions #38304738851](https://github.com/kangaetemo/filminibul/actions/runs/38304738851) raporunda 13.526 çeviri ve **1.903 eksik Türkçe özet** vardı; bunlar 13 Ekim snapshot'ıdır, bugünkü kalan sayısı diye varsayma. İÇ-03 onarımında 1.903 film yeniden kontrol edildi, 526 afiş gerçekten kaydedildi; önceki 8.613 afiş seçiminin tümü yazılmış sayılmaz. Önce güncel eksikleri ve tahmini token / API harcamasını hesapla, kontrol önbelleğini ve `--retry-failed` / `--skip-translation` davranışını doğrula. API-01 tamamlandıktan ve toplam ücretli çalışma bütçesi kullanıcı tarafından onaylandıktan sonra **yalnız eksik kayıtları** sınırlı partilerle sürdür; mevcut Türkçe metni / İngilizce kaynağı / embedding'i koru. Çevrilen / temizlenen özet, gerçekten değişen afiş, kalan özet, hata, maliyet ve önbellek yenileme sonuçlarını raporla; tamamlanmadan `[x]` yapma.
+- [x] **İÇ-01 — Kalan Türkçe film özetlerini kontrollü biçimde tamamla ve afiş bakımının sonucunu doğrula.** İlk çalışma [GitHub Actions #38304738851](https://github.com/kangaetemo/filminibul/actions/runs/38304738851) raporunda 13.526 çeviri ve **1.903 eksik Türkçe özet** vardı; bunlar 13 Ekim snapshot'ıdır, bugünkü kalan sayısı diye varsayma. İÇ-03 onarımında 1.903 film yeniden kontrol edildi, 526 afiş gerçekten kaydedildi; önceki 8.613 afiş seçiminin tümü yazılmış sayılmaz. Önce güncel eksikleri ve tahmini token / API harcamasını hesapla, kontrol önbelleğini ve `--retry-failed` / `--skip-translation` davranışını doğrula. API-01 tamamlandıktan ve toplam ücretli çalışma bütçesi kullanıcı tarafından onaylandıktan sonra **yalnız eksik kayıtları** sınırlı partilerle sürdür; mevcut Türkçe metni / İngilizce kaynağı / embedding'i koru. Çevrilen / temizlenen özet, gerçekten değişen afiş, kalan özet, hata, maliyet ve önbellek yenileme sonuçlarını raporla; tamamlanmadan `[x]` yapma. **15 Ekim hazırlığı:** güncel 1.903 eksik / retry ID kümesi aynı; 156 açık metadata / yer tutucu kaynak, 1.747 çeviri adayı. Tek geçiş ~0,48–0,65 USD; toplam 2 USD tavan önerisi henüz onaylanmadı. Bütçe rezervasyonu / usage / kesilmiş çıktı / uygun olmayan kaynak kontrolü ve testleri taslak doğrulama branch’inde hazır; toplu iş veya üretim main değişikliği yok.
 
 ### Önceden tamamlanan bakım onarımı
 
@@ -30,7 +32,7 @@ Bu maddeler kullanıcının isteğiyle havuza eklendi. 13 Ekim akşamı kullanı
 - [x] **KYN-01 — “Nerede izlenir?” kaynak satırını sadeleştir.** İstek: mümkünse “Veri: JustWatch · tüm seçenekler” satırını kaldır. Resmî TMDB endpoint'i JustWatch atfını şart koşuyor; tamamen atıfsız kullanım planlanmaz. “Veri:” öneki ve isteğe bağlı “tüm seçenekler” bağlantısı kaldırılabilir; panel içinde küçük, okunabilir JustWatch kaynak gösterimi korunur. Uygulamadaki nihai görünüm sadeleştirme sırasında belirlenir.
 - [x] **KYN-02 — “TMDB’de incele” bağlantısını kaldır.** Kullanıcının kesin arayüz isteği. Film ayrıntılarındaki bu düğme kaynak bildirimiyle aynı şey değildir; zorunlu TMDB atfı KYN-03 kapsamında korunur.
 - [x] **KYN-03 — Footer'daki kaynak cümleleri ve “ürün” ifadesini düzenle.** İstek: “Film verileri ve puanlar: TMDB · Yayın bilgisi: JustWatch” ile “Bu ürün TMDB tarafından onaylanmış veya sertifikalandırılmış değildir.” tekrarlarını şartlar elverdiğince kaldır. Öneri: footer'dan erişilen “Hakkında ve veri kaynakları” alanında onaylı TMDB logosunu ve gerekli bildirimi görünür tut; footer'ı sadeleştir. Türkçe kullanıcı metninde “Bu site, TMDB API'sini kullanır; TMDB tarafından onaylanmış veya sertifikalandırılmış değildir.” tercih edilebilir; resmî istenen İngilizce bildirim kaynaklar alanında korunur. Mevcut gizlilik politikasındaki üçüncü taraf hizmet listesi, bu logo / bildirim alanının yerine geçtiği varsayımıyla kullanılmaz. JustWatch atfı KYN-01 ile birlikte korunur.
-- [ ] **Kİ-01 — Oyuncu ve yönetmenlere özel film listeleri / sayfaları ekle.** Film kredilerindeki isimleri kişi sayfasına bağla; fotoğraf, ad ve ilgili filmografi sun. Aynı isimli kişileri ad metniyle değil TMDB kişi kimliğiyle ayır. Oyunculuk ve yönetmenlik listeleri ayrı rol kapsamlarında çalışsın; önbellek ve sayfalama bulunsun.
+- [x] **Kİ-01 — Oyuncu ve yönetmenlere özel film listeleri / sayfaları ekle.** Film kredilerindeki isimleri kişi sayfasına bağla; fotoğraf, ad ve ilgili filmografi sun. Aynı isimli kişileri ad metniyle değil TMDB kişi kimliğiyle ayır. Oyunculuk ve yönetmenlik listeleri ayrı rol kapsamlarında çalışsın; önbellek ve sayfalama bulunsun.
 - [ ] **Kİ-02 — Senaristlere özel listeler ve kredi desteği ekle.** Mevcut veri modeline kişi kimliği / yazarlık kredisi eklemeyi değerlendir. Senaryo, hikâye ve uyarlama gibi kredi rollerini birbirinin yerine gösterme. İsimden ilgili film listesine erişim sun; Kİ-01 kişi sayfası altyapısını kullan.
 - [x] **PF-03 — “Platformlarım” alanını kompakt filtreye dönüştür.** Önerilerin üstünde uzun platform rozetleri yerine tek “Platformlar” / “Filtrele” düğmesi göster; seçenekler açılabilir panelde olsun. Seçim varsa “Platformlar (2)” gibi sayıyla ve kısa özetle görünür tut; “Tümünü göster / Filtreyi temizle” erişilebilir kalsın. Mevcut çoklu seçim, URL'deki `p` filtresi, hatırlanan tercih ve sunucu öneri filtresi korunur. Paylaşılan bağlantının dil / filtre parametreleri istemeden silinmesin. Özellikle mobilde ilk öneri kartlarına ulaşmayı kısalt; açılma / kapanma, klavye ve dar ekran taşmasını doğrula.
 
@@ -93,7 +95,7 @@ Kullanıcı gizlilik politikasının tamamlanmasını önceliklendirdi ve yayım
 - [ ] **PF-01 — Öneri altyapısı ve önbelleği iyileştir.** Tekrarlayan sorguları, pahalı veritabanı işlemlerini ve API beklemelerini incele. Kullanıcıya özel sonuçları farklı hesaplar arasında paylaşma.
 - [ ] **PF-02 — Maliyet ve gecikmeyi birlikte takip et.** Film sayfaları ve öneri uç noktalarının CPU / yanıt sürelerini ölç; iyileştirmelerin öneri kalitesini bozmadığını doğrula.
 - [ ] **SEO-01 — Organik film keşfi trafiğini güçlendir.** Gerçek film önerisi aramalarına yanıt veren film / mod / keşif sayfalarını, başlıkları ve iç bağlantıları planla; taranabilirlik ve canonical davranışını kontrol et.
-- [ ] **SEO-02 — Google için dinamik film listeleri ve filmografi sayfaları oluştur.** SEO-01 ve Kİ-01 / Kİ-02 ile ilişkili yeni geliştirme paketi. **İlk aşama:** (1) Oyuncu ve yönetmen için TMDB kişi kimliğine dayalı ayrı, taranabilir filmografi sayfaları (rol ayrımı, fotoğraf, film listesi, sayfalama); (2) yıl + tür odaklı film listeleri (ör. “2024 aksiyon filmleri”, “2014 bilim kurgu filmleri”). Her kart, sitedeki **mevcut film detay sayfasına** bağlantı versin; listelerin birbirine ve ilgili kişi / film sayfalarına anlamlı iç bağlantıları olsun. **SEO / kalite:** sunucuda üretilen taranabilir HTML, kullanıcıya faydalı benzersiz giriş metni, doğru yıl / tür / kredi eşleşmeleri, canonical, sitemap, gerekiyorsa sayfalama, uygun `ItemList` / `Movie` yapılandırılmış verileri ve Search Console ölçümü. Boş, çok az içerikli veya yalnızca kombinasyon çoğaltan tekrar sayfaları otomatik indeksleme; kontrollü pilotta örnek hedef 50 kişi + 30 yıl/tür listesi, veri kalitesine göre netleştir. **Görünürlük:** ana sayfada yeni bölüm zorunlu değil; footer / menüde sade “Film Listeleri” girişi ve film sayfasındaki oyuncu / yönetmen bağlantıları yeterli başlangıç. **İkinci aşama:** “zaman yolculuğu filmleri”, “uzayda geçen filmler” gibi gerçekten seçilmiş, özgün açıklamalı tematik listeler (örnek ilk 10 seçki). Hedef yalnızca Google için seri sayfa üretmek değil, yararlı keşif ve sitede film sayfalarına geçiş sağlamak. Henüz uygulanmadı; ayrı planlama / geliştirme görevidir. 14 Ekim 2026 incelemesi: [ortak uygulama planı](docs/seo-02-uygulama-plani.md) hazır. Önerilen sıra: canlı metadata / kapasite raporu → yıl-tür pilotu ve ortak SEO altyapısı → kimlikli oyuncu / yönetmen filmografileri → senarist genişlemesi → tematik seçkiler. Plan öneridir; uygulama / migration / toplu veri işi henüz onaylanmadı. SEO-01 / Kİ-01 / Kİ-02 de açık kalır.
+- [ ] **SEO-02 — Google için dinamik film listeleri ve filmografi sayfaları oluştur.** SEO-01 ve Kİ-01 / Kİ-02 ile ilişkili yeni geliştirme paketi. **İlk aşama:** (1) Oyuncu ve yönetmen için TMDB kişi kimliğine dayalı ayrı, taranabilir filmografi sayfaları (rol ayrımı, fotoğraf, film listesi, sayfalama); (2) yıl + tür odaklı film listeleri (ör. “2024 aksiyon filmleri”, “2014 bilim kurgu filmleri”). Her kart, sitedeki **mevcut film detay sayfasına** bağlantı versin; listelerin birbirine ve ilgili kişi / film sayfalarına anlamlı iç bağlantıları olsun. **SEO / kalite:** sunucuda üretilen taranabilir HTML, kullanıcıya faydalı benzersiz giriş metni, doğru yıl / tür / kredi eşleşmeleri, canonical, sitemap, gerekiyorsa sayfalama, uygun `ItemList` / `Movie` yapılandırılmış verileri ve Search Console ölçümü. Boş, çok az içerikli veya yalnızca kombinasyon çoğaltan tekrar sayfaları otomatik indeksleme; kontrollü pilotta örnek hedef 50 kişi + 30 yıl/tür listesi, veri kalitesine göre netleştir. **Görünürlük:** ana sayfada yeni bölüm zorunlu değil; footer / menüde sade “Film Listeleri” girişi ve film sayfasındaki oyuncu / yönetmen bağlantıları yeterli başlangıç. **İkinci aşama:** “zaman yolculuğu filmleri”, “uzayda geçen filmler” gibi gerçekten seçilmiş, özgün açıklamalı tematik listeler (örnek ilk 10 seçki). Hedef yalnızca Google için seri sayfa üretmek değil, yararlı keşif ve sitede film sayfalarına geçiş sağlamak. İlk 80 sayfalık pilot kodlandı ve gerçek katalogla doğrulandı; kontrollü yayın, Kİ-02 ve tematik ikinci aşama açık. 14 Ekim 2026 incelemesi: [ortak uygulama planı](docs/seo-02-uygulama-plani.md) hazır. Önerilen sıra: canlı metadata / kapasite raporu → yıl-tür pilotu ve ortak SEO altyapısı → kimlikli oyuncu / yönetmen filmografileri → senarist genişlemesi → tematik seçkiler. Kullanıcı planı ve pilot uygulamasını onayladı. 50 kimlikli kişi / 30 yıl-tür pilotu hazır; sınırlı kişi migration'ı ve veri kaydı uygulandı. SEO-01 genel organik büyüme / Kİ-02 ve yayın sonrası ölçüm açık; Kİ-01'in 50 kişilik pilotu doğrulandı.
 
 ## P2 — İçe aktarma, profil ve bildirimler
 
@@ -130,3 +132,75 @@ Kullanıcı gizlilik politikasının tamamlanmasını önceliklendirdi ve yayım
 - [x] **UI-02 — Açık / koyu tema değişimini yumuşat.** Kullanıcı kısa görsel efekt istedi: 220ms renk çapraz geçişi; eski tarayıcıya geçici renk transition fallback. İlk tema yüklemesi, tercih saklama, hızlı karşıt tıklamalar ve hareketi azalt ayarı korunsun.
 
 ÜY-03 / UI-02 sonucu: 87 test ve son derleme başarılı; a8a092b yayını READY. Canlı dört detay düğmesi / kart paneli, TR–EN, Escape / odak dönüşü, Tab çevrimi ve tema renkleri doğrulandı. Gerçek Google hesabı ve fiziksel S25 FE kontrolü ayrı kullanıcı doğrulaması olarak kalır.
+
+
+## İÇ-01 — Onaylı çalışma · 16 Ekim 2026 00:04 Türkiye saati
+
+Kullanıcı API-01 → AR-02 → İÇ-01 → SEO-02 sırasıyla uygulamayı ve toplam azami **4 USD** ücretli kullanımı açıkça onayladı. Önceki 2 USD önerisinin onay bekleme durumu kaldırılmıştır. 1.903 retry kaydı mevcut runner sırlarıyla işlenecek; önceden doğrulanmış bütçe sayacı her istek/yeniden denemeden önce ortak rezervasyon yapar. Kaynak/embedding korunur. Başlatma tamamlanma sayılmaz; gerçek sonuç, usage, kalanlar ve cache doğrulanınca durum güncellenecek. SEO-02 sonraki sıradadır.
+
+
+## SEO-02 — İlk uygulama paketi · 16 Ekim 2026 00:15 Türkiye saati
+
+- [x] Onaylı 30 yıl/tür kombinasyonunun manifesti, /listeler dizini ve deterministik 24 kart sayfalama kodu.
+- [x] İlk HTML kartları / bağlantıları, ItemList + BreadcrumbList, self canonical, page=1 yönlendirmesi, geçersiz / taşan sayfa 404, upstream hata 500 ve preview noindex yerel fixture ile doğrulandı.
+- [x] Footer bağlantısı, sitemap pilot girişleri ve liste / kişi ölçüm bağlamı.
+- [x] Gerçek katalogla salt okunur SSR workflow #38808521199 başarılı; uygulama henüz üretime alınmadı.
+- [x] 50 kişinin TMDB kimliklerini katalog film çapalarıyla doğrula, kişi / kredi modeli ve oyuncu / yönetmen sayfalarını uygula (SEO-02 / Kİ-01). İsimler veya ilk beş oyuncu listesi kimlik sayılmadı.
+- [ ] Kİ-02 gerçek yazarlık rolleri ve SEO-02 tematik ikinci aşama mevcut planda açık.
+
+Not: önceki bütçe onayı ve içerik işi mevcut branch kaydında korunur. SEO hazırlığı için ücretli OpenAI çağrısı veya canlı şema değişikliği yapılmadı.
+
+
+## İÇ-01 — Gerçek toplu çalışma sonucu · 16 Ekim 2026 00:18 Türkiye saati
+
+- [x] Kaynağı kullanılabilir özetlerin çeviri turu: 1.903 kontrol, 1.746 TR özet / 3 afiş gerçekten kaydedildi, sıfır çakışma. Usage: 1.749 istek, 302.578 girdi / 151.260 çıktı tokenı; standart fiyatla **0,3630472 USD**, belirsiz ücretli istek yok. 4 USD onaylı tavan aşılmadı.
+- [x] Kalan 157 kaynak (16 Ekim kullanıcı kararıyla şimdilik kapsam dışında): 156 metadata/yer tutucu + 1 DVD şarkı listesi (784161). Hikâye uydurulmadan gerçek kaynak bulunmalı; bunlar çeviri kuyruğuna körlemesine gönderilmemeli.
+- [x] Şarkı listesi kaynak sınıflandırmasıyla sıfır OpenAI bütçeli son metadata raporu #38808833812 başarılı: 157 kontrol / 157 uygun olmayan kaynak / 0 hata / 0 ücretli istek; cache yenilendi.
+
+İlk ücretli run #38807465092 bir kaydın doğal Türkçe doğrulaması nedeniyle failure olarak sonuçlandı; 1.746 gerçek kayıt ve cache yenileme başarılıdır. Başarısızlığı gizleyen complete etiketi kullanılmadı. Ücretli çıktı docs/content-maintenance-paid-report-20261016.json dosyasında korunur.
+
+
+### Son durum · 16.10.2026 00:20 Türkiye saati
+
+İÇ-01 kapsamında kullanılabilir 1.746 aday tamamlandı; 16 Ekim kullanıcı kararıyla ana madde kapatıldı; 157 kaynak şimdilik kapsam dışında. Yeni tekrar çeviri çağrısı gerekmez. SEO-02 adım 1 kodu ve canlı katalog testi tamam; 50 kimlikli kişi / kredi / filmografi ve kontrollü yayın sonraki açık adımlar. [PR #3](https://github.com/kangaetemo/filminibul/pull/3) incelemeye hazır; main değişmedi. API-01 hesap/proje/bakiye uyarı ekranı doğrulaması hâlâ açık; işlevsel chat/embedding ve AR-02 testleri yeniden ücretlendirilmedi.
+
+
+## Kullanıcı kapsam kararı · 16 Ekim 2026 00:41 Türkiye saati
+
+İÇ-01 mevcut 1.746 çeviri / 3 afiş ve yaklaşık 0,363 USD kullanımla tamamlanmış kabul edildi. Kullanıcı kalan 157 kaydı şimdilik kapsam dışında bıraktı; kaynaklar düzeltilmiş/çevrilmiş sayılmıyor ve yeni ücretli çeviri işi açılmayacak. Önceki 157 nedeniyle açık tutma notlarının yerine bu karar geçerlidir.
+
+SEO-02 / Kİ-01'e geçildi: 50 kişinin katalogda gerçek film-rol çapalarıyla TMDB kimliği doğrulanacak, sınırlı kişi/kredi modeli, oyuncu/yönetmen sayfaları, film bağlantıları ve sitemap uygulanacak. İlk 30 yıl/tür pilotu ve geçmiş test kanıtları korunur. İlk kimlik toplama salt okunurdur; OpenAI çağrısı yok. Sonuç doğrulanmadan tamamlanma işareti verilmez.
+
+
+### SEO-02 / Kİ-01 — 50 kimlik doğrulandı
+
+- [x] [#38812137450](https://github.com/kangaetemo/filminibul/actions/runs/38812137450): 50/50 kişi, sıfır hata; anchor film + doğru rol + kişi adı/alternatif adı + kişi movie_credits çapraz doğrulaması. 30 oyuncu / 20 yönetmen; 2.810 kredi, ana rolde en az 10 katalog filmi.
+- [x] Sınırlı kişi/kredi şeması oluşturuldu. RLS açık, anon/authenticated erişimi kapalı, yalnız service_role. Güncelleme kişi başına atomik; başarısız snapshot eskisini korur. 50 kişi, 10 MB pilot ve 450 MB DB koruması var.
+- [x] Doğrulanmış artifact kaydedildi: #38858978659 başarılı; 50 kişi, 2.810 kredi, 1.605 farklı film. İlk snapshot tekrarında çoğalma yok; geçersiz snapshot testinde eski kişi/kredi verisi aynen korundu.
+- [x] Oyuncu/yönetmen route'ları, kişi dizini, film iç bağlantıları, sitemap ve canlı SSR doğrulaması; #38860035895 başarılı.
+
+
+### SEO-02 / Kİ-01 — Sayfa kodu hazır · 16 Ekim 2026 09:08 Türkiye saati
+
+Oyuncu/yönetmen route'ları, manifest, kişi fotoğrafı/fallback, gerçek karakter bilgileri, ayrı rol sorgusu, 24 kart ve sabit sıralama, filmden doğrulanmış kişi bağlantıları, Person/Movie JSON-LD, sitemap ve dizindeki 50 link uygulandı. Haftalık sınırlı bakım yalnız main'de, OpenAI sırrı olmadan çalışır. Henüz test sonucu / yayın tamamlandı sayılmaz; CI'da fixture, 50 gerçek kişi sayfası ve Matrix kişi bağlantısı doğrulanacak.
+
+
+SEO-02 CI #38859594490: 13 model/liste/ölçüm testi geçti. İlk build eski TypeScript hedefi nedeniyle Set/Map iterator spread sözdizimini reddetti; ilgili kullanımlar Array.from ile aynı davranışı koruyarak düzeltildi. Bağımsız tsc kontrolü build öncesine alındı. Gerçek SSR sonucu henüz bekleniyor.
+
+
+SEO-02 #38859793468: 13 test, tsc, üretim build, yıl/tür fixture ve canlı katalog SSR başarılı. Kişi fixture kontrolü embedding sütunu yerine film_embeddings_v3 tablo adını da eşleştiren fazla geniş test kuralı nedeniyle durdu; alan sınırı kontrolüyle düzeltildi. Uygulamanın sorgusu yalnız kart kolonlarını seçiyordu. Sonraki run tüm kişi SSR senaryolarını tamamlayacak.
+
+
+## SEO-02 / Kİ-01 — İlk pilot teslimi · 16 Ekim 2026 09:18 Türkiye saati
+
+- [x] **Kİ-01 pilotu:** 30 oyuncu + 20 yönetmen, kimlik/rol doğrulaması, fotoğraf/fallback, 24 kart ve karakter bilgileri, filmden kişi bağlantıları; 50/50 gerçek sayfa SSR doğrulaması başarılı.
+- [x] **SEO-02 ilk pilot uygulaması:** 30 yıl/tür + 50 kişi, manifesto bağlı sitemap ve dizin, canonical/yönlendirme, Person/Movie/ItemList/Breadcrumb, bağlamlı ölçüm. CI #38860035895 bütün adımları başarılı. Genel SEO-02 ana maddesi yayın ve sonraki tematik kapsam nedeniyle açık kalır.
+- [ ] **Kontrollü yayın:** PR #3'ün test edilmiş kaynakları henüz main'e birleştirilmedi; uygulama üretimde değil. Kişi veri migration'ı ve 50/2.810 kaydı hazır; aynı migration tekrar uygulanmamalı.
+- [ ] **Yayın sonrası:** gerçek cihaz görsel kontrolü; Search Console örnek URL denetimi / indeks ve 28 günlük trafik; üretim performans kontrolü. Kİ-02 ve 10 tematik seçki ayrı kapsam.
+
+İÇ-01 kullanıcı kararıyla [x]; 157 kayıt için yeni toplu çeviri / ücretli işlem açılmayacak. Bu SEO aşamasında ek OpenAI kullanımı 0. Rapor: docs/seo-02-pilot-uygulama-sonucu.md.
+
+
+## SEO-02 — Kontrollü yayın onayı · 16 Ekim 2026 10:29 Türkiye saati
+
+Kullanıcı “canlıya da alalım” diyerek ilk 80 sayfalık pilotun üretim yayınını açıkça onayladı. PR #3, test edilmiş uygulama koduyla mevcut main'e birleştirilecek; hedef Vercel filminibul / sams-projects-dba0a978 / production. Önceki üretim 8afa195, geri dönüş adayı dpl_8fvZ2pZJP7jawE8TXbUPXMj2rEY2. Veri migration'ı tekrar uygulanmayacak, yeni ücretli OpenAI işi yok. Liste/oyuncu/yönetmen/film bağlantısı, sayfalama ve sitemap üretimde doğrulandıktan sonra yayın maddesi kapatılacak.
