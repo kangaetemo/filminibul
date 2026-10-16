@@ -500,3 +500,10 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Gerçek Chrome'da Oyuncular tıklamasından hemen sonra scroll 1 px / hedef top 2781 px ile ara animasyon konumu gözlendi; sonra hedef top128 px, hash #actor / odak actor ve geçici inline scroll stilinin temizlenmesi doğrulandı. Listelere dal hedefi top127,5 px / #seckiler / odak seckiler. Yönetmenler geçişi Escape ile durduruldu: hedef henüz aşağıda, inline stil geri alınmıştı. Aynı kısayol tekrar tıklanınca #director / odak director / top127,5 px ile tamamlandı.
 - Görsel docs/liste-bolum-gecisi-2026-10-16.jpg. Yerel TypeScript / üretim build ve üç href + tabindex hedefi içeren gerçek build HTML kontrolü başarılı. Gerçek mobil cihaz ve azaltılmış hareket emülasyonu bu turda test edilmedi; ilgili kod yolu mevcut. Yeni DB taraması, yazma, migration veya ücretli API yok.
 - KŞ-13 [x]. Bu son kayıt / görsel commit'i yalnız dokümantasyon; uygulama kaynakları canlıda doğrulanan merge ile aynı.
+
+## 16 Ekim 2026 — Film Listeleri özel seçki geliştirme kararının kaydı
+
+- Kullanıcı şu anki `/listeler` alanının yalnız yıl/tür listeleri ve kişi filmografileriyle sıkıcı kaldığını, **özgün tematik ve editoryal film seçkileri** istedi.
+- Güncel main incelendi: `src/lib/catalog/pilot.ts` içindeki 30 yıl/tür listesi; `/listeler` dizinindeki oyuncu/yönetmen filmografileri; `/listeler/[slug]` mevcut yıl/tür sayfası ve `FilmCard` yeniden kullanım yolu doğrulandı. Özel tematik koleksiyon üyeliği ve sayfaları mevcut pilotun parçası değil.
+- `yapilacaklar.md` dosyasında SEO-02'nin ikinci aşamasıyla bağlantılı **FL-01–FL-04** görevleri açıldı: küçük ve doğrulanmış seçki veri modeli; hikâye/atmosfer/keşif başlıklarından 12 aday editoryal liste; güçlü görselli / mobil uyumlu dizin ve özel liste sayfaları; taranabilir SEO + tıklama ölçümü / kontrollü yayın. İlk içerik başlıkları fikir havuzudur, 12 seçkinin gerçek film üyeliği onaylanmış değildir.
+- Yalnızca plan / takip belgeleri değiştirildi; film listesi uygulaması, site yayını, veritabanı, migration veya ücretli API çalışması yapılmadı. Görevler açık bırakıldı.
