@@ -399,3 +399,13 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 ### SEO-02 fixture doğrulama düzeltmesi · 16 Ekim 2026
 
 #38859793468 ile TypeScript uyumsuzluğu giderildi: 13 model/liste/ölçüm testi, bağımsız tsc, Next build ve hem fixture hem canlı yıl/tür SSR başarılı. Yeni kişi fixture'ında test kuralı select ifadesindeki film_embeddings_v3 ilişki adını embedding alanı sanarak yanlış pozitif verdi. Kural yalnız kolon tokenı embedding'i eşleştirecek şekilde düzeltildi; veri erişimi veya şema bu hatada değişmedi. Sonuç gerçek bir test hatası olarak kaydedilir, 50 canlı kişi SSR testi henüz başarılı sayılmaz.
+
+
+## SEO-02 / Kİ-01 — İlk 80 sayfalık pilot doğrulandı · 16 Ekim 2026 09:18 Türkiye saati
+
+- [#38860035895](https://github.com/kangaetemo/filminibul/actions/runs/38860035895) tüm adımları başarılı. Test edilmiş kaynak 27b777fae4e7e9963dd5b25282531def834f8e61: 13 model/liste/ölçüm testi, tsc, Next 14 üretim build, yıl/tür fixture ve canlı SSR, kişi fixture ve 50/50 gerçek kişi sayfası SSR.
+- Dizin 30 oyuncu + 20 yönetmene gerçek bağlantı içeriyor. Her kişi sayfasında doğru ana-rol film adedi, en fazla 24 kart, tekilleştirme, canonical, Person/ItemList; Matrix detayında Keanu kişi linki / Movie JSON-LD doğrulandı. Page=2 ayrı canonical / çakışmasız kartlar; eski slug ve page=1 308; yanlış rol / bilinmeyen ID / geçersiz / taşan / çoğul page 404; preview/dil varyantı noindex. Fixture son sayfa tek kart / fotoğraf eksikliği / karakter notları / upstream 500 akışını geçti.
+- 50 cold sayfa p95 1.831 ms, 5 cache'li istek p95 119 ms; beş eşzamanlı cold ve beş cache'li istek başarılı. Bunlar runner/Next sunucusu ölçümü; Vercel üretim SLA'sı veya gerçek cihaz görsel kontrolü sayılmadı.
+- Kimlik #38812137450, kayıt #38858978659 ve son SSR #38860035895 raporları repo docs ve workflow artifact'lerinde korunur. Güvenlik/atomiklik/idempotence kanıtı docs/seo-02-people-safety-verification.json; yeni metadata yaklaşık 1,3 MB, 50 kişi / 2.810 kredi / 1.605 farklı film. Ücretli OpenAI çağrısı 0.
+- Kİ-01'in onaylı 50 kişilik pilotu [x] yapıldı; tüm TMDB kişileri kimliklendirilmiş sayılmadı. SEO-02 ilk 80 sayfa uygulaması tamam/yayına hazır; ana görev kontrollü yayın / tematik sonraki kapsamla açık. Kİ-02 writer ekranları, Search Console ve gerçek mobil görsel doğrulama ayrıca açık. İÇ-01 kapatma/kapsam kararı korundu; 157 kayıt için çalışma yok.
+- PR #3 güncelleniyor; main hâlâ 8afa195b70a6b4766eca7742154e7a7dc431baf3. Uygulama merge/deploy yapılmadı. Son kaynaklar GitHub üzerinden kalıcı; yerel çalışma ortamı kullanılamadığı için doğrulama runner'da yürütüldü. Gerçek run/commit sonuçları kaydedildi; başarısız iki doğrulama girişimi geçmişten silinmedi.

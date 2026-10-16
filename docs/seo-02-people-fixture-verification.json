@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-10-16T06:15:08.223Z",
+  "mode": "fixture",
+  "checks": [
+    "hub: 30 actor and 20 director links in initial HTML",
+    "fixture: missing photo fallback, character labels, single-card last page; upstream failure 500",
+    "role mismatch/unknown/invalid/overflow pages 404; old slug/page=1 308; page 2 self canonical and non-overlap; language variant noindex"
+  ],
+  "pages_checked": 1,
+  "cold_p95_ms": 171,
+  "cached_p95_ms": null,
+  "paid_api_calls": 0
+}

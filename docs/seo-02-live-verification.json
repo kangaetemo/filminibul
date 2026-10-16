@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-10-15T21:17:14.624Z",
+  "checked_at": "2026-10-16T06:15:07.187Z",
   "mode": "live_read_only",
   "checks": [
     "hub: 30 real links in initial HTML",
@@ -7,11 +7,5 @@
     "invalid/overflow/duplicate page and unknown combination: real 404; page=1: 308",
     "preview and language variants: noindex"
   ],
-  "paid_api_calls": 0,
-  "all_pilot_membership_quality": {
-    "lists": 30,
-    "smallest_list": 20,
-    "memberships": "3132",
-    "lists_meeting_threshold": 30
-  }
+  "paid_api_calls": 0
 }

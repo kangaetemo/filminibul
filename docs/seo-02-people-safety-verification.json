@@ -1,0 +1,44 @@
+{
+  "checked_at": "2026-10-16T06:18:25.066Z",
+  "rls": [
+    {
+      "rls": true,
+      "table": "film_people",
+      "anon_select": false,
+      "member_select": false,
+      "service_insert": true
+    },
+    {
+      "rls": true,
+      "table": "film_person_credits",
+      "anon_select": false,
+      "member_select": false,
+      "service_insert": true
+    }
+  ],
+  "rpc": {
+    "security_definer": false,
+    "search_path": "",
+    "anon_execute": false,
+    "authenticated_execute": false,
+    "service_execute": true
+  },
+  "failed_snapshot_preserved": true,
+  "repeat_snapshot_idempotent": true,
+  "invalid_scope_edges": 0,
+  "advisors": [
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "table": "film_people"
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "table": "film_person_credits"
+    }
+  ],
+  "test_transaction_rolled_back": true
+}

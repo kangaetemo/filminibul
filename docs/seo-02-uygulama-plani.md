@@ -2,7 +2,7 @@
 
 14 Ekim 2026 · SEO-01, SEO-02, Kİ-01 ve Kİ-02 birlikte değerlendirilmiştir.
 
-Durum güncellemesi (16 Ekim 2026): kullanıcı planı ve 0. adım raporunu onayladı; ilk yıl/tür pilotu uygulandı, yerel SSR testleri geçti. Gerçek katalog doğrulaması / yayın ve kişi-kredi / filmografi aşamaları açık. Aşağıdaki ilk inceleme bulguları tarihsel bağlamıyla korunur.
+Durum güncellemesi (16 Ekim 2026): 30 yıl/tür listesi + 50 kimlikli kişi pilotu kodlandı. 50 kişi / 2.810 kredi kaydedildi, depolama/erişim/atomiklik doğrulandı. Güncel sonuç ve kapsam docs/seo-02-pilot-uygulama-sonucu.md belgesinde izlenir. Son 50/50 kişi sayfası SSR kontrolü başarılı; ilk pilot uygulaması yayına hazır. Üretim uygulaması henüz yayımlanmadı. Aşağıdaki ilk inceleme bulguları tarihsel bağlamıyla korunur.
 
 ## 1. Sonuç ve görevlerin sınırı
 
