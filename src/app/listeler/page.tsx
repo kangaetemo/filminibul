@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowDown, ArrowUpRight, Clapperboard, Sparkles } from "lucide-react";
+import { ArrowUpRight, Clapperboard, Sparkles } from "lucide-react";
+import CatalogSectionsNav from "@/components/catalog/CatalogSectionsNav";
 import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import { GENRES, PILOT_LISTS, type GenreId } from "@/lib/catalog/pilot";
@@ -30,10 +31,7 @@ export default async function ListsPage() {
                 <h1 className="section-heading mt-4">Film listeleri</h1>
                 <p className="mt-4 text-xl font-semibold leading-snug sm:text-2xl">Bu akşam hangi dünyaya gidelim?</p>
                 <p className="mt-3 max-w-lg leading-relaxed text-muted">Bir döneme dön, sevdiğin türe dal ya da tanıdık bir yüzün peşine takıl. Sıradaki filmin burada bir yerde.</p>
-                <nav aria-label="Keşif bölümleri" className="mt-7 flex flex-wrap gap-3">
-                    <a href="#seckiler" className="button-primary">Listelere dal <ArrowDown className="ml-2 h-4 w-4" aria-hidden /></a>
-                    <a href="#actor" className="button-secondary">Oyuncular</a><a href="#director" className="button-secondary">Yönetmenler</a>
-                </nav>
+                <CatalogSectionsNav />
                 <p className="mt-5 text-xs text-muted">30 yıl ve tür seçkisi · 50 oyuncu ve yönetmen</p>
             </div>
             <div aria-hidden className="pointer-events-none absolute -right-10 top-4 hidden h-full w-[40%] items-center justify-center gap-3 lg:flex">
@@ -41,7 +39,7 @@ export default async function ListsPage() {
             </div>
         </header>
 
-        <section id="seckiler" aria-labelledby="lists-heading" className="scroll-mt-24 pt-12">
+        <section id="seckiler" tabIndex={-1} aria-labelledby="lists-heading" className="scroll-mt-24 pt-12 focus:outline-none">
             <div className="mb-6 flex flex-wrap items-end justify-between gap-3"><div><p className="eyebrow text-accent-ink">Zamanda küçük bir yolculuk</p><h2 id="lists-heading" className="mt-2 text-2xl font-bold sm:text-3xl">Yılını seç, havasına gir.</h2></div><p className="max-w-sm text-sm leading-relaxed text-muted">Katalogumuzdan seçkiler. Her yılın bütün filmlerini kapsamaz; en çok oylananlardan başlar.</p></div>
             <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{PILOT_LISTS.map(list => <li key={list.slug}>
                 <Link href={`/listeler/${list.slug}`} className="group relative flex min-h-48 overflow-hidden rounded-2xl border border-line bg-card transition-colors hover:border-accent/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent">
@@ -57,7 +55,7 @@ export default async function ListsPage() {
             </li>)}</ul>
         </section>
 
-        {(["actor", "director"] as const).map(role => <section key={role} id={role} className="mt-12 scroll-mt-24 border-t border-line pt-8" aria-labelledby={role + "-heading"}>
+        {(["actor", "director"] as const).map(role => <section key={role} id={role} tabIndex={-1} className="mt-12 scroll-mt-24 border-t border-line pt-8 focus:outline-none" aria-labelledby={role + "-heading"}>
             <p className="eyebrow text-accent-ink">{role === "actor" ? "Tanıdık yüzler, yeni hikâyeler" : "Kameranın arkasındaki imza"}</p>
             <h2 id={role + "-heading"} className="mt-2 text-2xl font-bold sm:text-3xl">{role === "actor" ? "Oyuncuların filmleri" : "Yönetmenlerin filmleri"}</h2>
             <p className="mt-3 text-sm text-muted">{role === "actor" ? "Favori oyuncunun henüz izlemediğin bir filmi olabilir." : "Sevdiğin bir yönetmenin dünyasında biraz daha kal."} Katalogumuzdaki 2025 ve öncesi yapımları keşfet.</p>

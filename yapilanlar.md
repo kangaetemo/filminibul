@@ -484,3 +484,11 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - / ve Keanu page=2 HTTP200: üst menüde /listeler, ana sayfanın main alanında yeni /listeler bölümü yok, filmografide görünür pager yok ve sonraki page=3 href'i var. Yerel tsc / üretim build / iki SSR fixture başarılı; aynı veri okumalarını genişleten CI taraması eklenmedi. Ücretli çağrı / DB yazma / migration 0.
 - Tarayıcı aracında bir exec-server transport kesintisi oldu; sorun giderme yönergesi okunduktan sonra aynı tab yeniden gözlemlendi, bağlantı döndü ve doğrulama tamamlandı. Başka tarayıcı kontrol yöntemi veya koruma bypass'ı kullanılmadı.
 - KŞ-12 [x] yapıldı. Bu son kayıt ve görsel commit'i yalnız dokümantasyon; uygulama kaynakları doğrulanan merge ile aynı.
+
+
+## KŞ-13 — Liste dizini bölüm geçişleri · 16 Ekim 2026 12:11 Türkiye saati
+
+- Kullanıcının görselindeki üç bölüm bağlantısı doğrulandı. Global CSS'te smooth zaten var; bu üç kısayol için tarayıcının varsayılan hash hareketi yerine 500 ms ease-in-out kaydırma uygulanıyor. SSR gerçek href'ler / hash / bölüm odağı korunur, hedef scroll-margin ve scroll-padding ile hizalanır. Diğer sayfaların kaydırma davranışı değiştirilmez.
+- wheel / touchstart / pointerdown / keydown ve unmount animasyonu iptal eder, geçici scroll davranışı geri yüklenir. Azaltılmış hareket tercihinde hedefe animasyonsuz gidilir. Yeni bağımlılık, DB veya ücretli servis çağrısı yok. Kontrol ve yayın henüz tamamlanmış sayılmadı.
+
+- Yerel tsc / Next üretim build ve build HTML içinde üç gerçek anchor / odaklanabilir hedef kontrolü başarılı. 500 ms geçiş yalnız küçük nav bileşeninde; yeni bağımlılık / veri taraması yok. Canlı tıklama doğrulaması yayın sonrası yapılacak.
