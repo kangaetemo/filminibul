@@ -4,6 +4,10 @@ Son güncelleme: 16 Ekim 2026 (Türkiye saati).
 
 Bu dosya, konuşulan geliştirmeleri ve açık işleri takip eder. Öncelikler istişarede önerilen sıradır; uygulama kapsamı yeni kararlarla güncellenir. Tamamlanan maddeler burada `[x]` olarak işaretlenir, tarih ve doğrulama bilgileriyle `yapilanlar.md` dosyasına eklenir. Başlatılmış ama bitmemiş işler açık kalır.
 
+## Liste dizini bölüm geçişleri — 16 Ekim 2026
+
+- [ ] **KŞ-13 — Bölüm kısayollarını yumuşak kaydır.** Film listeleri sayfasındaki Listelere dal / Oyuncular / Yönetmenler bağlantıları 500 ms hızlanıp yavaşlayan kaydırmayla hedefe ulaşsın. Hash / klavye odağı ve gerçek anchor bağlantıları korunsun. Kullanıcı kaydırma / dokunma / klavye ile araya girebilsin; azaltılmış hareket tercihinde animasyon uygulanmasın. Yalnız bu üç kısayol kapsanır.
+
 ## Üst menü ve alt sayfalama sadeleştirmesi — 16 Ekim 2026
 
 - [x] **KŞ-12 — Görünür sayfalama alanını kaldır, listeleri üst menüye ekle.** Kullanıcı artık alttaki Sayfa 4/4 / İlk sayfa / Önceki / Sonraki alanını istemiyor. Otomatik yükleme ve görünen grubun URL / SEO eşleşmesi devam eder. Daha fazla film bağlantısı gerçek sonraki sayfa href'iyle taranabilir kalır; JS kapalı önceki / ilk sayfa geri dönüşü noscript içindedir. Ortak üst menüye Film listeleri / Film lists eklenir; ana sayfaya yeni içerik bölümü eklenmez. Önceki KŞ-11 tasarımı bu kullanıcı kararıyla değişir. Tamamlandı: PR #6 / f98d808, üretim dpl_FZ1uZig8tuc28LQdGckrACXJZoSG READY. Yerel tsc / build / SSR fixture ve canlı menü tıklaması başarılı; 1348 px genişlikte tek satır header / taşma yok. Keanu 24 → 48 → 50 / URL 2 → 3 / canonical eşleşmesi sürüyor; görünür pager ve sayaç yok. Ana sayfa main alanında liste bölümü eklenmedi. Kanıt görseli docs/film-listeleri-ust-menu-2026-10-16.jpg.
