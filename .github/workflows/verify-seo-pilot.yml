@@ -1,13 +1,14 @@
 name: SEO yıl-tür pilotunu doğrula
 on:
   push:
-    branches: [feat/seo-pilot, feat/discovery-flow]
+    branches: [feat/seo-pilot, feat/discovery-flow, fix/catalog-scroll-url]
     paths:
       - src/**
       - scripts/catalog/verify_seo_pages.mjs
       - scripts/catalog/verify_people_pages.mjs
       - scripts/tests/catalog-lists.test.mjs
       - scripts/tests/credit-label.test.mjs
+      - scripts/tests/scroll-page.test.mjs
       - .github/workflows/verify-seo-pilot.yml
 permissions:
   contents: read
@@ -27,7 +28,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --ignore-scripts
-      - run: node --test scripts/tests/catalog-lists.test.mjs scripts/tests/analytics.test.mjs scripts/tests/people-model.test.mjs scripts/tests/credit-label.test.mjs
+      - run: node --test scripts/tests/catalog-lists.test.mjs scripts/tests/analytics.test.mjs scripts/tests/people-model.test.mjs scripts/tests/credit-label.test.mjs scripts/tests/scroll-page.test.mjs
       - run: node_modules/.bin/tsc --noEmit --pretty false
       - run: npm run build
         env:

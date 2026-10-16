@@ -34,7 +34,7 @@ async function request(path) {
     return { res, html: await res.text() };
 }
 function items(html) {
-    const scripts = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
+    const scripts = [...html.matchAll(/<script\b(?=[^>]*\btype="application\/ld\+json")[^>]*>([\s\S]*?)<\/script>/g)];
     const graph = scripts.map(m => JSON.parse(m[1])).flatMap(x => x["@graph"] || [x]);
     return graph.find(x => x["@type"] === "ItemList")?.itemListElement;
 }

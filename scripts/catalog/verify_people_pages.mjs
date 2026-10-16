@@ -30,7 +30,7 @@ const env={...process.env,VERCEL_ENV:"preview",NEXT_TELEMETRY_DISABLED:"1",...(!
 const app=spawn(process.execPath,["node_modules/next/dist/bin/next","start","-p",String(port)],{env,stdio:["ignore","pipe","pipe"]});
 app.stdout.on("data",b=>{output=(output+b).slice(-12000);});app.stderr.on("data",b=>{output=(output+b).slice(-12000);});
 async function request(path){const started=Date.now();const res=await fetch("http://127.0.0.1:"+port+path,{redirect:"manual",signal:AbortSignal.timeout(45000)});return {status:res.status,headers:res.headers,html:await res.text(),ms:Date.now()-started};}
-function graphs(html){return [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].flatMap(m=>{const x=JSON.parse(m[1]);return x["@graph"]||[x];});}
+function graphs(html){return [...html.matchAll(/<script\b(?=[^>]*\btype="application\/ld\+json")[^>]*>([\s\S]*?)<\/script>/g)].flatMap(m=>{const x=JSON.parse(m[1]);return x["@graph"]||[x];});}
 function items(html){return graphs(html).find(x=>x["@type"]==="ItemList")?.itemListElement;}
 const checks=[],cold=[],cached=[];
 async function verifyPerson(p){
@@ -61,6 +61,9 @@ try{
         await verifyPerson(manifest.find(p=>p.id===6384));
         const tail=await request("/oyuncu/6384-keanu-reeves?page=3");
         assert.equal(items(tail.html).length,1);
+        assert.ok(tail.html.includes('data-catalog-start="3"'));
+        assert.ok(!tail.html.includes("Başlangıç sayfası"));
+        assert.ok(tail.html.includes('aria-label="Sayfalar"'));
         assert.ok(tail.html.includes("Karakter 800048 (seslendirme)"));
         assert.equal((await request("/yonetmen/525-christopher-nolan")).status,500);
         checks.push("fixture: missing photo fallback, character labels, single-card last page; upstream failure 500");

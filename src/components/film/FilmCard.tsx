@@ -46,7 +46,7 @@ export default function FilmCard({ film, reasons, reasonsEn, platforms, index = 
     }, [film.id, sourceFilmId, index, context, pathname, params]);
     const onClick = () => track(context === "similar" && sourceFilmId ? "recommendation_clicked" : "film_clicked", { film_id: film.id, source_film_id: sourceFilmId, rank: index + 1, context, page });
     return (
-        <li ref={ref} className="min-w-0">
+        <li ref={ref} className="min-w-0" data-catalog-start={page && index === 0 ? page : undefined}>
             <div className="group relative">
                 <Link href={filmPath(film.id, film.title)} onClick={onClick} className="relative block aspect-[2/3] overflow-hidden rounded-lg bg-ink/5 ring-1 ring-ink/10 transition-shadow hover:shadow-glow-card" aria-label={`${title} ${language === "en" ? "film details" : "film ayrıntıları"}`}>
                     {film.posterUrl && !failedPoster ? <Image src={film.posterUrl} alt={`${title} ${language === "en" ? "poster" : "afişi"}`} fill sizes="(min-width: 1280px) 218px, (min-width: 1024px) 18vw, (min-width: 640px) 30vw, 45vw" className="object-cover transition-transform duration-300 group-hover:scale-[1.025]" onError={() => setFailedPoster(true)} /> : <span className="absolute inset-0 flex items-center justify-center p-5 text-center text-lg font-bold text-muted">{title}</span>}
