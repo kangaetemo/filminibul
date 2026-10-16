@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import FilmCard from "@/components/film/FilmCard";
 import type { FilmDTO } from "@/lib/recommend/types";
 import { filmPath } from "@/lib/filmUrl";
@@ -106,7 +105,6 @@ export default function CatalogFeed({ initial, path, title, structuredData, cont
         { "@type": "ItemList", name: title, url, numberOfItems: current.films.length,
             itemListElement: current.films.map((film, i) => ({ "@type": "ListItem", position: (current.page - 1) * PAGE_SIZE + i + 1, name: film.title, url: site + filmPath(film.id, film.title) })) },
     ] };
-    const pageButton = "flex h-12 w-full items-center justify-center rounded-lg border border-line bg-card px-2 text-xs font-semibold text-ink transition-colors hover:border-ink/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent sm:text-sm";
 
     return <>
         <ul ref={grid} className="movie-grid" aria-label="Filmler" aria-busy={loading}>
@@ -114,16 +112,9 @@ export default function CatalogFeed({ initial, path, title, structuredData, cont
         </ul>
         <div ref={sentinel} className="mt-6 flex flex-col items-center gap-3 text-center">
             <p role="status" aria-live="polite" className="text-sm text-muted">{loading ? "Sıradaki filmler yükleniyor…" : error ? "Sıradaki filmler yüklenemedi. Yeniden deneyebilirsin." : hasMore ? `${shown} film gösteriliyor · Aşağı indikçe devamı yüklenir` : `${shown} film gösteriliyor · Seçkinin sonuna geldin.`}</p>
-            {hasMore && <button type="button" onClick={() => void loadMore()} disabled={loading} className="button-secondary disabled:opacity-50">{error ? "Yeniden dene" : "Daha fazla film"}</button>}
+            {hasMore && <a href={pagePath(path, last.page + 1)} rel="next" aria-disabled={loading} onClick={event => { event.preventDefault(); if (!loading) void loadMore(); }} className={`button-secondary${loading ? " opacity-50" : ""}`}>{error ? "Yeniden dene" : "Daha fazla film"}</a>}
         </div>
-        <nav aria-label="Sayfalar" className="mx-auto mt-5 max-w-md border-t border-line pt-4">
-            <p className="mb-3 text-center text-sm text-muted" aria-live="polite">Sayfa {currentPage} / {last.pages}</p>
-            <div className="grid grid-cols-3 gap-2">
-                {currentPage > 1 ? <Link href={path} prefetch={false} className={pageButton}>İlk sayfa</Link> : <span aria-disabled="true" className={`${pageButton} opacity-40`}>İlk sayfa</span>}
-                {currentPage > 1 ? <Link href={pagePath(path, currentPage - 1)} prefetch={false} rel="prev" aria-label="Önceki sayfa" className={pageButton}>Önceki</Link> : <span aria-disabled="true" className={`${pageButton} opacity-40`}>Önceki</span>}
-                {currentPage < last.pages ? <Link href={pagePath(path, currentPage + 1)} prefetch={false} rel="next" aria-label="Sonraki sayfa" className={pageButton}>Sonraki</Link> : <span aria-disabled="true" className={`${pageButton} opacity-40`}>Sonraki</span>}
-            </div>
-        </nav>
+        <noscript>{initial.page > 1 && <nav aria-label="Sayfalı gezinme" className="mt-5 flex justify-center gap-4 text-sm underline"><a href={path}>İlk sayfa</a><a href={pagePath(path, initial.page - 1)} rel="prev">Önceki sayfa</a></nav>}</noscript>
         <script id="catalog-structured-data" type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(structured) }} />
     </>;
 }

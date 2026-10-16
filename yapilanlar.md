@@ -465,3 +465,12 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Kİ-05 ve KŞ-11 [x] yapıldı. Ücretli API çağrısı / DB yazımı / migration 0. Önceki turdaki sabit URL davranışı bu kullanıcı isteğiyle görünür grubun adresini izleyen davranışa dönüştü; geçmiş kayıt silinmedi.
 
 - Yayın sonrası 13 HTTP/SEO kontrolü başarılı; 80 pilot URL sitemap içinde, SSR / canonical / JSON-LD / yönlendirme / 404 / noindex korunuyor. Güncel kanıt docs/seo-02-production-verification.json. Son rapor / ekran görüntüsü commit’i yalnız dokümantasyon; uygulama kaynakları test edilmiş merge ile aynı.
+
+
+## KŞ-12 — Üst menü / alt alan sadeleştirmesi · 16 Ekim 2026 12:00 Türkiye saati
+
+- Ekran görüntüsü okundu; kullanıcı eşitlenmiş kontrollerin tamamını kaldırmayı istedi. Görünür pager ve sayfa sayacı kaldırıldı. Film sayısı / bitiş bildirimi, otomatik devam ve URL / title / canonical / ItemList eşleştirmesi sürüyor. Daha fazla film artık gerçek sonraki sayfa adresini taşıyan bağlantı: JS açıkken yerinde yükler, kapalıysa doğrudan sayfayı açar. Önceki / ilk sayfa yalnız noscript geri dönüşünde.
+- Ortak üst menüye Film listeleri bağlantısı ve İngilizce Film lists karşılığı eklendi. Tablet menüsü ayrı satırda; Kaydettiklerim metni geniş ekrana ertelenerek yeni bağlantıya alan açıldı, erişilebilir simge etiketi korunuyor. Ana sayfa içerik dosyası değiştirilmedi / yeni bölüm eklenmedi.
+- Düşük etkili arayüz değişikliği; yeni DB okuma / yazma, migration veya ücretli API çağrısı yok. Mevcut SSR fixture görünür Sayfalar nav'ını artık beklemeyecek şekilde uyarlandı. Tip / build / SSR ve canlı görsel doğrulama bekleniyor; henüz tamamlandı sayılmadı.
+
+- Yerel tsc, Next üretim build ve yıl/tür + kişi SSR/API fixture kontrolleri başarılı. Veri / sayfa URL mantığı değiştirilmediği için 50 kişilik canlı veri taraması yeniden çalıştırılmadı; bu branch mevcut SEO CI tetikleyicisine eklenmedi. Yerel build canlı sırları kullanmaz; mevcut ana sayfa fallback kaydı beklendi. Canlı görsel doğrulama yayın sonrasında yapılacak.

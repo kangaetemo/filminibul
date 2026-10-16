@@ -4,6 +4,10 @@ Son güncelleme: 16 Ekim 2026 (Türkiye saati).
 
 Bu dosya, konuşulan geliştirmeleri ve açık işleri takip eder. Öncelikler istişarede önerilen sıradır; uygulama kapsamı yeni kararlarla güncellenir. Tamamlanan maddeler burada `[x]` olarak işaretlenir, tarih ve doğrulama bilgileriyle `yapilanlar.md` dosyasına eklenir. Başlatılmış ama bitmemiş işler açık kalır.
 
+## Üst menü ve alt sayfalama sadeleştirmesi — 16 Ekim 2026
+
+- [ ] **KŞ-12 — Görünür sayfalama alanını kaldır, listeleri üst menüye ekle.** Kullanıcı artık alttaki Sayfa 4/4 / İlk sayfa / Önceki / Sonraki alanını istemiyor. Otomatik yükleme ve görünen grubun URL / SEO eşleşmesi devam eder. Daha fazla film bağlantısı gerçek sonraki sayfa href'iyle taranabilir kalır; JS kapalı önceki / ilk sayfa geri dönüşü noscript içindedir. Ortak üst menüye Film listeleri / Film lists eklenir; ana sayfaya yeni içerik bölümü eklenmez. Önceki KŞ-11 tasarımı bu kullanıcı kararıyla değişir.
+
 ## Kaydırma adresi ve sayfalama düzeltmesi — 16 Ekim 2026
 
 - [x] **Kİ-05 — Görünen film grubunu URL / SEO bilgisiyle eşitle.** Yeni grup önceden yüklenince değil ekranda okunan bölüm olunca `?page=2/3` güncellensin; yukarı kaydırınca önceki gruba dönsün, ilk sayfada page parametresi kaldırılsın. Başlık, canonical, OG ve ItemList / breadcrumb aktif grupla tutarlı olsun. SSR doğrudan sayfalar / gerçek önceki-sonraki linkleri, dil / diğer URL parametreleri korunsun. History replaceState kaydırma geçmişini şişirmesin.

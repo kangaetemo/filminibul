@@ -63,7 +63,7 @@ try{
         assert.equal(items(tail.html).length,1);
         assert.ok(tail.html.includes('data-catalog-start="3"'));
         assert.ok(!tail.html.includes("Başlangıç sayfası"));
-        assert.ok(tail.html.includes('aria-label="Sayfalar"'));
+        assert.ok(!tail.html.includes('aria-label="Sayfalar"'));
         assert.ok(tail.html.includes("Karakter 800048 (seslendirme)"));
         assert.equal((await request("/yonetmen/525-christopher-nolan")).status,500);
         checks.push("fixture: missing photo fallback, character labels, single-card last page; upstream failure 500");
