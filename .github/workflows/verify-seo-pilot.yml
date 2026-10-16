@@ -5,6 +5,7 @@ on:
     paths:
       - src/**
       - scripts/catalog/verify_seo_pages.mjs
+      - scripts/catalog/verify_people_pages.mjs
       - scripts/tests/catalog-lists.test.mjs
       - .github/workflows/verify-seo-pilot.yml
 permissions:
@@ -25,7 +26,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --ignore-scripts
-      - run: node --test scripts/tests/catalog-lists.test.mjs scripts/tests/analytics.test.mjs
+      - run: node --test scripts/tests/catalog-lists.test.mjs scripts/tests/analytics.test.mjs scripts/tests/people-model.test.mjs
       - run: npm run build
         env:
           VERCEL_ENV: preview
@@ -37,6 +38,14 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - name: Kişi sayfaları fixture ve hata senaryoları
+        run: node scripts/catalog/verify_people_pages.mjs
+      - name: Elli gerçek kişi sayfası, film bağlantısı ve SSR
+        run: node scripts/catalog/verify_people_pages.mjs --live
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       - if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:

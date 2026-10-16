@@ -20,6 +20,10 @@ import PlatformFilter from "@/components/film/PlatformFilter";
 import { FEATURED_PLATFORMS, getLiveProviders } from "@/lib/recommend/providers";
 import { filmPath, parseFilmParam } from "@/lib/filmUrl";
 import { OG_BASE } from "@/lib/seo";
+import { getFilmPeople } from "@/lib/catalog/people";
+import { getPilotPerson, personPath } from "@/lib/catalog/peopleManifest";
+import FilmPeopleLinks from "@/components/catalog/FilmPeopleLinks";
+import { jsonLd } from "@/lib/catalog/pilot";
 
 export const revalidate = 3600;
 
@@ -63,7 +67,7 @@ export default async function FilmPage({ params, searchParams }: Props) {
     const platforms = (searchParams?.p ?? "").split(",").map(Number).filter((x) => Number.isInteger(x) && x > 0);
 
     // Film bilgisi hızlı gelir; benzer filmler (HNSW sorgusu, soğukken 1–4 sn) aşağıda Suspense ile akışla yüklenir.
-    const [film, providers, trailer] = await Promise.all([getFilm(id), getLiveProviders(id), getTrailer(id)]);
+    const [film, providers, trailer, identifiedCredits] = await Promise.all([getFilm(id), getLiveProviders(id), getTrailer(id), getFilmPeople(id)]);
     if (!film) notFound();
 
     // Sadece id'li (/film/126986) ya da eski başlıklı adres → güncel adres (platform filtresi korunur)
@@ -78,6 +82,7 @@ export default async function FilmPage({ params, searchParams }: Props) {
 
     return (
         <>
+            <script type="application/ld+json" dangerouslySetInnerHTML={{__html:jsonLd({"@context":"https://schema.org","@type":"Movie",name:film.title,url:"https://filminibul.com"+canonical,...(film.posterUrl?{image:film.posterUrl}:{}),...(film.overview?{description:film.overview}:{}),genre:film.genres,director:[...new Set(identifiedCredits.filter(c=>c.kind==="crew"&&c.job==="Director").map(c=>c.person_id))].flatMap(id=>{const p=getPilotPerson(id,"director");return p?[{"@type":"Person",name:p.name,url:"https://filminibul.com"+personPath(p)}]:[];})})}} />
             <SiteHeader />
             <main className="min-h-screen">
                 <div className="film-backdrop relative h-20 w-full overflow-hidden sm:h-72 lg:h-80">
@@ -130,8 +135,7 @@ export default async function FilmPage({ params, searchParams }: Props) {
                         <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-3 py-4 text-base font-bold [&::-webkit-details-marker]:hidden"><T text={"Oyuncular ve film ayrıntıları"} /><ChevronDown className="h-5 w-5 shrink-0 transition-transform group-open:rotate-180" aria-hidden /></summary>
                         <div className="pb-6">
                         <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-5 gap-y-3 border-t border-line pt-5 text-sm leading-relaxed">
-                            {film.director && <><dt className="text-muted"><T text={"Yönetmen"} /></dt><dd className="font-semibold text-ink">{film.director}</dd></>}
-                            {film.cast.length > 0 && <><dt className="text-muted"><T text={"Oyuncular"} /></dt><dd className="text-ink">{film.cast.slice(0, 5).join(", ")}</dd></>}
+                            <FilmPeopleLinks film={film} credits={identifiedCredits} />
                             {film.collectionName && <><dt className="text-muted"><T text={"Film serisi"} /></dt><dd className="text-ink">{film.collectionName}</dd></>}
                         </dl>
                         <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1">

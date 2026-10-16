@@ -1,0 +1,39 @@
+name: SEO pilot filmografilerini yenile
+on:
+  schedule:
+    - cron: "30 5 * * 3"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: seo-people-maintenance
+  cancel-in-progress: false
+jobs:
+  refresh:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - run: node scripts/catalog/refresh_people.mjs --write
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: seo-people-refresh-report
+          path: |
+            docs/seo-02-people-report.json
+            data/seo-people/checkpoint.json
+      - name: Güncellenen katalog önbelleğini yenile
+        if: always()
+        run: node scripts/catalog/revalidate_content.mjs
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

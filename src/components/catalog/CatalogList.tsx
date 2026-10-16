@@ -6,13 +6,14 @@ import { filmPath } from "@/lib/filmUrl";
 import { jsonLd, pagePath, PAGE_SIZE } from "@/lib/catalog/pilot";
 import type { FilmDTO } from "@/lib/recommend/types";
 
-export default function CatalogList({ title, description, path, films, total, page, pages, context = "list", children }: {
+export default function CatalogList({ title, description, path, films, total, page, pages, context = "list", filmNotes, structuredData = [], children }: {
     title: string; description: string; path: string; films: FilmDTO[]; total: number; page: number; pages: number;
-    context?: "list" | "person"; children?: React.ReactNode;
+    context?: "list" | "person"; filmNotes?: Record<number,string>; structuredData?: Record<string,unknown>[]; children?: React.ReactNode;
 }) {
     const site = "https://filminibul.com";
     const url = site + pagePath(path, page);
     const structured = { "@context": "https://schema.org", "@graph": [
+        ...structuredData,
         { "@type": "BreadcrumbList", itemListElement: [
             { "@type": "ListItem", position: 1, name: "Filminibul", item: site },
             { "@type": "ListItem", position: 2, name: "Film listeleri", item: `${site}/listeler` },
@@ -28,7 +29,7 @@ export default function CatalogList({ title, description, path, films, total, pa
             <p className="mt-3 text-sm text-muted">Katalogumuzdaki {total.toLocaleString("tr-TR")} film. TMDB oy sayısına göre sıralı; eşitlikte film kimliği kullanılır. Bu liste eksiksiz bir arşiv veya en iyi filmler sıralaması değildir.</p>
             {children}
         </header>
-        <ul className="movie-grid">{films.map((film, i) => <FilmCard key={film.id} film={film} index={i} context={context} page={page} />)}</ul>
+        <ul className="movie-grid">{films.map((film, i) => <FilmCard key={film.id} film={film} index={i} context={context} page={page} creditLabel={filmNotes?.[film.id]} />)}</ul>
         <nav aria-label="Sayfalar" className="mt-10 flex flex-wrap items-center justify-center gap-4">
             {page > 1 && <Link href={pagePath(path, page - 1)} rel="prev" className="button-secondary">Önceki sayfa</Link>}
             <span className="text-sm text-muted">Sayfa {page} / {pages}</span>
