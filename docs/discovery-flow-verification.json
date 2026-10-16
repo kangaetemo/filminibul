@@ -1,0 +1,123 @@
+{
+  "checked_at": "2026-10-16T08:03:32.391Z",
+  "source_commit": "ca7cac59e19ffdd9fdd7d8444bac387a55e69e9d",
+  "merge_commit": "c5bef23a8f8b6f2970a1f9d5d86c28f6fa442232",
+  "pr": "https://github.com/kangaetemo/filminibul/pull/4",
+  "ci": {
+    "url": "https://github.com/kangaetemo/filminibul/actions/runs/38870554637",
+    "status": "success",
+    "unit_tests": 14,
+    "reports": [
+      {
+        "checked_at": "2026-10-16T07:59:24.271Z",
+        "mode": "fixture",
+        "checks": [
+          "hub: 30 real links in initial HTML",
+          "pages 1–2: SSR 24 cards, deterministic non-overlap, self canonical and JSON-LD positions",
+          "year/genre continuation API matches SSR page 2 exactly",
+          "invalid/overflow/duplicate page and unknown combination: real 404; page=1: 308",
+          "preview and language variants: noindex",
+          "49-row fixture last page: one card; upstream failure: 500 rather than empty/404"
+        ],
+        "fixture_queries": 3,
+        "paid_api_calls": 0
+      },
+      {
+        "checked_at": "2026-10-16T07:59:27.882Z",
+        "mode": "live_read_only",
+        "checks": [
+          "hub: 30 real links in initial HTML",
+          "pages 1–2: SSR 24 cards, deterministic non-overlap, self canonical and JSON-LD positions",
+          "year/genre continuation API matches SSR page 2 exactly",
+          "invalid/overflow/duplicate page and unknown combination: real 404; page=1: 308",
+          "preview and language variants: noindex"
+        ],
+        "paid_api_calls": 0
+      },
+      {
+        "checked_at": "2026-10-16T07:59:29.001Z",
+        "mode": "fixture",
+        "checks": [
+          "hub: 30 actor and 20 director links in initial HTML",
+          "fixture: missing photo fallback, character labels, single-card last page; upstream failure 500",
+          "infinite feed API: 24-card next page, deduped tail, scoped notes, Turkish voice, whitelist/validation, safe non-cached 503",
+          "role mismatch/unknown/invalid/overflow pages 404; old slug/page=1 308; page 2 self canonical and non-overlap; language variant noindex"
+        ],
+        "pages_checked": 1,
+        "cold_p95_ms": 165,
+        "cached_p95_ms": null,
+        "paid_api_calls": 0
+      },
+      {
+        "checked_at": "2026-10-16T07:59:40.198Z",
+        "mode": "live_read_only",
+        "checks": [
+          "hub: 30 actor and 20 director links in initial HTML",
+          "50/50 real catalog role pages: count, SSR cards, no duplicates, canonical and Person JSON-LD",
+          "infinite feed API: 24-card next page, deduped tail, scoped notes, Turkish voice, whitelist/validation, safe non-cached 503",
+          "role mismatch/unknown/invalid/overflow pages 404; old slug/page=1 308; page 2 self canonical and non-overlap; language variant noindex",
+          "Matrix detail: verified Keanu actor link and safe Movie structured data",
+          "five concurrent cold person pages and five cached requests completed"
+        ],
+        "pages_checked": 50,
+        "cold_p95_ms": 1322,
+        "cached_p95_ms": 104,
+        "paid_api_calls": 0
+      }
+    ]
+  },
+  "production": {
+    "deployment_id": "dpl_3BeYYpEZuQeF4xnPH1hBKmQrR2JA",
+    "state": "READY",
+    "aliases": [
+      "filminibul.com",
+      "www.filminibul.com",
+      "filminibul-sams-projects-dba0a978.vercel.app",
+      "filminibul-git-main-sams-projects-dba0a978.vercel.app"
+    ],
+    "browser": {
+      "person": "https://filminibul.com/oyuncu/6384-keanu-reeves",
+      "initial_cards": 24,
+      "after_first_scroll": 48,
+      "after_second_scroll": 50,
+      "unique": 50,
+      "automatic_without_button": true,
+      "canonical_unchanged": true,
+      "turkish_voice": true,
+      "english_voice": false,
+      "visible_tmdb_repeat": false,
+      "hub": "https://filminibul.com/listeler",
+      "hub_images": 136,
+      "actor_portraits": 30,
+      "loaded_actor_portraits": 30,
+      "light_and_dark_checked": true,
+      "desktop_horizontal_overflow": false,
+      "screenshot": "docs/kesif-listeleri-2026-10-16.jpg",
+      "mobile_device_tested": false,
+      "console_notes": "Existing AdSense attribute warning and browser-extension metadata error observed; no new application error in this browser check."
+    },
+    "http_check_report": "docs/seo-02-production-verification.json",
+    "runtime_scan": {
+      "levels": [
+        "error",
+        "fatal"
+      ],
+      "window": "10m",
+      "records": 0
+    },
+    "api_groups": [
+      24,
+      24,
+      2
+    ],
+    "api_unique_films": 50,
+    "api_turkish_voice_labels": 5
+  },
+  "preview": {
+    "browser_check": "automatic approval review rejected temporary share-link access; no bypass attempted after rejection; created link revoked successfully",
+    "alternative": "Reviewed test suite and read-only CI before merge; browser checks on public production after READY"
+  },
+  "paid_api_calls": 0,
+  "database_writes": 0,
+  "migrations": 0
+}

@@ -1,40 +1,33 @@
 {
-  "checked_at": "2026-10-16T07:32:38.817Z",
+  "checked_at": "2026-10-16T08:02:17.559Z",
   "base_url": "https://filminibul.com",
+  "deployment_id": null,
+  "merge_commit": null,
   "status": "passed",
   "requests": [
     {
       "path": "/listeler",
       "status": 200,
-      "ms": 4525,
+      "ms": 5352,
       "canonical": "https://filminibul.com/listeler",
       "robots": "index, follow",
       "location": null,
       "cache": "PRERENDER"
     },
     {
-      "path": "/listeler/2023-aksiyon-filmleri?page=2",
-      "status": 200,
-      "ms": 4392,
-      "canonical": "https://filminibul.com/listeler/2023-aksiyon-filmleri?page=2",
-      "robots": "index, follow",
-      "location": null,
-      "cache": "MISS"
-    },
-    {
       "path": "/listeler/2023-aksiyon-filmleri",
       "status": 200,
-      "ms": 4458,
+      "ms": 313,
       "canonical": "https://filminibul.com/listeler/2023-aksiyon-filmleri",
       "robots": "index, follow",
       "location": null,
       "cache": "MISS"
     },
     {
-      "path": "/oyuncu/6384-keanu-reeves",
+      "path": "/listeler/2023-aksiyon-filmleri?page=2",
       "status": 200,
-      "ms": 1528,
-      "canonical": "https://filminibul.com/oyuncu/6384-keanu-reeves",
+      "ms": 6244,
+      "canonical": "https://filminibul.com/listeler/2023-aksiyon-filmleri?page=2",
       "robots": "index, follow",
       "location": null,
       "cache": "MISS"
@@ -42,8 +35,17 @@
     {
       "path": "/yonetmen/525-christopher-nolan",
       "status": 200,
-      "ms": 1726,
+      "ms": 5173,
       "canonical": "https://filminibul.com/yonetmen/525-christopher-nolan",
+      "robots": "index, follow",
+      "location": null,
+      "cache": "MISS"
+    },
+    {
+      "path": "/oyuncu/6384-keanu-reeves",
+      "status": 200,
+      "ms": 5248,
+      "canonical": "https://filminibul.com/oyuncu/6384-keanu-reeves",
       "robots": "index, follow",
       "location": null,
       "cache": "MISS"
@@ -51,7 +53,7 @@
     {
       "path": "/oyuncu/6384-eski-ad?page=2",
       "status": 308,
-      "ms": 274,
+      "ms": 316,
       "canonical": "https://filminibul.com/oyuncu/6384-keanu-reeves?page=2",
       "robots": "index, follow",
       "location": "/oyuncu/6384-keanu-reeves?page=2",
@@ -60,7 +62,7 @@
     {
       "path": "/listeler/2023-aksiyon-filmleri?page=1",
       "status": 308,
-      "ms": 236,
+      "ms": 234,
       "canonical": "https://filminibul.com/listeler/2023-aksiyon-filmleri",
       "robots": "index, follow",
       "location": "/listeler/2023-aksiyon-filmleri",
@@ -69,7 +71,7 @@
     {
       "path": "/oyuncu/525-christopher-nolan",
       "status": 404,
-      "ms": 201,
+      "ms": 217,
       "robots": "noindex",
       "location": null,
       "cache": "MISS"
@@ -77,7 +79,7 @@
     {
       "path": "/listeler/2023-aksiyon-filmleri?page=99999",
       "status": 404,
-      "ms": 254,
+      "ms": 297,
       "robots": "noindex",
       "location": null,
       "cache": "MISS"
@@ -85,7 +87,7 @@
     {
       "path": "/oyuncu/6384-keanu-reeves?lang=en",
       "status": 200,
-      "ms": 394,
+      "ms": 289,
       "canonical": "https://filminibul.com/oyuncu/6384-keanu-reeves",
       "robots": "noindex, follow",
       "location": null,
@@ -94,7 +96,7 @@
     {
       "path": "/film/603-matrix",
       "status": 200,
-      "ms": 1338,
+      "ms": 498,
       "canonical": "https://filminibul.com/film/603-matrix",
       "robots": "",
       "location": null,
@@ -103,7 +105,7 @@
     {
       "path": "/sitemap.xml",
       "status": 200,
-      "ms": 567,
+      "ms": 552,
       "robots": "",
       "location": null,
       "cache": "PRERENDER"
@@ -111,7 +113,7 @@
     {
       "path": "/robots.txt",
       "status": 200,
-      "ms": 371,
+      "ms": 293,
       "robots": "",
       "location": null,
       "cache": "PRERENDER"
@@ -129,28 +131,5 @@
     "Correct actor/director roles and verified Matrix actor link",
     "308 old slug/page=1, 404 wrong role/overflow, noindex language variant",
     "All 80 pilot landing URLs plus hub in sitemap; robots allows them"
-  ],
-  "source_merge_commit": "1d121bdb5d5da1cbaf05ea37fad70727b078b51e",
-  "initial_release_deployment_id": "dpl_BJx8qrBEjFwyxheAKcBk8gBA8gCo",
-  "latest_verified_deployment_id": "dpl_89v5SKBWKBD6E6gsPN8YcpE9UUWX",
-  "latest_verified_commit": "3d616e1d2485b9607864e0e31b2429907dccf18a",
-  "latest_commit_changes": [
-    "docs/content-maintenance-report.json"
-  ],
-  "production_aliases": [
-    "filminibul.com",
-    "www.filminibul.com"
-  ],
-  "runtime_error_scan": {
-    "window": "10m",
-    "deployments": [
-      "dpl_BJx8qrBEjFwyxheAKcBk8gBA8gCo",
-      "dpl_89v5SKBWKBD6E6gsPN8YcpE9UUWX"
-    ],
-    "levels": [
-      "error",
-      "fatal"
-    ],
-    "matched_logs": 0
-  }
+  ]
 }
