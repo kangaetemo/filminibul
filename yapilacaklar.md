@@ -6,7 +6,7 @@ Bu dosya, konuşulan geliştirmeleri ve açık işleri takip eder. Öncelikler i
 
 ## Liste dizini bölüm geçişleri — 16 Ekim 2026
 
-- [ ] **KŞ-13 — Bölüm kısayollarını yumuşak kaydır.** Film listeleri sayfasındaki Listelere dal / Oyuncular / Yönetmenler bağlantıları 500 ms hızlanıp yavaşlayan kaydırmayla hedefe ulaşsın. Hash / klavye odağı ve gerçek anchor bağlantıları korunsun. Kullanıcı kaydırma / dokunma / klavye ile araya girebilsin; azaltılmış hareket tercihinde animasyon uygulanmasın. Yalnız bu üç kısayol kapsanır.
+- [x] **KŞ-13 — Bölüm kısayollarını yumuşak kaydır.** Film listeleri sayfasındaki Listelere dal / Oyuncular / Yönetmenler bağlantıları 500 ms hızlanıp yavaşlayan kaydırmayla hedefe ulaşsın. Hash / klavye odağı ve gerçek anchor bağlantıları korunsun. Kullanıcı kaydırma / dokunma / klavye ile araya girebilsin; azaltılmış hareket tercihinde animasyon uygulanmasın. Yalnız bu üç kısayol kapsanır. Tamamlandı: PR #7 / 28c1826, üretim dpl_2uokQXNyXZxvX6QBoLnS6CrCXMtx READY. tsc / build / SSR anchor kontrolü başarılı; canlı üç kısayol, ara kaydırma konumu, hedef odağı / hizası ve Escape ile iptal doğrulandı. Görsel docs/liste-bolum-gecisi-2026-10-16.jpg.
 
 ## Üst menü ve alt sayfalama sadeleştirmesi — 16 Ekim 2026
 

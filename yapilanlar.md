@@ -492,3 +492,11 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - wheel / touchstart / pointerdown / keydown ve unmount animasyonu iptal eder, geçici scroll davranışı geri yüklenir. Azaltılmış hareket tercihinde hedefe animasyonsuz gidilir. Yeni bağımlılık, DB veya ücretli servis çağrısı yok. Kontrol ve yayın henüz tamamlanmış sayılmadı.
 
 - Yerel tsc / Next üretim build ve build HTML içinde üç gerçek anchor / odaklanabilir hedef kontrolü başarılı. 500 ms geçiş yalnız küçük nav bileşeninde; yeni bağımlılık / veri taraması yok. Canlı tıklama doğrulaması yayın sonrası yapılacak.
+
+
+## KŞ-13 — Canlı animasyon doğrulaması · 16 Ekim 2026 12:15 Türkiye saati
+
+- Kaynak 6944c6616bbb47f22da7e76b155609a8c4ab274b, [PR #7](https://github.com/kangaetemo/filminibul/pull/7), merge 28c182652f85032caffcc6fc4a625591567d6c78. Vercel filminibul / production dpl_2uokQXNyXZxvX6QBoLnS6CrCXMtx READY; filminibul.com / www alias'ları doğrulandı.
+- Gerçek Chrome'da Oyuncular tıklamasından hemen sonra scroll 1 px / hedef top 2781 px ile ara animasyon konumu gözlendi; sonra hedef top128 px, hash #actor / odak actor ve geçici inline scroll stilinin temizlenmesi doğrulandı. Listelere dal hedefi top127,5 px / #seckiler / odak seckiler. Yönetmenler geçişi Escape ile durduruldu: hedef henüz aşağıda, inline stil geri alınmıştı. Aynı kısayol tekrar tıklanınca #director / odak director / top127,5 px ile tamamlandı.
+- Görsel docs/liste-bolum-gecisi-2026-10-16.jpg. Yerel TypeScript / üretim build ve üç href + tabindex hedefi içeren gerçek build HTML kontrolü başarılı. Gerçek mobil cihaz ve azaltılmış hareket emülasyonu bu turda test edilmedi; ilgili kod yolu mevcut. Yeni DB taraması, yazma, migration veya ücretli API yok.
+- KŞ-13 [x]. Bu son kayıt / görsel commit'i yalnız dokümantasyon; uygulama kaynakları canlıda doğrulanan merge ile aynı.
