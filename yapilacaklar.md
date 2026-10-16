@@ -6,10 +6,10 @@ Bu dosya, konuşulan geliştirmeleri ve açık işleri takip eder. Öncelikler i
 
 ## Kaydırma adresi ve sayfalama düzeltmesi — 16 Ekim 2026
 
-- [ ] **Kİ-05 — Görünen film grubunu URL / SEO bilgisiyle eşitle.** Yeni grup önceden yüklenince değil ekranda okunan bölüm olunca `?page=2/3` güncellensin; yukarı kaydırınca önceki gruba dönsün, ilk sayfada page parametresi kaldırılsın. Başlık, canonical, OG ve ItemList / breadcrumb aktif grupla tutarlı olsun. SSR doğrudan sayfalar / gerçek önceki-sonraki linkleri, dil / diğer URL parametreleri korunsun. History replaceState kaydırma geçmişini şişirmesin.
-- [ ] **KŞ-11 — Alt sayfalamayı tutarlı ve kompakt yap.** Ekran görüntüsündeki farklı stiller / gereksiz boşluklar ve “Başlangıç sayfası” kaldırılır; güncel “Sayfa 2 / 3”, eşit genişlik / 48 px yükseklikte İlk sayfa, Önceki, Sonraki; sınırdaki kontroller devre dışı.
+- [x] **Kİ-05 — Görünen film grubunu URL / SEO bilgisiyle eşitle.** Yeni grup önceden yüklenince değil ekranda okunan bölüm olunca `?page=2/3` güncellensin; yukarı kaydırınca önceki gruba dönsün, ilk sayfada page parametresi kaldırılsın. Başlık, canonical, OG ve ItemList / breadcrumb aktif grupla tutarlı olsun. SSR doğrudan sayfalar / gerçek önceki-sonraki linkleri, dil / diğer URL parametreleri korunsun. History replaceState kaydırma geçmişini şişirmesin.
+- [x] **KŞ-11 — Alt sayfalamayı tutarlı ve kompakt yap.** Ekran görüntüsündeki farklı stiller / gereksiz boşluklar ve “Başlangıç sayfası” kaldırılır; güncel “Sayfa 2 / 3”, eşit genişlik / 48 px yükseklikte İlk sayfa, Önceki, Sonraki; sınırdaki kontroller devre dışı.
 
-Google Search Central lazy-loading yönergesindeki görünür chunk / History API yaklaşımı temel alınır. Bu işlem tek başına sıralama artışı sözü değildir. Uygulama / tarayıcı ve yayın doğrulaması sürüyor.
+Google Search Central lazy-loading yönergesindeki görünür chunk / History API yaklaşımı temel alınır. Bu işlem tek başına sıralama artışı sözü değildir. Tamamlandı: PR #5 / 32779eb main; CI #38876072424 başarılı, üretim dpl_5BLz4AQCPKswakxLdTMNnerVe6xC READY. Canlı Keanu 24 → 48 → 50 / URL 1 → 2 → 3, yukarı dönüş 2 → 1; canonical / title / ItemList eşleşti. İkinci URL doğrudan açılış ve yenilemede 24 kart / konum25; Kate Winslet 2/2 kontrollerinin üçü de 144×48 px ve son kontrol devre dışı. Rapor docs/catalog-scroll-url-verification.json; görsel docs/katalog-sayfalama-2026-10-16.jpg. Gerçek mobil cihaz kontrolü yapılmadı.
 
 ## Keşif arayüzü — 16 Ekim 2026
 

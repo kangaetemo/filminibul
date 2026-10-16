@@ -1,0 +1,156 @@
+{
+  "checked_at": "2026-10-16T08:53:10.645Z",
+  "source_commit": "ca1c35fa727bc15c55a9a867dde583d4a50730c4",
+  "merge_commit": "32779eb233bff67df335f99a56b124d27add6b69",
+  "pr": "https://github.com/kangaetemo/filminibul/pull/5",
+  "ci": {
+    "url": "https://github.com/kangaetemo/filminibul/actions/runs/38876072424",
+    "status": "success",
+    "unit_tests": 18,
+    "reports": [
+      {
+        "checked_at": "2026-10-16T08:49:11.079Z",
+        "mode": "fixture",
+        "checks": [
+          "hub: 30 real links in initial HTML",
+          "pages 1–2: SSR 24 cards, deterministic non-overlap, self canonical and JSON-LD positions",
+          "year/genre continuation API matches SSR page 2 exactly",
+          "invalid/overflow/duplicate page and unknown combination: real 404; page=1: 308",
+          "preview and language variants: noindex",
+          "49-row fixture last page: one card; upstream failure: 500 rather than empty/404"
+        ],
+        "fixture_queries": 3,
+        "paid_api_calls": 0
+      },
+      {
+        "checked_at": "2026-10-16T08:49:16.023Z",
+        "mode": "live_read_only",
+        "checks": [
+          "hub: 30 real links in initial HTML",
+          "pages 1–2: SSR 24 cards, deterministic non-overlap, self canonical and JSON-LD positions",
+          "year/genre continuation API matches SSR page 2 exactly",
+          "invalid/overflow/duplicate page and unknown combination: real 404; page=1: 308",
+          "preview and language variants: noindex"
+        ],
+        "paid_api_calls": 0
+      },
+      {
+        "checked_at": "2026-10-16T08:49:17.125Z",
+        "mode": "fixture",
+        "checks": [
+          "hub: 30 actor and 20 director links in initial HTML",
+          "fixture: missing photo fallback, character labels, single-card last page; upstream failure 500",
+          "infinite feed API: 24-card next page, deduped tail, scoped notes, Turkish voice, whitelist/validation, safe non-cached 503",
+          "role mismatch/unknown/invalid/overflow pages 404; old slug/page=1 308; page 2 self canonical and non-overlap; language variant noindex"
+        ],
+        "pages_checked": 1,
+        "cold_p95_ms": 166,
+        "cached_p95_ms": null,
+        "paid_api_calls": 0
+      },
+      {
+        "checked_at": "2026-10-16T08:49:30.995Z",
+        "mode": "live_read_only",
+        "checks": [
+          "hub: 30 actor and 20 director links in initial HTML",
+          "50/50 real catalog role pages: count, SSR cards, no duplicates, canonical and Person JSON-LD",
+          "infinite feed API: 24-card next page, deduped tail, scoped notes, Turkish voice, whitelist/validation, safe non-cached 503",
+          "role mismatch/unknown/invalid/overflow pages 404; old slug/page=1 308; page 2 self canonical and non-overlap; language variant noindex",
+          "Matrix detail: verified Keanu actor link and safe Movie structured data",
+          "five concurrent cold person pages and five cached requests completed"
+        ],
+        "pages_checked": 50,
+        "cold_p95_ms": 1244,
+        "cached_p95_ms": 126,
+        "paid_api_calls": 0
+      }
+    ]
+  },
+  "deployment": {
+    "id": "dpl_5BLz4AQCPKswakxLdTMNnerVe6xC",
+    "state": "READY",
+    "sha": "32779eb233bff67df335f99a56b124d27add6b69",
+    "aliases": [
+      "filminibul.com",
+      "www.filminibul.com",
+      "filminibul-sams-projects-dba0a978.vercel.app",
+      "filminibul-git-main-sams-projects-dba0a978.vercel.app"
+    ]
+  },
+  "browser": {
+    "person": "https://filminibul.com/oyuncu/6384-keanu-reeves",
+    "initial_cards": 24,
+    "page2": {
+      "cards": 48,
+      "url": "?page=2",
+      "canonical": "?page=2",
+      "title_page": 2,
+      "item_list_first_position": 25
+    },
+    "page3": {
+      "cards": 50,
+      "unique": 50,
+      "url": "?page=3",
+      "canonical": "?page=3",
+      "item_list_first_position": 49,
+      "item_list_count": 2
+    },
+    "scroll_up_page2": true,
+    "scroll_home": {
+      "page_parameter_removed": true,
+      "cards_retained": 50,
+      "canonical_first_page": true
+    },
+    "direct_and_refresh_page2": {
+      "cards": 24,
+      "first_position": 25,
+      "first_film_id": 3509
+    },
+    "pager": {
+      "person": "https://filminibul.com/oyuncu/204-kate-winslet?page=2",
+      "label": "Sayfa 2 / 2",
+      "controls": [
+        {
+          "label": "İlk sayfa",
+          "width": 144,
+          "height": 48
+        },
+        {
+          "label": "Önceki",
+          "width": 144,
+          "height": 48
+        },
+        {
+          "label": "Sonraki",
+          "width": 144,
+          "height": 48,
+          "disabled": true
+        }
+      ],
+      "horizontal_overflow": false,
+      "screenshot": "docs/katalog-sayfalama-2026-10-16.jpg"
+    },
+    "real_mobile_device_tested": false
+  },
+  "sources": [
+    "https://developers.google.com/search/docs/crawling-indexing/javascript/lazy-loading",
+    "https://nextjs.org/docs/14/app/building-your-application/routing/linking-and-navigating"
+  ],
+  "paid_api_calls": 0,
+  "database_writes": 0,
+  "migrations": 0,
+  "production_http": {
+    "requests": 13,
+    "status": "passed",
+    "sitemap_pilot_urls": 80,
+    "report": "docs/seo-02-production-verification.json"
+  },
+  "runtime_scan": {
+    "window": "10m",
+    "levels": [
+      "error",
+      "fatal"
+    ],
+    "records": 0
+  }
+}
