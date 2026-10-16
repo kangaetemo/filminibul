@@ -4,6 +4,7 @@ import { catalogCard, type CardRow } from "./lists";
 import { CARD_COLUMNS, PAGE_SIZE } from "./pilot";
 import { getPilotPerson, type PersonRole } from "./peopleManifest";
 import type { FilmDTO } from "@/lib/recommend/types";
+import { creditLabel } from "./creditLabel.mjs";
 export type PersonRow = { person_id:number; name:string; display_name:string; profile_path:string|null; pilot_role:PersonRole; published:boolean; updated_at:string };
 export type CreditRow = { movie_id:number; kind:"cast"|"crew"; job:string; character_name:string|null; film:CardRow };
 export const getPersonSnapshot = cache(async(id:number,role:PersonRole)=>{
@@ -29,7 +30,7 @@ export const getPersonSnapshot = cache(async(id:number,role:PersonRole)=>{
     }
     const sorted=Array.from(films.values()).sort((a,b)=>(b.voteCount??-1)-(a.voteCount??-1)||a.id-b.id);
     const notes:Record<number,string>={};
-    for(const film of sorted)notes[film.id]=role==="director"?"Yönetmen":Array.from(characters.get(film.id)??[]).join(" · ");
+    for(const film of sorted)notes[film.id]=role==="director"?"Yönetmen":Array.from(characters.get(film.id)??[]).map(creditLabel).join(" · ");
     return {entry,person,films:sorted,notes,total:sorted.length,pages:Math.ceil(sorted.length/PAGE_SIZE)};
 });
 export type IdentifiedCredit = {person_id:number; kind:"cast"|"crew"; job:string; person:PersonRow};

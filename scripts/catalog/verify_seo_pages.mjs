@@ -64,6 +64,12 @@ try {
     const firstIds = new Set(items(first.html).map(x => x.url));
     assert.ok(items(second.html).every(x => !firstIds.has(x.url)), "pages must not duplicate cards");
     checks.push("pages 1–2: SSR 24 cards, deterministic non-overlap, self canonical and JSON-LD positions");
+    const continuation=await request("/api/catalog/page?"+new URLSearchParams({path,page:"2"}));
+    assert.equal(continuation.res.status,200);
+    const chunk=JSON.parse(continuation.html);
+    assert.equal(chunk.films.length,24);assert.equal(chunk.page,2);
+    assert.deepEqual(chunk.films.map(f=>f.id),items(second.html).map(i=>Number(new URL(i.url).pathname.split("/")[2].split("-")[0])));
+    checks.push("year/genre continuation API matches SSR page 2 exactly");
     const redirect = await request(`${path}?page=1`);
     assert.equal(redirect.res.status, 308);
     assert.equal(new URL(redirect.res.headers.get("location"), "http://localhost").pathname, path);

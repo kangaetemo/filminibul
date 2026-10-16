@@ -1,7 +1,7 @@
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
-import FilmCard from "@/components/film/FilmCard";
+import CatalogFeed from "./CatalogFeed";
 import { filmPath } from "@/lib/filmUrl";
 import { jsonLd, pagePath, PAGE_SIZE } from "@/lib/catalog/pilot";
 import type { FilmDTO } from "@/lib/recommend/types";
@@ -26,14 +26,14 @@ export default function CatalogList({ title, description, path, films, total, pa
         <nav aria-label="İçerik yolu" className="text-sm text-muted"><Link href="/listeler" className="underline underline-offset-4">Film listeleri</Link><span aria-hidden> / </span><span>{title}</span></nav>
         <header className="mb-8 mt-6 max-w-3xl"><p className="eyebrow text-accent-ink">Katalogdan keşfet</p><h1 className="section-heading mt-3">{title}</h1>
             <p className="mt-4 leading-relaxed text-muted">{description}</p>
-            <p className="mt-3 text-sm text-muted">Katalogumuzdaki {total.toLocaleString("tr-TR")} film. TMDB oy sayısına göre sıralı; eşitlikte film kimliği kullanılır. Bu liste eksiksiz bir arşiv veya en iyi filmler sıralaması değildir.</p>
+            <p className="mt-3 text-sm text-muted">Katalogumuzdan {total.toLocaleString("tr-TR")} film · En çok oylananlardan başlayarak</p>
             {children}
         </header>
-        <ul className="movie-grid">{films.map((film, i) => <FilmCard key={film.id} film={film} index={i} context={context} page={page} creditLabel={filmNotes?.[film.id]} />)}</ul>
+        <CatalogFeed key={`${path}:${page}`} path={path} context={context} initial={{ films, page, pages, total, notes: Object.fromEntries(films.map(film => [film.id, filmNotes?.[film.id] ?? ""])) }} />
         <nav aria-label="Sayfalar" className="mt-10 flex flex-wrap items-center justify-center gap-4">
             {page > 1 && <Link href={pagePath(path, page - 1)} rel="prev" className="button-secondary">Önceki sayfa</Link>}
-            <span className="text-sm text-muted">Sayfa {page} / {pages}</span>
-            {page < pages && <Link href={pagePath(path, page + 1)} rel="next" className="button-secondary">Sonraki sayfa</Link>}
+            <span className="text-sm text-muted">Başlangıç sayfası {page} / {pages}</span>
+            {page < pages && <Link href={pagePath(path, page + 1)} rel="next" className="min-h-11 p-3 text-sm underline">Sonraki sayfayı ayrı aç</Link>}
             {page > 1 && <Link href={path} className="min-h-11 p-3 text-sm underline">İlk sayfa</Link>}
         </nav>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(structured) }} />
