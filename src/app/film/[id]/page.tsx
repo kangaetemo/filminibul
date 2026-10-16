@@ -80,9 +80,19 @@ export default async function FilmPage({ params, searchParams }: Props) {
     }
 
 
+    const linkedDirectors = Array.from(new Set(identifiedCredits.filter(c => c.kind === "crew" && c.job === "Director").map(c => c.person_id))).flatMap(personId => {
+        const person = getPilotPerson(personId, "director");
+        return person ? [{ "@type": "Person", name: person.name, url: "https://filminibul.com" + personPath(person) }] : [];
+    });
+    const movieStructuredData = {
+        "@context": "https://schema.org", "@type": "Movie", name: film.title, url: "https://filminibul.com" + canonical,
+        ...(film.posterUrl ? { image: film.posterUrl } : {}), ...(film.overview ? { description: film.overview } : {}),
+        genre: film.genres, ...(linkedDirectors.length ? { director: linkedDirectors } : {}),
+    };
+
     return (
         <>
-            <script type="application/ld+json" dangerouslySetInnerHTML={{__html:jsonLd({"@context":"https://schema.org","@type":"Movie",name:film.title,url:"https://filminibul.com"+canonical,...(film.posterUrl?{image:film.posterUrl}:{}),...(film.overview?{description:film.overview}:{}),genre:film.genres,director:[...new Set(identifiedCredits.filter(c=>c.kind==="crew"&&c.job==="Director").map(c=>c.person_id))].flatMap(id=>{const p=getPilotPerson(id,"director");return p?[{"@type":"Person",name:p.name,url:"https://filminibul.com"+personPath(p)}]:[];})})}} />
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(movieStructuredData) }} />
             <SiteHeader />
             <main className="min-h-screen">
                 <div className="film-backdrop relative h-20 w-full overflow-hidden sm:h-72 lg:h-80">

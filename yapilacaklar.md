@@ -183,3 +183,6 @@ SEO-02 / Kİ-01'e geçildi: 50 kişinin katalogda gerçek film-rol çapalarıyla
 ### SEO-02 / Kİ-01 — Sayfa kodu hazır · 16 Ekim 2026 09:08 Türkiye saati
 
 Oyuncu/yönetmen route'ları, manifest, kişi fotoğrafı/fallback, gerçek karakter bilgileri, ayrı rol sorgusu, 24 kart ve sabit sıralama, filmden doğrulanmış kişi bağlantıları, Person/Movie JSON-LD, sitemap ve dizindeki 50 link uygulandı. Haftalık sınırlı bakım yalnız main'de, OpenAI sırrı olmadan çalışır. Henüz test sonucu / yayın tamamlandı sayılmaz; CI'da fixture, 50 gerçek kişi sayfası ve Matrix kişi bağlantısı doğrulanacak.
+
+
+SEO-02 CI #38859594490: 13 model/liste/ölçüm testi geçti. İlk build eski TypeScript hedefi nedeniyle Set/Map iterator spread sözdizimini reddetti; ilgili kullanımlar Array.from ile aynı davranışı koruyarak düzeltildi. Bağımsız tsc kontrolü build öncesine alındı. Gerçek SSR sonucu henüz bekleniyor.

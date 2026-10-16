@@ -27,6 +27,7 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: node --test scripts/tests/catalog-lists.test.mjs scripts/tests/analytics.test.mjs scripts/tests/people-model.test.mjs
+      - run: node_modules/.bin/tsc --noEmit --pretty false
       - run: npm run build
         env:
           VERCEL_ENV: preview

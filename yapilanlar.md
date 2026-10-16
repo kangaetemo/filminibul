@@ -389,3 +389,8 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Film kredilerinde yalnız gerçek film/kişi ilişkisi ve onaylı ana rolü olan kişiye bağlantı; kimliksiz eski adlar düz metin kalır. Aynı filmde çoklu doğrulanmış yönetmen desteklenir. Movie JSON-LD'de doğrulanmış Director ilişkileri, kişi sayfasında Person+ItemList+Breadcrumb kullanılır; JSON metni script enjeksiyonuna karşı kaçırılır. Yeni metadata sunucuda, fotoğraflar mevcut TMDB loader'dan, kart başına ek veri çağrısı yok.
 - Haftalık refresh 50 kişiyle sınırlı; snapshot başarısızsa eskisini korur, DB/pilot kapasite kontrolleri aktif. Katalog etiketli günlük cache ve refresh sonrası invalidation var. Yeni kullanıcı verisi veya OpenAI çağrısı yok.
 - Sayfa/model ve gerçek SSR testleri CI'da başlatılacak; test geçmeden SEO-02 / Kİ-01 ana görevi bitmiş sayılmadı. Üretim uygulaması yayımlanmadı.
+
+
+### SEO-02 derleme uyumluluğu düzeltmesi · 16 Ekim 2026
+
+#38859594490 model/liste/ölçüm testlerinde 13/13 başarılı, build TS2802 ile başarısız: mevcut tsconfig hedefi iterator spread'i desteklemiyor. Yeni filmografi Map/Set kullanımları Array.from ile değiştirildi; bütün uygulamanın derleme hedefi değiştirilmedi. Film Movie JSON-LD verisi okunabilir bir sabit nesneye taşındı, doğrulanmış yönetmen yoksa boş director alanı eklenmedi. Sonraki CI önce tsc ile tüm tip hatalarını, sonra build/SSR senaryolarını doğrulayacak. Üretim uygulaması veya kaydedilmiş 50 kişi verisi bu hata nedeniyle değiştirilmedi.

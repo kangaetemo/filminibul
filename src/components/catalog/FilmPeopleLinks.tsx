@@ -14,7 +14,7 @@ export default function FilmPeopleLinks({film,credits}:{film:FilmDTO;credits:Ide
         if(person)(role==="actor"?actors:directors).set(person.id,person);
     }
     const link=(p:PilotPerson)=><Link href={personPath(p)} className="underline underline-offset-4 hover:text-accent-ink">{p.name}</Link>;
-    const actorEntries=[...actors.values()],directorEntries=[...directors.values()];
+    const actorEntries=Array.from(actors.values()),directorEntries=Array.from(directors.values());
     const cast=film.cast.slice(0,5);
     const extra=actorEntries.filter(p=>!cast.some(name=>normalizedName(name)===normalizedName(p.name)));
     const fallbackDirector=film.director&&!directorEntries.some(p=>normalizedName(p.name)===normalizedName(film.director))?film.director:null;

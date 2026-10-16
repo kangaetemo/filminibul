@@ -27,9 +27,9 @@ export const getPersonSnapshot = cache(async(id:number,role:PersonRole)=>{
         }
         if(rows.length<1000)break;
     }
-    const sorted=[...films.values()].sort((a,b)=>(b.voteCount??-1)-(a.voteCount??-1)||a.id-b.id);
+    const sorted=Array.from(films.values()).sort((a,b)=>(b.voteCount??-1)-(a.voteCount??-1)||a.id-b.id);
     const notes:Record<number,string>={};
-    for(const film of sorted)notes[film.id]=role==="director"?"Yönetmen":[...(characters.get(film.id)??[])].join(" · ");
+    for(const film of sorted)notes[film.id]=role==="director"?"Yönetmen":Array.from(characters.get(film.id)??[]).join(" · ");
     return {entry,person,films:sorted,notes,total:sorted.length,pages:Math.ceil(sorted.length/PAGE_SIZE)};
 });
 export type IdentifiedCredit = {person_id:number; kind:"cast"|"crew"; job:string; person:PersonRow};
