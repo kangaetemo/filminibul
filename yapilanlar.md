@@ -409,3 +409,10 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Kimlik #38812137450, kayıt #38858978659 ve son SSR #38860035895 raporları repo docs ve workflow artifact'lerinde korunur. Güvenlik/atomiklik/idempotence kanıtı docs/seo-02-people-safety-verification.json; yeni metadata yaklaşık 1,3 MB, 50 kişi / 2.810 kredi / 1.605 farklı film. Ücretli OpenAI çağrısı 0.
 - Kİ-01'in onaylı 50 kişilik pilotu [x] yapıldı; tüm TMDB kişileri kimliklendirilmiş sayılmadı. SEO-02 ilk 80 sayfa uygulaması tamam/yayına hazır; ana görev kontrollü yayın / tematik sonraki kapsamla açık. Kİ-02 writer ekranları, Search Console ve gerçek mobil görsel doğrulama ayrıca açık. İÇ-01 kapatma/kapsam kararı korundu; 157 kayıt için çalışma yok.
 - PR #3 güncelleniyor; main hâlâ 8afa195b70a6b4766eca7742154e7a7dc431baf3. Uygulama merge/deploy yapılmadı. Son kaynaklar GitHub üzerinden kalıcı; yerel çalışma ortamı kullanılamadığı için doğrulama runner'da yürütüldü. Gerçek run/commit sonuçları kaydedildi; başarısız iki doğrulama girişimi geçmişten silinmedi.
+
+
+## SEO-02 — Üretim yayın talimatı ve hedef doğrulaması · 16 Ekim 2026 10:29 Türkiye saati
+
+- Kullanıcı üretim yayınını açıkça istedi. PR #3 head 08d3c36794133f00fac1884562668413d20401b2, main 8afa195b70a6b4766eca7742154e7a7dc431baf3; mergeable=true. Son uygulama kaynak kontrolü #38860035895 / 27b777fa tüm adımları başarılı; sonraki commit yalnız rapor/takip dosyalarıydı.
+- Vercel team_665VlzWwrorfmvkLXKajR5sW / prj_UQOwvdOYEPcjl8mOfQlNQVN1pqSJ / filminibul / production doğrulandı; mevcut READY sürüm 8afa195 / dpl_8fvZ2pZJP7jawE8TXbUPXMj2rEY2. Standart Git entegrasyonuyla main merge yayını kullanılacak; sırlar yerel ortama alınmayacak.
+- Bu kayıt yayına geçiş onayıdır, henüz başarılı dağıtım iddiası değildir. Gerçek merge/deployment ve üretim kontrolleri sonraki kayda eklenecek. Kişi metadata migration'ı zaten hazır; tekrar uygulanmayacak.

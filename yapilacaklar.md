@@ -199,3 +199,8 @@ SEO-02 #38859793468: 13 test, tsc, üretim build, yıl/tür fixture ve canlı ka
 - [ ] **Yayın sonrası:** gerçek cihaz görsel kontrolü; Search Console örnek URL denetimi / indeks ve 28 günlük trafik; üretim performans kontrolü. Kİ-02 ve 10 tematik seçki ayrı kapsam.
 
 İÇ-01 kullanıcı kararıyla [x]; 157 kayıt için yeni toplu çeviri / ücretli işlem açılmayacak. Bu SEO aşamasında ek OpenAI kullanımı 0. Rapor: docs/seo-02-pilot-uygulama-sonucu.md.
+
+
+## SEO-02 — Kontrollü yayın onayı · 16 Ekim 2026 10:29 Türkiye saati
+
+Kullanıcı “canlıya da alalım” diyerek ilk 80 sayfalık pilotun üretim yayınını açıkça onayladı. PR #3, test edilmiş uygulama koduyla mevcut main'e birleştirilecek; hedef Vercel filminibul / sams-projects-dba0a978 / production. Önceki üretim 8afa195, geri dönüş adayı dpl_8fvZ2pZJP7jawE8TXbUPXMj2rEY2. Veri migration'ı tekrar uygulanmayacak, yeni ücretli OpenAI işi yok. Liste/oyuncu/yönetmen/film bağlantısı, sayfalama ve sitemap üretimde doğrulandıktan sonra yayın maddesi kapatılacak.
