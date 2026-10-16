@@ -170,3 +170,11 @@ Not: önceki bütçe onayı ve içerik işi mevcut branch kaydında korunur. SEO
 İÇ-01 mevcut 1.746 çeviri / 3 afiş ve yaklaşık 0,363 USD kullanımla tamamlanmış kabul edildi. Kullanıcı kalan 157 kaydı şimdilik kapsam dışında bıraktı; kaynaklar düzeltilmiş/çevrilmiş sayılmıyor ve yeni ücretli çeviri işi açılmayacak. Önceki 157 nedeniyle açık tutma notlarının yerine bu karar geçerlidir.
 
 SEO-02 / Kİ-01'e geçildi: 50 kişinin katalogda gerçek film-rol çapalarıyla TMDB kimliği doğrulanacak, sınırlı kişi/kredi modeli, oyuncu/yönetmen sayfaları, film bağlantıları ve sitemap uygulanacak. İlk 30 yıl/tür pilotu ve geçmiş test kanıtları korunur. İlk kimlik toplama salt okunurdur; OpenAI çağrısı yok. Sonuç doğrulanmadan tamamlanma işareti verilmez.
+
+
+### SEO-02 / Kİ-01 — 50 kimlik doğrulandı
+
+- [x] [#38812137450](https://github.com/kangaetemo/filminibul/actions/runs/38812137450): 50/50 kişi, sıfır hata; anchor film + doğru rol + kişi adı/alternatif adı + kişi movie_credits çapraz doğrulaması. 30 oyuncu / 20 yönetmen; 2.810 kredi, ana rolde en az 10 katalog filmi.
+- [x] Sınırlı kişi/kredi şeması oluşturuldu. RLS açık, anon/authenticated erişimi kapalı, yalnız service_role. Güncelleme kişi başına atomik; başarısız snapshot eskisini korur. 50 kişi, 10 MB pilot ve 450 MB DB koruması var.
+- [ ] Doğrulanmış artifact'i kaydet; gerçek satır sayıları ve tekrarlı çalıştırmada çoğalmama doğrulansın.
+- [ ] Oyuncu/yönetmen route'ları, kişi dizini, film iç bağlantıları, sitemap ve canlı SSR doğrulaması.

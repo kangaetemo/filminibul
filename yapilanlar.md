@@ -370,3 +370,11 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Kullanıcı 157 kaydı şimdilik bırakarak İÇ-01'in tamamlanmış sayılmasını açıkça istedi; ana görev [x] yapıldı, geçmiş eksik/kullanım kanıtları silinmedi. Yeni çeviri/harcama yapılmadı.
 - 50 kişinin kimliği yalnız isimle atanmaz: katalog film çapası üzerindeki cast veya tam Director kredisi, kişi detay adı/alternatif adı ve person movie_credits içindeki aynı film/rol birlikte kontrol edilir. Tüm katalog kadrosu taranmaz; yalnız 50 kişi ve 2025/öncesi mevcut katalog filmleri kapsanır. Ham Writing job/department gelecekteki Kİ-02 için korunur; yeni senarist sayfası bu pilotta açılmaz.
 - Ortam terminali kullanılamadığından kaynaklar GitHub branch'i üzerinden hazırlanır, test ve veri işi mevcut GitHub runner sırlarıyla yürütülür. Kimlik toplayıcı ilk geçişte salt okunur; model rol/isim/dedup testleri ve rapor/artifact hazır. Çalışma başlatmak tamamlanma sayılmadı; gerçek sonuç eklenecek.
+
+
+## SEO-02 / Kİ-01 — Kimlik sonucu ve sınırlı metadata şeması · 16 Ekim 2026
+
+- Salt okunur kimlik run #38812137450 başarılı: 50/50, 0 hata, 2.810 tüm-rol kredi satırı. Ana rol film adetleri 10–90; yeni katalog filmi / embedding / OpenAI işlemi yok. Public kimlik raporu docs/seo-02-people-identity-report.json.
+- Canlı DB 421.956.755 byte; iki yeni tablo ve role/film indeksleri ile service_role'a özel SECURITY INVOKER atomik snapshot RPC migration'ı uygulandı. İlk MCP denemesi expired requestState hatası verdi; salt okunur kontrolde nesneler yoktu, tek tekrar başarılı oldu. Schema SQL'i scripts/sql/seo_02_people.sql ile repoda saklanır; yerel runtime bulunmadığından CLI migration üretimi kullanılamadı, MCP migration geçmişine kaydedildi.
+- 50 kişi / en az 5 ana-rol filmi / onaylı çapası / 2025 ve öncesi katalog üyeliği / 10 MB metadata / 450 MB DB sınırları RPC'de doğrulanır. Bütün transaction geri alınacağı için yarım güncelleme mevcut kredileri silmez. Anon/authenticated tablo ve RPC hakları kaldırıldı, RLS açıldı.
+- Veriyi ikinci kez TMDB'den indirmek yerine aynı başarılı run'ın artifact'i indirilecek; 50 kimlik/sayım eşleşmesi kontrol edilerek servis bağlamında kaydedilecek ve ilk snapshot tekrar uygulanıp idempotence doğrulanacak. Henüz veri kaydının başarılı olduğu iddia edilmedi. Fotoğraf / rol manifesti doğrulanan 50 kimlikle hazırlandı; sayfa kodu sırada.

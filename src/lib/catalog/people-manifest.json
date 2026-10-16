@@ -1,0 +1,252 @@
+[
+  {
+    "id": 31,
+    "name": "Tom Hanks",
+    "role": "actor"
+  },
+  {
+    "id": 112,
+    "name": "Cate Blanchett",
+    "role": "actor"
+  },
+  {
+    "id": 138,
+    "name": "Quentin Tarantino",
+    "role": "director"
+  },
+  {
+    "id": 204,
+    "name": "Kate Winslet",
+    "role": "actor"
+  },
+  {
+    "id": 240,
+    "name": "Stanley Kubrick",
+    "role": "director"
+  },
+  {
+    "id": 287,
+    "name": "Brad Pitt",
+    "role": "actor"
+  },
+  {
+    "id": 380,
+    "name": "Robert De Niro",
+    "role": "actor"
+  },
+  {
+    "id": 488,
+    "name": "Steven Spielberg",
+    "role": "director"
+  },
+  {
+    "id": 500,
+    "name": "Tom Cruise",
+    "role": "actor"
+  },
+  {
+    "id": 524,
+    "name": "Natalie Portman",
+    "role": "actor"
+  },
+  {
+    "id": 525,
+    "name": "Christopher Nolan",
+    "role": "director"
+  },
+  {
+    "id": 578,
+    "name": "Ridley Scott",
+    "role": "director"
+  },
+  {
+    "id": 608,
+    "name": "Hayao Miyazaki",
+    "role": "director"
+  },
+  {
+    "id": 1032,
+    "name": "Martin Scorsese",
+    "role": "director"
+  },
+  {
+    "id": 1245,
+    "name": "Scarlett Johansson",
+    "role": "actor"
+  },
+  {
+    "id": 1337,
+    "name": "Tony Leung Chiu-wai",
+    "role": "actor"
+  },
+  {
+    "id": 2231,
+    "name": "Samuel L. Jackson",
+    "role": "actor"
+  },
+  {
+    "id": 2636,
+    "name": "Alfred Hitchcock",
+    "role": "director"
+  },
+  {
+    "id": 2963,
+    "name": "Nicolas Cage",
+    "role": "actor"
+  },
+  {
+    "id": 3894,
+    "name": "Christian Bale",
+    "role": "actor"
+  },
+  {
+    "id": 5026,
+    "name": "Akira Kurosawa",
+    "role": "director"
+  },
+  {
+    "id": 5064,
+    "name": "Meryl Streep",
+    "role": "actor"
+  },
+  {
+    "id": 5292,
+    "name": "Denzel Washington",
+    "role": "actor"
+  },
+  {
+    "id": 5655,
+    "name": "Wes Anderson",
+    "role": "director"
+  },
+  {
+    "id": 6193,
+    "name": "Leonardo DiCaprio",
+    "role": "actor"
+  },
+  {
+    "id": 6384,
+    "name": "Keanu Reeves",
+    "role": "actor"
+  },
+  {
+    "id": 7467,
+    "name": "David Fincher",
+    "role": "director"
+  },
+  {
+    "id": 18897,
+    "name": "Jackie Chan",
+    "role": "actor"
+  },
+  {
+    "id": 36592,
+    "name": "Saoirse Ronan",
+    "role": "actor"
+  },
+  {
+    "id": 56214,
+    "name": "Nuri Bilge Ceylan",
+    "role": "director"
+  },
+  {
+    "id": 59754,
+    "name": "Demet Akbağ",
+    "role": "actor"
+  },
+  {
+    "id": 74376,
+    "name": "Cem Yılmaz",
+    "role": "actor"
+  },
+  {
+    "id": 77349,
+    "name": "Şener Şen",
+    "role": "actor"
+  },
+  {
+    "id": 97272,
+    "name": "Kemal Sunal",
+    "role": "actor"
+  },
+  {
+    "id": 97274,
+    "name": "Adile Naşit",
+    "role": "actor"
+  },
+  {
+    "id": 97278,
+    "name": "Atıf Yılmaz",
+    "role": "director"
+  },
+  {
+    "id": 109083,
+    "name": "Ertem Eğilmez",
+    "role": "director"
+  },
+  {
+    "id": 121422,
+    "name": "Kartal Tibet",
+    "role": "director"
+  },
+  {
+    "id": 121423,
+    "name": "Ayşen Gruda",
+    "role": "actor"
+  },
+  {
+    "id": 137427,
+    "name": "Denis Villeneuve",
+    "role": "director"
+  },
+  {
+    "id": 142766,
+    "name": "Tarık Akan",
+    "role": "actor"
+  },
+  {
+    "id": 142857,
+    "name": "Çağan Irmak",
+    "role": "director"
+  },
+  {
+    "id": 145352,
+    "name": "Yılmaz Güney",
+    "role": "director"
+  },
+  {
+    "id": 145409,
+    "name": "Kadir İnanır",
+    "role": "actor"
+  },
+  {
+    "id": 145518,
+    "name": "Zeki Demirkubuz",
+    "role": "director"
+  },
+  {
+    "id": 228610,
+    "name": "Metin Erksan",
+    "role": "director"
+  },
+  {
+    "id": 228611,
+    "name": "Hülya Koçyiğit",
+    "role": "actor"
+  },
+  {
+    "id": 556047,
+    "name": "Halit Akçatepe",
+    "role": "actor"
+  },
+  {
+    "id": 556048,
+    "name": "Münir Özkul",
+    "role": "actor"
+  },
+  {
+    "id": 556475,
+    "name": "Türkan Şoray",
+    "role": "actor"
+  }
+]
