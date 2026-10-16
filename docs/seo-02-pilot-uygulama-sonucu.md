@@ -48,3 +48,10 @@ Kişi testi ilk HTML kartları ve film URL'leri, 30 oyuncu/20 yönetmen dizin ba
 Runner'daki canlı katalog ölçümü: 50 ilk sayfanın cold p95 süresi 1.831 ms; 5 cache'li isteğin p95'i 119 ms. Beş eşzamanlı ilk kişi isteği ve beş cache'li istek başarılı. Bunlar runner/Next sunucusu ölçümleridir; Vercel üretim performansı yayın sonrası ayrıca ölçülür. Bu aşamada ücretli API çağrısı yok.
 
 Kaynak PR [#3](https://github.com/kangaetemo/filminibul/pull/3) üzerinde; test edilen kod commit'i 27b777fae4e7e9963dd5b25282531def834f8e61. Uygulama henüz üretimde değil. Kİ-01'in 50 kişilik pilot uygulaması doğrulandı; SEO-02'nin ilk 80 sayfalık pilotu yayına hazır, kontrollü yayın ve sonrasındaki Search Console / mobil cihaz görsel kontrolü açık. Kİ-02 ve tematik ikinci aşama ayrı açık işlerdir.
+
+
+## Üretim yayını · 16 Ekim 2026 10:34 Türkiye saati
+
+Kullanıcı onayıyla PR #3 / 1d121bd main'e birleştirildi. Üretim READY: dpl_BJx8qrBEjFwyxheAKcBk8gBA8gCo; otomatik rapor commit'i 3d616e1d / dpl_89v5SKBWKBD6E6gsPN8YcpE9UUWX de READY. https://filminibul.com/listeler canlıdır. Bu kayıt, önceki “henüz üretimde değil” durumunun yerine geçer.
+
+13 gerçek HTTP kontrolü başarılı: liste/kişi canonical ve index/follow, 24 kartlı sayfalama, 30 oyuncu / 20 yönetmen dizin bağlantısı, Matrix → Keanu, JSON-LD, 308/404/noindex varyantlar. Sitemap 26.866 URL içinde 80 pilot landing + dizini içeriyor; robots izin veriyor. İki yeni deployment'ta son 10 dakikalık error/fatal filtresinde kayıt yok. Kanıt: docs/seo-02-production-verification.json. Ek OpenAI kullanımı 0. Gerçek cihaz görsel kontrolü ve Search Console / 28 günlük trafik ölçümü yayın sonrası açık işlerdir.

@@ -195,7 +195,7 @@ SEO-02 #38859793468: 13 test, tsc, üretim build, yıl/tür fixture ve canlı ka
 
 - [x] **Kİ-01 pilotu:** 30 oyuncu + 20 yönetmen, kimlik/rol doğrulaması, fotoğraf/fallback, 24 kart ve karakter bilgileri, filmden kişi bağlantıları; 50/50 gerçek sayfa SSR doğrulaması başarılı.
 - [x] **SEO-02 ilk pilot uygulaması:** 30 yıl/tür + 50 kişi, manifesto bağlı sitemap ve dizin, canonical/yönlendirme, Person/Movie/ItemList/Breadcrumb, bağlamlı ölçüm. CI #38860035895 bütün adımları başarılı. Genel SEO-02 ana maddesi yayın ve sonraki tematik kapsam nedeniyle açık kalır.
-- [ ] **Kontrollü yayın:** PR #3'ün test edilmiş kaynakları henüz main'e birleştirilmedi; uygulama üretimde değil. Kişi veri migration'ı ve 50/2.810 kaydı hazır; aynı migration tekrar uygulanmamalı.
+- [x] **Kontrollü yayın:** PR #3 main'e birleştirildi (1d121bd); Vercel production READY. Liste/kişi/film/redirect/robots ve sitemap'te 80 pilot URL kontrolü başarılı. Veri migration'ı yeniden uygulanmadı.
 - [ ] **Yayın sonrası:** gerçek cihaz görsel kontrolü; Search Console örnek URL denetimi / indeks ve 28 günlük trafik; üretim performans kontrolü. Kİ-02 ve 10 tematik seçki ayrı kapsam.
 
 İÇ-01 kullanıcı kararıyla [x]; 157 kayıt için yeni toplu çeviri / ücretli işlem açılmayacak. Bu SEO aşamasında ek OpenAI kullanımı 0. Rapor: docs/seo-02-pilot-uygulama-sonucu.md.
@@ -204,3 +204,14 @@ SEO-02 #38859793468: 13 test, tsc, üretim build, yıl/tür fixture ve canlı ka
 ## SEO-02 — Kontrollü yayın onayı · 16 Ekim 2026 10:29 Türkiye saati
 
 Kullanıcı “canlıya da alalım” diyerek ilk 80 sayfalık pilotun üretim yayınını açıkça onayladı. PR #3, test edilmiş uygulama koduyla mevcut main'e birleştirilecek; hedef Vercel filminibul / sams-projects-dba0a978 / production. Önceki üretim 8afa195, geri dönüş adayı dpl_8fvZ2pZJP7jawE8TXbUPXMj2rEY2. Veri migration'ı tekrar uygulanmayacak, yeni ücretli OpenAI işi yok. Liste/oyuncu/yönetmen/film bağlantısı, sayfalama ve sitemap üretimde doğrulandıktan sonra yayın maddesi kapatılacak.
+
+
+## SEO-02 — İlk pilot üretimde · 16 Ekim 2026 10:34 Türkiye saati
+
+- [x] PR #3 birleştirildi; kaynak merge 1d121bdb5d5da1cbaf05ea37fad70727b078b51e. İlk üretim dpl_BJx8qrBEjFwyxheAKcBk8gBA8gCo READY; otomatik metadata raporu 3d616e1d / dpl_89v5SKBWKBD6E6gsPN8YcpE9UUWX READY.
+- [x] https://filminibul.com/listeler üzerinden 30 yıl/tür + 30 oyuncu + 20 yönetmen bağlantısı; üretim index/follow, canonical, 24+24 çakışmasız sayfalama, Keanu/Nolan, Matrix kişi bağlantısı ve Movie/Person/ItemList doğrulandı.
+- [x] Sitemap HTTP200; toplam 26.866 URL, 80 pilot landing + dizin tam. robots izin veriyor. Eski slug/page=1 308; yanlış rol/taşan sayfa 404; lang=en varyantı noindex.
+- [x] İki üretim deployment'ında son 10 dakikalık error/fatal log filtresinde kayıt yok. 13 kontrollü HTTP isteği; OpenAI çağrısı 0.
+- [ ] Yayın sonrası gerçek mobil cihaz görsel kontrolü ve Search Console örnek URL / indeks / 28 günlük trafik takibi. Kİ-02 ve tematik ikinci aşama açık kalır.
+
+Rapor docs/seo-02-production-verification.json. Yukarıdaki tarihsel “henüz üretimde değil” notları bu yayın kaydından önceki durumu anlatır. İlk 80 sayfalık SEO-02 pilotu artık canlıdır; genel SEO-02 sonraki kapsamla açık tutulur.
