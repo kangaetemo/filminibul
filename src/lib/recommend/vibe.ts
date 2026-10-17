@@ -71,7 +71,7 @@ function checkRate(ip: string): void {
     if (hits.size > 5000) hits.forEach((v, k) => v.every((t) => now - t >= RATE_WINDOW_MS) && hits.delete(k));
 }
 
-const normalizeQuery = (q: string) => q.toLocaleLowerCase("tr").replace(/\s+/g, " ").trim();
+export const normalizeQuery = (q: string) => q.toLocaleLowerCase("tr").replace(/\s+/g, " ").trim();
 
 // ---- OpenAI ----
 
@@ -136,7 +136,14 @@ function matchedThemes(themes: Set<string>, keywords: string[] | null, language:
 
 // ---- Ana fonksiyon ----
 
-export async function vibeSearch(rawQuery: string, ip = "unknown"): Promise<VibeResult> {
+/** Aşama süreleri (ms); yalnız önbellekte olmayan aramada doldurulur. */
+export interface VibeTiming {
+    chat?: number;
+    embed?: number;
+    db?: number;
+}
+
+export async function vibeSearch(rawQuery: string, ip = "unknown", timing: VibeTiming = {}): Promise<VibeResult> {
     const query = rawQuery.replace(/\s+/g, " ").trim();
     if (query.length < VIBE_MIN_CHARS) throw new VibeError("Biraz daha ayrıntı yaz.", 400);
     if (query.length > VIBE_MAX_CHARS) throw new VibeError(`En fazla ${VIBE_MAX_CHARS} karakter yazabilirsin.`, 400);
@@ -148,13 +155,21 @@ export async function vibeSearch(rawQuery: string, ip = "unknown"): Promise<Vibe
     try { openai.ensureAvailable(); } catch (error) { providerError(error); }
     checkRate(ip);
 
+    let started = Date.now();
     const doc = await expandToDoc(query);
+    timing.chat = Date.now() - started;
     if (!doc || doc === "NONE" || !/^genres:|^themes:|^story:/im.test(doc)) {
         throw new VibeError("Bunu bir film aramasına çeviremedim. Nasıl bir film istediğini biraz daha anlat.", 422);
     }
+    started = Date.now();
     const vector = await embedDoc(doc);
+    timing.embed = Date.now() - started;
     // pgvector metin biçimi: "[0.1,0.2,...]"
+    started = Date.now();
     const rows = await supabaseRpc<Candidate[]>("vibe_search_v3", { query_embedding: `[${vector.join(",")}]`, match_limit: POOL }, 3600);
+    timing.db = Date.now() - started;
+    // Sorgu metni loglanmaz; yalnız aşama süreleri (Vercel loglarında yavaş aramaları ayırmak için)
+    console.info("vibe_timing", timing);
 
     const themes = parseThemes(doc);
     const films = rows

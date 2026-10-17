@@ -4,7 +4,11 @@ export class VibeProviderError extends Error {
     constructor(kind, retryAfter = 60) { super(kind); this.kind = kind; this.retryAfter = retryAfter; }
 }
 
-export function createVibeOpenAI({ getKey = () => process.env.OPENAI_API_KEY, request = fetch, now = Date.now, pause = ms => new Promise(resolve => setTimeout(resolve, ms)), report = details => console.warn("vibe_provider_unavailable", details) } = {}) {
+// Deneme başına zaman aşımı (ms). Normal yanıt chat'te ~2–4 sn, embedding'de <1 sn; takılan bir isteği
+// 20 sn beklemek yerine erken kesip tazesini denemek uç gecikmeyi kısaltır (en kötü durum ~20 sn).
+export const VIBE_TIMEOUTS = { "chat/completions": [8000, 12000], embeddings: [5000, 8000] };
+
+export function createVibeOpenAI({ getKey = () => process.env.OPENAI_API_KEY, request = fetch, now = Date.now, pause = ms => new Promise(resolve => setTimeout(resolve, ms)), report = details => console.warn("vibe_provider_unavailable", details), timeouts = VIBE_TIMEOUTS } = {}) {
     let blocked = null;
     function ensureAvailable() {
         if (!getKey()) throw new VibeProviderError("unavailable");
@@ -22,7 +26,7 @@ export function createVibeOpenAI({ getKey = () => process.env.OPENAI_API_KEY, re
         for (let attempt = 0; attempt < 2; attempt++) {
             let response;
             try {
-                response = await request(`https://api.openai.com/v1/${endpoint}`, { method: "POST", cache: "no-store", signal: AbortSignal.timeout(20000), headers: { Authorization: `Bearer ${getKey()}`, "Content-Type": "application/json" }, body: JSON.stringify(body) });
+                response = await request(`https://api.openai.com/v1/${endpoint}`, { method: "POST", cache: "no-store", signal: AbortSignal.timeout(timeouts[endpoint][attempt]), headers: { Authorization: `Bearer ${getKey()}`, "Content-Type": "application/json" }, body: JSON.stringify(body) });
             } catch {
                 if (attempt === 0) { await pause(500); continue; }
                 throw new VibeProviderError("busy");

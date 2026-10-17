@@ -8,7 +8,8 @@ import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import SearchBox from "@/components/search/SearchBox";
 import FilmCard from "@/components/film/FilmCard";
-import { VibeError, vibeSearch, VIBE_MAX_CHARS } from "@/lib/recommend/vibe";
+import { VibeError, VIBE_MAX_CHARS } from "@/lib/recommend/vibe";
+import { cachedVibeSearch } from "@/lib/recommend/vibeCached";
 
 // Tarife göre film arama: /ara?q=zaman döngüsünde sıkışmış bir karakter
 // Sorgu sonsuz çeşitlilikte olduğu için arama motorlarına açılmaz; adres yine de paylaşılabilir.
@@ -74,7 +75,7 @@ async function Results({ q }: { q: string }) {
     const ip = headers().get("x-forwarded-for")?.split(",")[0].trim() || "unknown";
     let result;
     try {
-        result = await vibeSearch(q, ip);
+        result = (await cachedVibeSearch(q, ip)).result;
     } catch (err) {
         if (!(err instanceof VibeError)) console.error("vibe sayfası hatası:", err);
         const message = err instanceof VibeError ? err.message : "Arama şu an yapılamadı. Biraz sonra tekrar dene.";

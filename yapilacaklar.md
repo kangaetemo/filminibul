@@ -93,6 +93,10 @@ Kullanıcı gizlilik politikasının tamamlanmasını önceliklendirdi ve yayım
 - [x] **İÇ-02 — Özet yok mesajını gerçek durumla uyumlu yap.** Film bazında çeviri durumu izlenmediği sürece “Türkçe özet hazırlanıyor” yerine “Türkçe özet henüz bulunmuyor” kullan. Kaynak metin varsa “Orijinal özeti göster” seçeneği ekle.
 
 
+## Tarif araması gecikmesi — 17 Ekim 2026
+
+- [ ] **AR-03 — Tarif aramasının uç gecikmesini azalt ve aşamaları ölç.** Kullanıcı aramanın uzun sürdüğünü bildirdi. 15 Ekim canlı ölçümleri 21,9 / 12,6 sn; 17 Ekim canlı ölçümde 8 yeni sorgu 2,6–5,9 sn (API), /ara sayfa iskeleti 0,3 sn + sonuç 2,3–3,5 sn, aynı sorgu tekrarı 0,3 sn. Yavaşlık ara ara görülüyor; 21,9 sn eski 20 sn OpenAI zaman aşımı + yeniden deneme desenine uyuyor. Kod hazır (yerel commit, henüz push / yayın yok): OpenAI deneme zaman aşımı chat 8 + 12 sn, embedding 5 + 8 sn (önce 20 + 20); sonuçlar Next veri önbelleğiyle bütün sunucu örneklerinde 6 sa paylaşılır (katalog etiketiyle tazelenir, hatalar önbelleğe girmez); API yanıtında `Server-Timing` (chat / embed / db / cache) ve sorgu metni olmadan `vibe_timing` logu. Yayından sonra: canlıda aşama süreleri ve önbellek isabeti ölçülsün; chat baskınsa çıktı uzunluğu / model seçeneği `vibe_try.mjs` ile kalite ölçülerek değerlendirilsin. Doğrulanmadan kapatma.
+
 ## P0 — Tarif aramasında bakiye / kota hatası
 
 - [x] **AR-01 — Bakiye bittiğinde tarif aramasını doğru karşıla.** Kullanıcı “Arama şu an yapılamadı” bildirdi; 13 Ekim 14:36 canlı /ara logu OpenAI chat 429 / no credits remaining gösterdi. Quota hatasında gereksiz yeniden denemeyi durdur, kısa devreyle yinelenen başarısız çağrıları azalt. Geçici yoğunluk ile kota ayrımını koru; film adı ve ruh hâli keşfine çalışan bağlantılar sun. TR / EN, test ve canlı doğrulama birlikte ele alınır. Bakiye yükleme, model değiştirme veya yeni API anahtarı bu işin kapsamı değil. 3e2b47b yayını READY; 59 test ve derleme başarılı; canlı TR / EN mesaj, API 503 / güvenli kod ve alternatif kutudan Matrix film sayfasına geçiş doğrulandı. Tarif sonuçlarının yeniden üretilmesi sağlayıcı kredilerinin düzelmesine bağlı.

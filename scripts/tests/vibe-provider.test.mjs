@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createVibeOpenAI } from '../../src/lib/server/vibeOpenAI.mjs';
+import { createVibeOpenAI, VIBE_TIMEOUTS } from '../../src/lib/server/vibeOpenAI.mjs';
 
 const quotaCodes = ['insufficient_quota', 'credit_balance_exhausted', 'billing_hard_limit_reached', 'organization_spend_limit_exceeded', 'project_spend_limit_exceeded', 'organization_usage_limit_exceeded'];
 
@@ -44,4 +44,22 @@ test('authentication errors are safe and do not retry; provider raw text is neve
     const client = createVibeOpenAI({ getKey: () => 'fixture', report: () => {}, request: async () => { calls++; return Response.json({ error: { message: 'secret credential and query' } }, { status: 401 }); } });
     await assert.rejects(client.call('chat/completions', {}), error => error.kind === 'unavailable' && !error.message.includes('secret'));
     await assert.rejects(client.call('embeddings', {}), { kind: 'unavailable' }); assert.equal(calls, 1);
+});
+
+test('a hung request is cut at the first timeout and retried once with a longer one', async () => {
+    let calls = 0, pauses = 0; const timeouts = [];
+    const client = createVibeOpenAI({ getKey: () => 'fixture', pause: async () => { pauses++; }, timeouts: { 'chat/completions': [20, 1000], embeddings: [20, 1000] }, request: (_url, options) => {
+        calls++;
+        if (calls === 1) return new Promise((_resolve, reject) => options.signal.addEventListener('abort', () => reject(options.signal.reason)));
+        return Promise.resolve(Response.json({ choices: [] }));
+    } });
+    const started = Date.now();
+    assert.deepEqual(await client.call('chat/completions', {}), { choices: [] });
+    assert.equal(calls, 2); assert.equal(pauses, 1); assert.ok(Date.now() - started < 900);
+});
+
+test('default timeouts keep the worst case near 20 seconds per provider call', () => {
+    for (const [endpoint, [first, second]] of Object.entries(VIBE_TIMEOUTS)) {
+        assert.ok(first < second, endpoint); assert.ok(first + 500 + second <= 21000, endpoint);
+    }
 });
