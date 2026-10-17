@@ -1,6 +1,6 @@
 # SEO-02 — İlk pilot: yıl/tür listeleri ve filmografiler
 
-16 Ekim 2026. İlk kapsam: 30 yıl/tür listesi + 30 oyuncu + 20 yönetmen. **Güncelleme (17 Ekim 2026):** pilot 16 Ekim 10:34'te üretime alındı (aşağıda "Üretim yayını"); site Search Console'a eklendi. Aşağıdaki "henüz yayımlanmadı" ifadeleri yayın öncesi durumu anlatır.
+16 Ekim 2026. İlk kapsam: 30 yıl/tür listesi + 30 oyuncu + 20 yönetmen. **Güncelleme (17 Ekim 2026):** pilot 16 Ekim 10:34'te üretime alındı (aşağıda "Üretim yayını"); site Search Console'a eklendi ve sitemap gönderildi. Aşağıdaki "henüz yayımlanmadı" ifadeleri yayın öncesi durumu anlatır.
 
 ## Veri ve kimlik
 - 50 kimlik, katalogdaki örnek film üzerinde gerçek cast veya tam Director kredisiyle bulundu. Kişi detayındaki ad/alternatif ad ve person movie_credits içindeki aynı film/rol tekrar doğrulandı. Arama sonucunun ilk satırını kişi saymak veya ilk beş oyuncudan kimlik uydurmak kullanılmadı.
