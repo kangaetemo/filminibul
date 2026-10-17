@@ -1,0 +1,83 @@
+name: Tarif araması kalitesini ölç
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "live = canlı site, local = bu daldaki arama kodu"
+        type: choice
+        options: [live, local]
+        default: live
+      label:
+        description: "Çalıştırma adı (boşsa kaynak-tarih)"
+        type: string
+        default: ""
+      only:
+        description: "Yalnız bu tarif id'leri, virgülle (boşsa hepsi)"
+        type: string
+        default: ""
+      max_cost:
+        description: "Hakem için azami USD"
+        type: string
+        default: "0.5"
+permissions:
+  contents: read
+concurrency:
+  group: vibe-quality
+  cancel-in-progress: false
+jobs:
+  judge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - name: Bağımlılıklar (yerel mod TypeScript ister)
+        if: inputs.source == 'local'
+        run: npm ci --no-audit --no-fund
+      - name: Önceki puanları ve çalıştırmaları geri yükle
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            data/eval/vibe_judgments.jsonl
+            data/eval/vibe_runs.json
+          key: vibe-eval-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: vibe-eval-
+      - name: Sonuçları al ve LLM hakemle puanla
+        run: |
+          set -- --source "$SOURCE" --max-cost "$MAX_COST"
+          [ -n "$LABEL" ] && set -- "$@" --label "$LABEL"
+          [ -n "$ONLY" ] && set -- "$@" --only "$ONLY"
+          node scripts/rerank/vibe_judge.mjs "$@"
+        env:
+          SOURCE: ${{ inputs.source }}
+          LABEL: ${{ inputs.label }}
+          ONLY: ${{ inputs.only }}
+          MAX_COST: ${{ inputs.max_cost }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SUPABASE_URL: ${{ inputs.source == 'local' && secrets.SUPABASE_URL || '' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ inputs.source == 'local' && secrets.SUPABASE_SERVICE_ROLE_KEY || '' }}
+      - name: Raporu özet sayfasına yaz
+        if: always() && hashFiles('data/eval/vibe_report.md') != ''
+        run: cat data/eval/vibe_report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Puanları ve çalıştırmaları sakla
+        if: always() && hashFiles('data/eval/vibe_judgments.jsonl') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            data/eval/vibe_judgments.jsonl
+            data/eval/vibe_runs.json
+          key: vibe-eval-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Rapor dosyalarını indirilebilir bırak
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: vibe-quality-report
+          path: |
+            data/eval/vibe_report.md
+            data/eval/vibe_runs.json
+            data/eval/vibe_judgments.jsonl
+          if-no-files-found: ignore
