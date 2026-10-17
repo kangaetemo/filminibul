@@ -4,13 +4,15 @@ import { OG_BASE } from "@/lib/seo";
 import Link from "next/link";
 import Image from "next/image";
 import { Suspense } from "react";
-import { ArrowRight, ArrowUpRight, Plus, Shuffle } from "lucide-react";
+import { ArrowRight, Plus, Shuffle } from "lucide-react";
 import DiscoverySearch from "@/components/search/DiscoverySearch";
 import MoodChips from "@/components/search/MoodChips";
 import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import FilmCard from "@/components/film/FilmCard";
 import PersonalFilms from "@/components/film/PersonalFilms";
+import HeroFrames from "@/components/home/HeroFrames";
+import { HERO_FRAMES, heroFrameIndex } from "@/lib/heroFrames";
 import { getFilm, getSimilarFilms } from "@/lib/recommend/similar";
 
 export const revalidate = 3600;
@@ -21,16 +23,12 @@ export default function HomePage() {
         <>
             <SiteHeader search={false} />
             <main>
-                <section className="cinema-hero" aria-labelledby="home-title">
-                    <Image src="https://image.tmdb.org/t/p/w1280/5XNQBqnBwPA9yT0jZ0p3s8bbLh0.jpg" alt="" fill priority sizes="100vw" className="hero-art object-cover" />
-                    <div className="page-width relative pb-7 pt-7 sm:pb-16 sm:pt-16 lg:pb-16 lg:pt-20">
-                        <p className="eyebrow mb-4 text-white/80"><T text={"Film biter. Keşif devam eder."} /></p>
-                        <h1 id="home-title" className="hero-title max-w-[790px]"><T text={"Bir filmi sevdin."} /><br /><T text={"Sırada ne var?"} /></h1>
-                        <p className="mb-5 mt-4 max-w-xl text-sm leading-relaxed text-white/90 sm:mb-7 sm:mt-5 sm:text-lg"><T text={"Sevdiğin filme benzer filmler bul."} /><br className="sm:hidden" /> <T text={"Aynı his, bambaşka hikâyeler."} /></p>
-                        <DiscoverySearch />
-                        <Link href="/film/157336-yildizlararasi" className="mt-5 inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-white/75 hover:text-white lg:absolute lg:bottom-7 lg:right-12 lg:mt-0"><T text={"Bu kare: Yıldızlararası · 2014"} /> <ArrowUpRight className="h-3.5 w-3.5" aria-hidden /></Link>
-                    </div>
-                </section>
+                <HeroFrames frames={HERO_FRAMES} initial={heroFrameIndex()}>
+                    <p className="eyebrow mb-4 text-white/80"><T text={"Film biter. Keşif devam eder."} /></p>
+                    <h1 id="home-title" className="hero-title max-w-[790px]"><T text={"Bir filmi sevdin."} /><br /><T text={"Sırada ne var?"} /></h1>
+                    <p className="mb-5 mt-4 max-w-xl text-sm leading-relaxed text-white/90 sm:mb-7 sm:mt-5 sm:text-lg"><T text={"Sevdiğin filme benzer filmler bul."} /><br className="sm:hidden" /> <T text={"Aynı his, bambaşka hikâyeler."} /></p>
+                    <DiscoverySearch />
+                </HeroFrames>
 
                 <section id="modlar" className="page-width scroll-mt-6 pt-12 sm:pt-14" aria-labelledby="mood-heading">
                     <div className="section-top"><div><p className="eyebrow mb-2 text-muted"><T text={"Film adı aklında değilse"} /></p><h2 id="mood-heading" className="section-heading"><T text={"Bugün hangi moddasın?"} /></h2></div><p className="max-w-xs text-sm leading-relaxed text-muted"><T text={"Nasıl hissetmek istediğini seç."} /><br className="hidden sm:block" /> <T text={"O havaya birlikte girelim."} /></p></div>

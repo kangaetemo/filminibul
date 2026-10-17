@@ -534,3 +534,12 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Eklendi: `data/eval/vibe_queries.json` (32 tarif; kullanıcı örneği dahil), `scripts/rerank/vibe_judge.mjs` (canlı site veya `--source local` ile uygulamanın `vibe.ts` kodu; gpt-4.1 hakem 0–3; ort. puan / iyi / alakasız / nDCG@10; tür bazında kırılım; önbellek `data/eval/vibe_judgments.jsonl`; rapor `data/eval/vibe_report.md`), `scripts/rerank/tsImport.mjs` (TS modüllerini Node'da yükleme), `.github/workflows/verify-vibe-quality.yml` (elle; puan önbelleği Actions cache'te, rapor özet sayfasında ve artifact'te).
 - Doğrulama: 3 tarifle canlı `--dry-run` başarılı (hakem çağrısı yok; tahmini tam hakem maliyeti 3 tarif için ~0,009 USD, 32 tarif için ~0,1 USD). Yerel mod `vibe.ts` modülünü yükledi. Rapor üretimi sahte puanlarla denendi, deneme dosyaları silindi. İş akışı YAML'ı ayrıştırıldı. Gerçek hakem puanlaması yapılmadı (bu ortamda OpenAI anahtarı yok).
 - Kalan: push; ardından canlı taban çizgisi ölçümü ve iyileştirmeler. AR-04 açık.
+
+## GR-01 / GR-02 — Ana sayfa film karesi havuzu · 18 Ekim 2026 Türkiye saati
+
+- Kullanıcı ana sayfadaki "Bu kare: Yıldızlararası · 2014" alanında daha çok, güzel ve siteye yakışan görsel istedi.
+- Kare seçimi: katalogdaki TMDB arka planları indirilip tek tek incelendi. Afiş tasarımı / oyuncu dizilimi (Blade Runner 2049, Yüzüklerin Efendisi, Başlangıç, Arabistanlı Lawrence), yazının durduğu sol tarafı kalabalık ya da yazılı kareler (Bir Zamanlar Anadolu'da, Aşk Zamanı) elendi. Seçilen 6 kare: Yıldızlararası, Ahlat Ağacı, Dune: Çöl Gezegeni - Bölüm İki, Senin Adın, Nomadland, Aşıklar Şehri. Başlık / yıl canlı film sayfalarından doğrulandı (Nomadland katalogda 2021).
+- Uygulama: `src/lib/heroFrames.ts` (kare listesi, saat başı ilk kare seçimi), `src/components/home/HeroFrames.tsx` (oklar, yükleme sonrası geçiş, isteğe bağlı indirme), `src/app/page.tsx` ana sayfa hero'su bileşene taşındı; kullanılmayan çeviri anahtarı kaldırıldı.
+- Doğrulama: `npx tsc --noEmit` ve `VERCEL_ENV=preview next build` başarılı; test paketi değişiklik öncesiyle aynı (105/111; 6 bilinen Windows ESM yol sorunu). Yerel geliştirme sunucusunda masaüstü: 6 karenin ileri / geri döngüsü, yazı ile görünen görselin eşleşmesi (DOM opaklık kontrolü), yalnız açılan karelerin indirilmesi; 375 px mobil: yatay taşma yok, oklar 44×44 px.
+- Kalan: push ve canlı yayın, gerçek telefon kontrolü. GR-01 / GR-02 açık.
+- Ayrıca bulundu ve AR-05 olarak kaydedildi: Türkçe harf içeren film adı araması bozuk ("kış uykusu" → sonuç yok).
