@@ -17,7 +17,9 @@ import FilmSynopsis from "@/components/film/FilmSynopsis";
 import TrailerButton from "@/components/film/TrailerButton";
 import { getTrailer } from "@/lib/recommend/trailer";
 import PlatformFilter from "@/components/film/PlatformFilter";
-import { FEATURED_PLATFORMS, getLiveProviders } from "@/lib/recommend/providers";
+import { FEATURED_PLATFORMS, getLiveProviders, platform, watchableIds } from "@/lib/recommend/providers";
+import { buildFilmSnippet } from "@/lib/filmSnippet.mjs";
+import SimilarHeading from "@/components/film/SimilarHeading";
 import { filmPath, parseFilmParam } from "@/lib/filmUrl";
 import { OG_BASE } from "@/lib/seo";
 import { getFilmPeople } from "@/lib/catalog/people";
@@ -26,6 +28,9 @@ import FilmPeopleLinks from "@/components/catalog/FilmPeopleLinks";
 import { jsonLd } from "@/lib/catalog/pilot";
 
 export const revalidate = 3600;
+
+const withTimeout = <T,>(promise: Promise<T>, ms: number) =>
+    Promise.race([promise, new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), ms))]);
 
 // Next 14: params senkron nesne (Next 15+'da Promise olur ve await gerekir)
 type Props = { params: { id: string }; searchParams?: { p?: string; lang?: string } };
@@ -42,10 +47,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             ? film.overview.slice(0, 197).replace(/\s+\S*$/, "") + "…"
             : film.overview
         : `${film.title} filmine tema, atmosfer ve hikâyece benzeyen filmler.`;
+    // Arama sonucu metni (SEO-03): benzer filmler + yayın platformu + konu. Sayfa açılışını bekletmemek için
+    // benzer filmler 1,5 sn'de gelmezse yalnız konu kullanılır (veriler önbellekli; çoğu istekte anında gelir).
+    const [similar, providers] = await Promise.all([
+        film.inCatalog ? withTimeout(getSimilarFilms(film.id, 20), 1500).catch(() => null) : null,
+        getLiveProviders(film.id),
+    ]);
+    const snippet = buildFilmSnippet({
+        title: film.title,
+        year: film.year,
+        overview: film.overview,
+        similarTitles: (similar ?? []).map((s) => s.film.title),
+        platforms: watchableIds(providers ?? undefined).map((p) => platform(p).name),
+    });
     const image = film.backdropUrl ?? film.posterUrl;
     return {
-        title: `${name} ve benzer filmler · Filminibul`,
-        description,
+        title: snippet.title,
+        description: snippet.description,
         alternates: { canonical: url },
         openGraph: {
             ...OG_BASE,
@@ -135,7 +153,7 @@ export default async function FilmPage({ params, searchParams }: Props) {
 
                 <section id="benzer-filmler" className="page-width mt-8 scroll-mt-6 sm:mt-16" aria-labelledby="similar-heading">
                     <div className="section-top mb-5 border-b border-line pb-4 sm:mb-7 sm:pb-6">
-                        <div><p className="eyebrow mb-2 hidden text-muted sm:block"><T text={"Tema · Atmosfer · Hikâye"} /></p><h2 id="similar-heading" className="section-heading"><T text={"Benzer filmleri keşfet."} /></h2><p className="mt-3 text-sm text-muted"><FilmText film={film} field="title" /> <T text={"ile ortak bir şeyler taşıyan filmler."} /></p></div>
+                        <div><p className="eyebrow mb-2 hidden text-muted sm:block"><T text={"Tema · Atmosfer · Hikâye"} /></p><SimilarHeading film={film} /></div>
                     </div>
                     {film.inCatalog && <Suspense><PlatformFilter platforms={FEATURED_PLATFORMS} selected={platforms} /></Suspense>}
                     {!film.inCatalog ? <p className="mt-6 text-sm text-muted"><T text={"Bu film henüz öneri kataloğumuzda yok. Eklendiğinde benzer filmleri burada bulabileceksin."} /></p> : <Suspense key={`${id}:${platforms.join(",")}`} fallback={<SimilarSkeleton />}><SimilarList id={id} platforms={platforms} collection={film.collectionName} /></Suspense>}
