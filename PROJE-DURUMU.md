@@ -1,131 +1,87 @@
 # Filminibul: Proje Durumu
 
-Son güncelleme: 2026-10-02 · Canlı kod: GitHub `kangaetemo/filminibul`, `main` (Vercel otomatik deploy). Merge bekleyen branch yok; Claude doğrudan `main`'e push'lar.
+Son güncelleme: 17 Ekim 2026 (Türkiye saati) · Canlı: [filminibul.com](https://filminibul.com) · Kod: GitHub `kangaetemo/filminibul`, `main` (Vercel otomatik deploy).
 
-> `proje-tanimi.md` hedef mimariyi anlatır, bu dosya **şu an ne olduğunu ve nerede kaldığımızı**.
-> Yeni oturumda Claude'a "PROJE-DURUMU.md'yi oku" demen yeterli.
-
----
-
-## 1. Ne yapıldı (özet)
-
-Başlangıçta klasördeki kod eski bir GitHub sürümüydü (Next 14, Upstash, kaydırmalı swipe arayüzü, 384 boyutlu embedding, kırık öneriler). Supabase/OpenAI sürümünün kodu kayıptı ama veri Supabase'te duruyordu. Sırayla:
-
-1. Supabase ve Upstash verisi yerel diske yedeklendi, envanter çıkarıldı.
-2. **Öneri kalitesinin asıl sorunu bulundu:** `ivfflat` index (`probes=1`) yüzünden gerçek komşular kaçıyordu (Matrix → Reloaded gelmiyordu). HNSW'ye geçildi.
-3. Yeni embedding (v3) üretildi, TMDB'den zenginleştirme yapıldı, reranker LLM ile ölçülerek kuruldu.
-4. Site sıfırdan yeni akışa çevrildi: **film ara → film sayfası → 20 benzer film + "neden önerildi?"**
-5. Eklendi: semantic modlar, Türkçe keyword açıklamaları, "Nerede izlenir?" (Türkiye platformları), platform filtresi, haftalık otomatik platform yenileme, admin paneli, admin'den film ekleme.
-6. **2026-10-01 oturumu:**
-   - **Film sayfası akışı + ısıtma** (`96fa5cc`): film bilgisi ~0,2 sn'de gelir, benzer filmler Suspense ile akar; arama kutusu ilk 2 katalog sonucunun `/api/similar/[id]` çağrısını önceden yapar.
-   - **Tarife göre arama ("vibe")** (`68b5783`): `/ara?q=…`, `/api/vibe-search`. Türkçe cümle → LLM ile film belgesi formatına → embed → Supabase `vibe_search_v3`. Ayrıntı §3.
-   - **Tasarım yenilemesi** (`68b5783`): sıcak sinematik palet (amber), Fraunces serif, film grenı, afiş şeridi, yeni ana sayfa/film/mod sayfaları. Ayrıntı §3.
-   - **Fragman** (`5f2b637`): film sayfasında "Fragmanı izle" (TMDB videoları, YouTube nocookie, tıklayınca yüklenir).
-   - **Afiş düzeltmesi** (`47d0425`): masaüstünde afiş uzuyordu (flex stretch), `self-start` ile 2:3 oranı korundu.
-7. **2026-10-02 oturumu** (ayrıntılar ilgili bölümlerde):
-   - **Öneri hatası:** yeni filmlerin oy/puanı katalogda 0 kalmıştı → az oylu cezası (Marslı → Project Hail Mary önerilmiyordu). `refresh_stats.mjs` ile tazelendi, haftalık işe bağlandı.
-   - **Haftalık katalog güncellemesi** (GitHub Actions, pazartesi 05:00 TR): eksik film ekleme, oy/puan, komşu tablosu, modlar, çeviriler, IDF, seri adları; admin panelinden de başlatılır. Uçtan uca doğrulandı.
-   - **Katalog 22.934 → 26.575 film:** ≥1.000 oylu eksik popülerler (2.040; ör. Transformers, Minions) + **Türk filmleri 48 → 1.546** (orijinal dili Türkçe, ≥5 oy).
-   - **Hız:** önceden hesaplanmış komşu tablosu (`film_neighbors`), benzer film sorgusu medyan 1,8 sn → ~350 ms, eşzamanlı istekte zaman aşımı bitti. Yer için HNSW index halfvec'e çevrildi (kalite ölçüldü: ilk 20 aynı).
-   - **Site:** üst çubukta arama kutusu (3–4 sonuç, kaydırmalı), okunur film adresleri (`/film/126986-devlet-kusu`), Türk filmlerinde Türkçe başlık, Türkçe seri adları, **iki filmi karıştır** (`/karistir`).
-   - **Görseller** Vercel optimizasyonu yerine doğrudan TMDB CDN'inden (Vercel ücretsiz kotası dolmuş, afişler 402 veriyordu).
-   - **SEO:** site haritası, robots.txt, canonical, paylaşım önizlemeleri (canlıda doğrulandı).
-   - **Temizlik:** kullanılmayan Firebase/dil sistemi/paketler, 79 MB arşiv repodan çıktı, gizlilik sayfası ve README güncel. Upstash token'ları geçersiz (doğrulandı).
+> Bu dosya **sitenin şu anki hâlini** özetler. Ayrıntılı iş takibi: [`yapilacaklar.md`](yapilacaklar.md) (açık / kapanan maddeler) ve [`yapilanlar.md`](yapilanlar.md) (tarihli kayıtlar, doğrulamalar). Çalışma kuralları: [`AGENTS.md`](AGENTS.md). Öneri sisteminin hedef mimarisi ve ilkeleri: [`proje-tanimi.md`](proje-tanimi.md).
+>
+> Site Ekim 2026'da büyük ölçüde yeniden yapıldı. Bu dosyanın 2 Ekim sürümündeki bazı bilgiler (Firebase'in kaldırıldığı, kişiselleştirme olmadığı, eski tasarım) artık geçerli değil; eski metin git geçmişinde duruyor.
 
 ---
 
-## 2. Mimari
+## 1. Kısa özet
 
-```
-TMDB ─► scripts/ (offline) ─► Supabase (film_embeddings_v3, film_providers)
-                                        │  RPC similar_movies_v3 (HNSW, 200 aday)
-Kullanıcı ─► Next.js 14 (Vercel) ─► reranker.ts (hafif hybrid) ─► 20 film + reasons
-```
+Türkçe öncelikli film keşif sitesi. Sevilen bir filme benzeyenleri bulur, tarif edilen filmi arar, iki filmi karıştırır, ruh hâline ve listelere göre keşif sunar. Google ile giriş yapan kullanıcının kaydettiği filmler buluta yazılır ve bunlardan kişisel öneri üretilir.
 
-| Konu | Karar |
+| Konu | Şu anki durum |
 |---|---|
-| Framework | **Next.js 14.2.35** (dokümandaki "16" değil). `params` senkron nesne; Next 15+'a geçilirse `await params` gerekir. |
-| Veritabanı | Supabase (ücretsiz plan, 500 MB). Upstash **artık kullanılmıyor**. |
-| Embedding | `text-embedding-3-large`, `dimensions: 1536`, **başlıksız** belge (Genres / Themes / Director / Setting / Story). Tek kaynak: `src/lib/recommend/embeddingDoc.mjs` |
-| Retrieval | `similar_movies_v3(seed_movie_id, match_limit=200)`, HNSW (`m=16, ef_construction=64`), `hnsw.ef_search` fonksiyon içinde ayarlı |
-| Reranker | `src/lib/recommend/reranker.ts` ("lightNoRec"): semantic 0.75, keyword 0.05, genre 0.04, director 0.03, quality 0.04, collection 0.08 + cezalar. Keyword aday kanalı **kapalı**, TMDB öneri bonusu **kapalı**. |
-| Kişiselleştirme | Yok (henüz) |
-
-### Ölçümlerle alınan kararlar (LLM hakem: gpt-4.1, 50 seed, Top 10, nDCG@10)
-
-| Sıralama | nDCG@10 |
-|---|---|
-| Eski ağır hybrid reranker | 0.78 |
-| Saf semantic (v3) | 0.80 |
-| **Şu anki hafif reranker** | **0.82** |
-
-- Asıl kazanç v3 embedding'den geldi (keyword'leri belgeye koyup başlığı çıkarmak). Reranker'ı ağır tutmak zarar veriyordu.
-- Keyword kanalının eklediği adaylar LLM'den ort. 0.95/3 aldı → kapatıldı. Yönetmen sınırı 3 auteur'leri kesiyordu → 10.
-- TMDB "recommendations" bonusu ölçülebilir fark yaratmadı → kapalı (kod duruyor).
-- Ağırlık değiştirmeden önce mutlaka `llm_judge.mjs` ile ölç (puanlar önbellekli, tekrar ödeme yok).
-
-### Veri gerçekleri
-- Katalog: **26.575 film** (2026-10-02, Türk filmleri dolgusundan sonra; önce 25.074). Katalog: **25.074 film** (2026-10-02, ikinci haftalık iş çalıştırmasından sonra). 24.974 ara toplam: 22.931 orijinal + admin'den 3 film + haftalık işin ilk elle çalıştırması 100 + ilk dolgu 1.940 (TMDB'de ≥1.000 oylu eksik filmler, `add_missing.mjs --max=1940`).
-- Keyword'ü olan film %57 (TMDB'de gerçekten yok, çekim eksikliği değil). Seri (collection) bilgisi %14. Türkçe başlık/özet ~%25.
-- Filmlerin yarısından fazlası <10 oy almış. Bunları silmek önerilmedi: az bilinen filmlerin önerilerini besliyorlar (LLM ort. 1.83/3).
-- **Oy/puan verisi eskiyebilir (2026-10-02 bulgusu):** vizyondan önce eklenen filmler `vote_count=0` kalıyor; reranker bunlara `lowVotes` cezası (−0,08) + kalite 0 veriyor ve film top 20'den düşüyor (ör. Marslı → Project Hail Mary: adaylarda 7. sıradaydı ama katalogda 0 oy, TMDB'de 8.078). `scripts/tmdb/refresh_stats.mjs` ile 2021+ filmlerde 2.575 satır tazelendi (2026'da "<20 oy" görünen 671 → 491). Eski değerler: `data/tmdb/stats_backup_2026-10-02_dry.json` (tam liste). **Henüz otomatik değil**, haftalık işe bağlanmalı.
-- **Katalogda çok sayıda popüler film eksik (2026-10-02 taraması):** TMDB'nin en çok oy alan 10.000 filminden **5.154'ü katalogda yok** (≥5.000 oy: 104 · ≥2.000: 807 · ≥1.000: 2.019 · ≥500: 3.953; ör. Transformers, Minions, Hızlı ve Öfkeli 6, Cloverfield, Addams Ailesi 2019). O gün katalogdaki 22.934 filmin yalnızca 2.906'sı ≥1.000 oyluydu. **Aynı gün 2.040 film eklendi** (≥1.000 oylu eksiklerin hepsi; ~0,1 $ OpenAI). Kalan ~3.100 eksik (300–1.000 oy) haftalık işle 100'er gelir. Sonrasında `rebuild_static.mjs` ile 1.907 yeni keyword çevrildi, modlara 7–43 yeni film girdi.
-- Supabase doluluk: **393 MB / 500 MB** (2026-10-02, Türk filmleri dolgusundan sonra). Admin panelinde göstergesi var.
+| Framework | **Next.js 14.2** (App Router), React 18, Tailwind 3. `params` senkron nesne; Next 15+'a geçilirse `await params` gerekir. |
+| Veritabanı | Supabase (ücretsiz plan, 500 MB). 16 Ekim ölçümü ~423 MB. Upstash kullanılmıyor. |
+| Üyelik | Firebase Authentication, yalnız Google girişi (e-posta girişi kodda var, `NEXT_PUBLIC_EMAIL_AUTH_ENABLED=false`). Sunucu ID token'ı doğrular (`src/lib/server/memberAuth.mjs`). |
+| Kullanıcı verisi | Özel Supabase Storage bucket'ı `member-watchlists`: hesap başına kaydedilen filmler + `signals/` altında izledim / beğendim / bana göre değil. |
+| Embedding | OpenAI `text-embedding-3-large`, `dimensions: 1536`, başlıksız film belgesi. Tek kaynak: `src/lib/recommend/embeddingDoc.mjs` |
+| Benzer filmler | Önceden hesaplanmış komşu tablosu `film_neighbors` (`similar_movies_v4`), yoksa canlı HNSW (`similar_movies_v3`). 200 aday → hafif reranker → 20 film + gerekçe. |
+| Arayüz dili | TR (varsayılan) / EN, istemcide seçilir. Canonical adresler Türkçe; `lang=en` varyantları `noindex`. |
+| Katalog | ~26.775 film (14 Ekim), Türk filmleri ~1.546. Canlı sitemap 26.866 URL (17 Ekim). |
 
 ---
 
-## 3. Site
+## 2. Site
 
-**Sayfalar:** `/` (tek arama kutusu + örnek tarifler + mod kutucukları) · `/ara?q=` (tarife göre arama) · `/film/[id]` (adres `/film/126986-devlet-kusu`) (detay, fragman, nerede izlenir, platform filtresi, benzer filmler) · `/mod/[id]` (8 mod, "Karıştır") · `/privacy` · `/admin` · `/admin/login`
+### Sayfalar
+| Adres | İçerik |
+|---|---|
+| `/` | Arama kutusu; "Benzerini bul / Tarif et / İki filmi karıştır" girişleri, ruh hâli kutucukları, "Senin için" rafı |
+| `/film/[id]` | Adres `/film/603-matrix` biçiminde. Kısa tanıtım → benzer filmler → fragman, nerede izlenir, oyuncu / ayrıntı alanları. Kaydet / İzledim / Beğendim / Bana göre değil / Paylaş |
+| `/ara?q=` | Tarife göre arama ("vibe") |
+| `/mod/[id]` | 8 ruh hâli: korku, komedi, duygusal, gerilim, macera, romantik, düşündürücü, nostalji |
+| `/karistir?a=&b=` | İki filme birlikte benzeyen 24 film |
+| `/listeler` | Film listeleri dizini: 30 yıl+tür listesi, 30 oyuncu, 20 yönetmen; bölüm kısayolları |
+| `/listeler/[slug]` | Yıl+tür listesi (ör. 2014 bilim kurgu), 24'lü sayfalar, aşağı kaydırdıkça yükleme |
+| `/oyuncu/[id]`, `/yonetmen/[id]` | TMDB kişi kimliğine dayalı filmografiler (rol ayrı) |
+| `/kaydedilenler` | Kaydedilen filmler (girişli: bulut; eski tarayıcı listesi isteğe bağlı aktarılır) |
+| `/senin-icin` | Kaydedilen / beğenilen filmlerden kişisel öneriler |
+| `/hesap` | Google girişi / çıkış, tercih geçmişi |
+| `/hakkinda` | Hakkında ve veri kaynakları (TMDB logosu ve bildirimi, JustWatch atfı) |
+| `/privacy` | Gizlilik politikası (TR / EN, iletişim `admin@filminibul.com`) |
+| `/admin` | Şifreli yönetim: katalog ekleme, platform yenileme, DB doluluğu, `/admin/content` (özet düzenleyici), `/admin/analytics` (ürün istatistikleri, son bakılan filmler, arama geçmişi) |
 
-**API:** `/api/search-movie?q=` · `/api/vibe-search?q=` · `/api/similar/[id]?limit=&debug=1&p=8,337` · `/api/admin/*` (login, logout, refresh-providers, catalog/search, catalog/add)
+Üst menü: Keşfet · Film listeleri · Ruh hâline göre · İki filmi karıştır · Senin için · Kaydedilenler · tema (açık/koyu) · dil (TR/EN).
 
-**Öne çıkan davranışlar**
-- Arama: katalogda "içinde geçer" araması (yarım kelime, "ruhların kaç") + TMDB (sunucuda, anahtar tarayıcıya gitmez).
-- **İki filmi karıştır (`/karistir?a=&b=`, 2026-10-02):** iki filme BİRLİKTE benzeyen 24 film. Sıralama **min(benzerlik A, benzerlik B)** + hafif kalite (≤0,04); orta nokta (ortalama) bir filmin devam filmlerine kayıyordu (Matrix + Amélie → üç Matrix). Örnek: Matrix + Amélie → Alphaville, Simone, Kader Ajanları; Oyuncak Hikâyesi + Yaratık → E.T., WALL·E. Supabase RPC `blend_movies` (`scripts/sql/blend.sql`, çalıştırıldı): orta noktaya en yakın 1000 aday (halfvec index, ≥100 oy), iki benzerlik tam hassasiyetle. Ölçüm (59 çift): en iyi 24'ün ort. 0,07'si 600'lük havuz dışında → 1000. **Süre:** 14 rastgele çift medyan 1,1 sn, en kötü 2,9 sn; birbirine çok uzak çiftler 3,5 sn; ilk soğuk çağrı 12 sn. Sonuç 1 gün önbellekte. Yavaşlarsa havuz 600'e indirilebilir. Kod: `src/lib/recommend/blend.ts`, `src/app/karistir/page.tsx`, `src/components/blend/BlendPicker.tsx` (sadece katalogdaki filmler seçilebilir). Kartta neden: her filmle ortak en nadir temalar (`reranker.ts → sharedThemes`). Film sayfasında "Başka bir filmle karıştır", menüde "Karıştır". Çift sayfaları `noindex, follow`; `/karistir` site haritasında.
-- **SEO (2026-10-02):** `src/app/sitemap.ts` (ana sayfa + 8 mod + tüm filmler, ~26,6 bin adres / 3,5 MB; günde bir yenilenir), `src/app/robots.ts` (`/admin`, `/api/` kapalı). Film sayfası: kısaltılmış özet açıklama, canonical, paylaşım önizlemesi (kapak görseli w1280 → `summary_large_image`, yoksa afiş), `og:type video.movie`. Mod ve ana sayfada canonical + önizleme. Ortak alanlar `src/lib/seo.ts` (Next openGraph'ı birleştirmez, üzerine yazar). Layout'ta canonical YOK (alt sayfalara miras kalırdı). **Yapılacak (kullanıcı):** Google Search Console'a site haritasını bildir.
-- **Görseller doğrudan TMDB CDN'inden (2026-10-02):** Vercel ücretsiz planının görsel optimizasyon kotası doldu, afişler `402 OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED` verdi. `next.config.mjs` → `loader: 'custom'`, `src/lib/tmdbImageLoader.ts`: next/image'ın istediği genişlik en yakın TMDB boyutuna çevrilir (w45…w1280; hepsi afiş/arka plan/logoda çalışıyor). `/_next/image` artık hiç kullanılmıyor. **Yeni görsel eklerken TMDB dışı kaynak kullanılırsa yükleyici onu olduğu gibi döndürür (optimize edilmez).**
-- **Film adresleri (2026-10-02):** `/film/<tmdb id>-<başlık>` (`src/lib/filmUrl.ts`: `filmPath`, `slugify`, `parseFilmParam`). Türkçe harfler sadeleşir (ş→s, ı→i…), Latin olmayan başlıkta sadece id. Sadece id'li, büyük harfli ya da eski başlıklı adresler **308** ile güncel adrese gider (`?p=` korunur); sayfada `canonical` var (`metadataBase: https://filminibul.com`). Admin'deki bağlantılar id'li kalır (yönlendirilir).
-- **Türk filmleri az (2026-10-02):** 25 bin filmlik katalogda orijinal dili Türkçe olan sadece **48** film vardı (TMDB'de Türk filmleri az oy alıyor, eşiklere takılıyordu). TMDB'de dili Türkçe: tümü 9.751 · ≥1 oy 5.229 · **≥5 oy 1.527** · ≥20 oy 624. ≥5 oylu örneklem (100 film): afiş %100, Türkçe özet %100, İngilizce özet %96, keyword %47. Başka kaynak değerlendirildi: IMDb veri setleri ticari olmayan lisans (sitede reklam alanı var), Sinemalar/Beyazperde/Sinematürk'ün açık API'si yok, Wikidata TMDB'den fazlasını vermez → **TMDB'de kalınıyor, sonuçlar gözlemlenecek.** Eksik ≥5 oylu Türk filmi: 1.498 (~30 MB). **Eklendi (2026-10-02, GitHub'dan `max_add=1500` ile):** katalog 26.575, Türkçe film 48 → **1.546**. Örnek: Devlet Kuşu → İbo ile Güllüşah, Bizim Aile, Tokatçı, Salako, Çöpçüler Kralı.
-- **Seri adları Türkçe (2026-10-02):** `src/data/collections_tr.json` (TMDB `/collection/{id}/translations`, sadece `tr` çevirisi; başka dilde dönen adlar reddedilir). 2.263 serinin 728'inde Türkçe ad var (Matrix, Yıldız Savaşları, Baba, Kara Şövalye…); yoksa İngilizce ad sadeleşir ("The Godfather Collection" → "The Godfather"). Ekler atılır çünkü "Seri:" etiketiyle gösteriliyor. Tek kaynak: `src/lib/recommend/collectionName.mjs`; sitede `collections.ts → collectionLabel`. Haftalık iş (`rebuild_static.mjs`) yeni serileri ekler ve dosyayı commit'ler.
-- **Gösterilen başlık** (`displayTitle`, `similar.ts`): Türkçe çeviri → **Türkçe çekilmiş filmde orijinal başlık** → İngilizce. TMDB, orijinali Türkçe olan filmlerin "tr" çevirisinde başlık tutmuyor; 48 Türkçe filmin 45'i İngilizce görünüyordu (Devlet Kuşu → "Windfall").
-- "Neden önerildi?": reranker'daki gerçek sinyallerden (seri, yönetmen, ortak temalar, türler); keyword'ler Türkçe.
-- Modlar semantic: mod tanım metni embed edilir, en yakın filmler `src/data/moods.json`'da. **Nostalji** dönem tanımı olduğu için tür/yıl/puan filtresiyle kalır.
-- "Nerede izlenir?": TMDB/JustWatch Türkiye verisi (kaynak belirtmek şart, UI'da yazıyor). Filtre 200 adayın tamamında arar, seçim tarayıcıda hatırlanır.
-- Eski kaydırmalı `/kesfet` sayfası, `/api/recommendations` ve Upstash kodu **silindi**.
+### API
+- Herkese açık: `/api/search-movie?q=`, `/api/vibe-search?q=`, `/api/similar/[id]?limit=&debug=1&p=`, `/api/catalog/page` (liste / filmografi devam sayfaları), `/api/analytics/event`
+- Üye (Firebase ID token): `/api/member/watchlist`, `/api/member/film-signals`, `/api/member/recommendations`
+- Admin: `/api/admin/*` (login, logout, catalog/search, catalog/add, content, refresh-content, refresh-providers, update-catalog)
+- İmzalı: `/api/catalog/revalidate` (bakım işleri sonunda önbellek yenileme)
 
-### Tarife göre arama ("vibe", `/ara`)
-- **Akış** (`src/lib/recommend/vibe.ts`): Türkçe cümle → `gpt-4.1-mini` ile film belgesi formatına (Genres/Themes/Setting/Story, İngilizce) → `text-embedding-3-large` → Supabase RPC `vibe_search_v3` (HNSW, 300 aday, `vote_count>=100`) → hafif kalite ayarı (≤0.04) → 24 film. Kartta "neden eşleşti" = LLM temalarıyla filmin keyword'lerinin kesişimi (Türkçe).
-- **Neden belgeye çeviriyoruz:** cümleyi doğrudan embed etmek alakasız sonuç veriyor ("zaman döngüsü" → Paper Lives, Winter Sleep); belgeye çevirince Kelebek Etkisi, Ölüm Günün Kutlu Olsun, Zamanın Ötesinde. Deney betiği: `node scripts/rerank/vibe_try.mjs ["sorgu"…]` (yerel v3 embedding, Supabase'e dokunmaz, önbellekli).
-- **Supabase'te çalıştırıldı:** `scripts/sql/vibe_search.sql` (`vibe_search_v3`). Yeni Supabase projesi kurulursa tekrar çalıştırılmalı.
-- **Maliyet/hız:** arama başına ~$0,0002. Yeni tarif ~3,7–4,9 sn (yerel ölçüm; OpenAI ~1,5–2 sn + soğuk Supabase), aynı tarif 8 ms (6 sa önbellek).
-- **Koruma:** IP başına dakikada 8 yeni arama + 240 karakter sınırı; **sunucu örneği başına bellek içi** (kesin değil, kötüye kullanım olursa Vercel'in hız sınırlaması eklenmeli). Uç nokta herkese açık ve OpenAI'ye para ödüyor.
-- **Arama kutusu** (`SearchBox.tsx`): film adı önerileri + ilk satırda "…gibi bir film bul" (tarif). Enter: 4+ kelime ya da film sonucu yoksa tarif, aksi halde ilk film. Klavye gezintisi + ARIA combobox.
+### Öne çıkan davranışlar
+- **Benzer filmler:** reranker `src/lib/recommend/reranker.ts` ("lightNoRec"): semantic 0.75, collection 0.08, keyword 0.05, genre 0.04, quality 0.04, director 0.03 + cezalar. "Neden önerildi?" gerçek sinyallerden (seri, yönetmen, ortak temalar, türler) üretilir. Aynı serinin filmleri ayrı bölümde.
+- **Tarife göre arama:** Türkçe / İngilizce cümle → `gpt-4.1-mini` ile film belgesi biçimine → embedding → `vibe_search_v3` (300 aday, ≥100 oy) → 24 film. IP başına dakikada 8 yeni arama, 240 karakter sınırı. OpenAI bakiyesi biterse kota hatası güvenli mesajla karşılanır ve film adı / ruh hâli keşfine yönlendirilir.
+- **Karıştır:** sıralama min(benzerlik A, benzerlik B) + hafif kalite. RPC `blend_movies` (1.000 aday); zaman aşımında (57014) 300 adaylı yedek yol devreye girer.
+- **Kişisel öneriler:** hesabın bulut listesinden en fazla 8 temsili film; kaydedilen / izlenen / beğenilmeyen filmler dışlanır, beğenilen filmler daha güçlü kaynak sayılır; seri başına 2, yönetmen başına 3 sınırı. Ek OpenAI çağrısı yok.
+- **Girişsiz kullanıcı:** Kaydet / İzledim / Beğendim / Bana göre değil düğmeleri sayfada yerinde Google giriş paneli açar; girişten sonra seçilen işlem bir kez tamamlanır.
+- **Film içerikleri:** Türkçe özet `tr_overview` alanında; Türkçe yoksa "Türkçe özet henüz bulunmuyor" + "Orijinal özeti göster". Orijinal dilde afiş tercih edilir. Gösterilen başlık: Türkçe çeviri → Türkçe çekilmiş filmde orijinal başlık → İngilizce. Seri adları Türkçe (`src/data/collections_tr.json`).
+- **Nerede izlenir?:** TMDB / JustWatch Türkiye verisi, kompakt "Platformlar" filtresi (URL'de `p`, tercih tarayıcıda hatırlanır).
+- **Paylaşım:** bağlantıyı doğrudan kopyalama + X / WhatsApp / Telegram / Instagram yönlendirmesi + destekleniyorsa sistem paylaşımı.
+- **SEO:** sitemap (filmler + modlar + 80 pilot liste / kişi sayfası), robots (`/admin`, `/api/` kapalı), canonical, paylaşım önizlemeleri, Movie / Person / ItemList / BreadcrumbList JSON-LD. Sonsuz kaydırmada görünen grup URL'ye `?page=N` olarak yansır, JS kapalıyken gerçek sonraki sayfa bağlantıları çalışır. Site **Google Search Console'a eklendi** (kullanıcı bildirimi, 17 Ekim 2026).
+- **Görseller** doğrudan TMDB CDN'inden (`src/lib/tmdbImageLoader.ts`); Vercel görsel optimizasyonu kullanılmıyor (ücretsiz kota dolmuştu).
+- **Ürün istatistikleri:** kendi Supabase tablolarında (`docs/analytics.md`); üyelik kimliğiyle ilişkilendirilmez, ham olaylar 30 gün / günlük özetler 365 gün. Ayrıca Vercel Analytics.
 
-### Tasarım sistemi (2026-10-01 yenileme)
-- **Palet** (`tailwind.config.ts`): zemin `#0c0a09`, kart `#171310`, vurgu amber `accent #e0963a` / `accent-glow #f5b966`, `ember #c2542d`. `white` bilerek krem (`#f6efe4`): tüm `text-white/NN`, `border-white/10` kullanımları sıcak tonda çıkar. Token adları eskisiyle aynı olduğu için admin paneli otomatik yeni renkleri aldı (ayrıca elden geçirilmedi).
-- **Yazı:** başlıklar `font-display` (Fraunces), gövde Inter. **Inter `latin-ext` ile yüklenir** (yoksa ş/ğ/ı/İ sistem fontuna düşüyordu).
-- **Atmosfer:** `body::before` film grenı, `.spotlight` huzmesi, ana sayfada `PosterWall` (moods.json'dan 21 afiş, yavaş akan, karartılmış; veri alınamazsa sessizce gizlenir).
-- **Ortak bileşenler:** `SiteHeader` (`overlay` filmde; **üst çubukta kompakt arama kutusu**, `SearchBox size="sm"`, öneri listesi kutunun altına biner ve ~3–4 film yüksekliğinde kaydırılır (`max-h-[25rem]`), mobilde ikinci satır; ana sayfa ve `/ara`'da `search={false}`), `Footer` (artık statik), `FilmCard` (`index` ile kademeli giriş animasyonu), `MoodChips` (`tiles` = ana sayfa kutucukları).
-- **Film sayfası:** `SiteHeader overlay` kapak `div`'inin **dışında**, `main`'in (`relative`) doğrudan çocuğu: kapak `overflow-hidden` olduğu için içindeyken üst arama kutusunun sonuç listesini kesiyordu (2026-10-02 düzeltildi). Büyük kapak, `-mt-56` ile bilgi bloğu; afiş `self-start` (flex'te uzamasın diye şart), `lg:w-72`. Benzer filmler `Suspense` içinde (`SimilarList`).
-- **Fragman:** `src/lib/recommend/trailer.ts` (TMDB `/movie/{id}/videos`, `include_video_language=tr,en`; Trailer > Teaser, resmî, Türkçe > İngilizce, en yeni; 24 sa önbellek) + `TrailerButton` (modal, Esc/dış tık, odak yönetimi, YouTube yalnızca tıklayınca `youtube-nocookie.com`). Gizlilik sayfasına YouTube eklendi.
+### Tasarım
+- Açık ve koyu tema: ilk ziyarette cihaz tercihi, elle seçim tarayıcıda hatırlanır, geçişte 220 ms renk geçişi. Açık tema krem zemin, koyu tema kömür; vurgu sıcak amber. Renkler `src/app/globals.css` içindeki CSS değişkenlerinde, Tailwind token'ları `tailwind.config.ts`'te.
+- Yazı tipi: Manrope (değişken, yerelden yüklenir, OFL). Başlık ve gövde aynı aile.
+- Mobil: film sayfasında öneriler öne alınmış, özet kısaltılabilir, ana düğmeler 48 px. Azaltılmış hareket tercihine uyulur.
 
-### Admin paneli (`/admin`)
-- Şifreli giriş (`ADMIN_PASSWORD`), imzalı httpOnly çerez, `src/middleware.ts` ile korunur.
-- **Katalog:** TMDB'de ara → katalogda olmayanı "Kataloğa ekle" (TMDB detay + TR çeviri → v3 embedding → Supabase → platform bilgisi, ~1–5 sn, ~$0.00002/film). Eklenen film anında aranır, kendi önerileri çıkar, başka filmlerin önerilerine girer (Supabase okumaları `catalog` etiketiyle önbelleklenir, ekleyince tazelenir).
-- **Veritabanı doluluk çubuğu** (`admin_db_usage` SQL fonksiyonu).
-- **Platform bilgisi:** istatistikler, son GitHub Actions çalıştırmaları, **"Şimdi güncelle"** butonu.
+---
 
-### Otomasyon (GitHub Actions)
-- **Platform yenileme** — `.github/workflows/refresh-providers.yml`: her **pazartesi 03:00 UTC (06:00 TR)** + elle "Run workflow". `fetch_providers.mjs` (>%1 hata varsa durur) → `upload_providers.mjs` (yeni veri tablonun %70'inden azsa silmeden durur; `--force` ile atlanır).
-- **Katalog güncelleme** — `.github/workflows/update-catalog.yml`: her **pazartesi 02:00 UTC (05:00 TR)**, platform yenilemesinden bir saat önce (yeni filmler aynı sabah platform taramasına girer) + elle "Run workflow" (`max_add` girdisi) + admin panelinde "Şimdi güncelle". Adımlar:
-  1. `scripts/catalog/add_missing.mjs --max=100`: eksik filmleri ekler. Öncelik: (a) Türkiye'de son 60 günde vizyona girenler (TMDB discover `region=TR`, ≥10 oy), (b) **Türk filmleri: orijinal dili Türkçe, ≥5 oy** (2026-10-02 eklendi), (c) TMDB'nin en çok oy alan 10.000 filminden (≥300 oy) katalogda olmayanlar, oy sayısına göre. İngilizce özeti olmayan filmde embedding belgesine Türkçe özet konur (catalogAdd.ts'te de). Ekleme admin'deki "Kataloğa ekle" ile aynı (TMDB detay + TR çeviri → `embeddingDoc.mjs` → OpenAI → `film_embeddings_v3` + `film_providers`). Veritabanı **480 MB**'ı geçerse eklemez. `--dry-run`, `--ids=…`.
-  2. `scripts/tmdb/refresh_stats.mjs`: 2021+ filmlerin oy/puan/popülerliği.
-  3. `scripts/catalog/rebuild_static.mjs`: `idf.json`, `keywords_tr.json` (sadece yeni keyword'ler çevrilir; mevcut/elle düzeltilmiş çevirilere dokunmaz), `moods.json` (kalite tabanını geçen ~4.700 filmin embedding'i Supabase'ten çekilip tam cosine; yerel `build_moods.mjs` ile aynı sonuç). ~30 sn.
-  4. Değişen `src/data/*.json` commit'lenip push'lanır → Vercel deploy. Yazar olarak repodaki son commit'in sahibi kullanılır (Vercel tanımadığı yazarı deploy etmeyebilir).
-  - Eklenen filmlerin listesi çalıştırmanın **Summary** sayfasında. Yeni filmler sitede en geç ~1 saat içinde görünür (Supabase okumaları 1 sa önbellekli).
-  - Script'ler yerel `data/` klasörüne ihtiyaç duymaz (`scripts/catalog/lib.mjs`). Mod tanımları tek kaynak: `scripts/rerank/moodDefs.mjs`.
-  - **Gerekli ek secret:** GitHub'da `OPENAI_API_KEY` (embedding + keyword çevirisi).
+## 3. Otomasyon (GitHub Actions)
+
+| İş | Zaman (TR) | Ne yapar |
+|---|---|---|
+| `update-catalog.yml` | Pazartesi 05:00 + elle / admin | Eksik filmleri ekler (≤100; TR vizyonları, Türk filmleri, TMDB'de çok oylu eksikler), 2021+ oy/puan tazeler, komşu tablosu, `idf.json`, `keywords_tr.json`, `moods.json`, seri adları. Değişen `src/data/*.json` commit'lenir. DB 480 MB'ı geçerse eklemez. |
+| `refresh-providers.yml` | Pazartesi 06:00 + elle | Türkiye platform bilgisi (>%1 hata veya tablonun %70'inden az veri varsa durur) |
+| `refresh-content.yml` | Salı 07:00 + elle | Türkçe özet / başlık temizliği, eksik çeviriler, orijinal dil afişi; rapor `docs/content-maintenance-report.json` |
+| `refresh-seo-people.yml` | Çarşamba 08:30 + elle | 50 pilot kişinin filmografisini doğrular ve atomik yeniler (OpenAI yok) |
+| Diğerleri (yalnız elle) | — | `verify-*` doğrulama işleri, `collect/persist-seo-people`, `complete-content-approved` (bütçe sınırlı çeviri), `finalize-content`, `prepare-watchlists` |
 
 ---
 
@@ -133,122 +89,105 @@ Kullanıcı ─► Next.js 14 (Vercel) ─► reranker.ts (hafif hybrid) ─► 
 
 | Değişken | Nerede gerekli |
 |---|---|
-| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | `.env.local`, Vercel, GitHub Secrets |
-| `TMDB_API_KEY` | `.env.local`, Vercel, GitHub Secrets |
-| `OPENAI_API_KEY` | `.env.local`, Vercel, **GitHub Secrets (haftalık katalog güncellemesi)**. Admin'den film ekleme **ve ziyaretçilerin tarife göre aramasında** (`/ara`) kullanılır; bakiye bitince tarif araması çalışmaz ("Arama şu an yapılamadı"). Benzer film/film adı aramasında OpenAI yok. |
+| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | `.env.local`, Vercel, GitHub Secrets. Asla `NEXT_PUBLIC_` olmamalı. |
+| `TMDB_API_KEY` | `.env.local`, Vercel, GitHub Secrets (yalnız sunucu) |
+| `OPENAI_API_KEY` | Vercel (tarif araması, admin'den film ekleme), GitHub Secrets (katalog / içerik işleri) |
+| `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Vercel, `.env.local`. **Google girişi bunlara bağlı, silinmemeli.** |
+| `NEXT_PUBLIC_EMAIL_AUTH_ENABLED` | İsteğe bağlı, varsayılan `false` |
 | `ADMIN_PASSWORD` | Vercel (+ istersen `.env.local`) |
-| `GITHUB_TOKEN` | Vercel: fine-grained, sadece bu repo, **Actions: Read and write** |
+| `GITHUB_TOKEN` (+ isteğe bağlı `GITHUB_REPO`) | Vercel: fine-grained, yalnız bu repo, Actions: Read and write (admin'den iş başlatma) |
+| `ANALYTICS_ENABLED`, `NEXT_PUBLIC_ANALYTICS_ENABLED` | Production'da `true`, preview'da `false` (`docs/analytics.md`) |
 
-`SUPABASE_SERVICE_ROLE_KEY` asla `NEXT_PUBLIC_` olmamalı. Tarayıcı paketinde anahtar olmadığı doğrulandı.
-
----
-
-## 5. Sık kullanılan komutlar
-
-```bash
-npm run dev                                   # yerel site (kendi terminalinde çalıştır)
-
-# Değerlendirme
-node scripts/rerank/llm_judge.mjs             # LLM hakem (ağırlık denemeleri için)
-node scripts/rerank/eval.mjs --emb v3         # golden.json recall
-node scripts/rerank/compare_emb.mjs 603 26466 # v2/v3 saf semantic karşılaştırma
-
-# Veri üretimi / yenileme
-node scripts/tmdb/fetch_providers.mjs && node scripts/tmdb/upload_providers.mjs   # (Actions da yapıyor)
-node scripts/tmdb/refresh_stats.mjs            # 2021+ filmlerin oy/puan/popülerliğini TMDB'den tazele (--from=YIL, --dry-run)
-node scripts/catalog/add_missing.mjs --dry-run # katalogda eksik filmleri listele (yazmaz); --max=N, --ids=1,2
-node scripts/catalog/rebuild_static.mjs       # idf + keyword çevirileri + modlar (Supabase'ten; haftalık iş de bunu çalıştırır)
-node scripts/tmdb/translate_keywords.mjs      # yeni keyword'leri Türkçeye çevir (önbellekli)
-node scripts/rerank/build_moods.mjs           # mod listelerini yeniden hesapla
-node scripts/rerank/build_idf.mjs             # keyword ağırlık tablosu
-node scripts/embed/embed_v3.mjs --dry-run     # embedding belgesi + maliyet tahmini
-```
-
-Supabase SQL'leri `scripts/sql/` altında: `v3_setup.sql`, `film_providers.sql`, `admin_db_usage.sql` (hepsi çalıştırıldı), `drop_v2.sql` (çalıştırıldı, v2 silindi).
+Şablon: [`.env.example`](.env.example).
 
 ---
 
-## 6. Bilgisayarda olup GitHub'da OLMAYANLAR (yedekle!)
+## 5. Ölçümlerle alınmış kararlar (korunmalı)
 
-`.gitignore`'daki büyük veri klasörleri yalnızca bu bilgisayarda:
-- `data/export/`: Supabase + Upstash yedeği. **Eski v2 embedding yedeği:** `data/export/supabase/film_embeddings_v2.embeddings.jsonl` (442 MB). v2 tablosu silindi, tek kopya bu.
-- `data/embeddings/`: v3 embedding'leri (`v3.bin`) ve mod vektörleri
-- `data/tmdb/`: zenginleştirme, keyword çevirisi önbelleği, platform verisi
+- Öneri kalitesi (LLM hakem gpt-4.1, 50 seed, nDCG@10): eski ağır hybrid 0.78 · saf semantic v3 0.80 · **şu anki hafif reranker 0.82**. Asıl kazanç v3 embedding'den geldi; reranker'ı ağırlaştırmak zarar verdi. Ağırlık değiştirmeden önce `node scripts/rerank/llm_judge.mjs` ile ölç (puanlar önbellekli).
+- Keyword aday kanalı ve TMDB "recommendations" bonusu ölçülebilir fayda vermedi → kapalı (kod duruyor).
+- `ivfflat` (`probes=1`) gerçek komşuları kaçırıyordu → HNSW. HNSW index halfvec (ilk 20 birebir aynı ölçüldü); geri alma `scripts/sql/halfvec_revert.sql`.
+- Komşu tablosu: benzer film sorgusu medyan 1,8 sn → ~350 ms, eşzamanlı istekte zaman aşımı kalktı. Admin'den eklenen film kendi listesini anında canlı HNSW'den alır, başka filmlerin listelerine pazartesi girer.
+- Tarif cümlesini doğrudan embed etmek alakasız sonuç veriyor; önce film belgesine çevrilir. Deney: `node scripts/rerank/vibe_try.mjs "sorgu"`.
+- Karıştırmada orta nokta (ortalama) bir filmin devam filmlerine kayıyordu → min yöntemi.
+- `scripts/rerank/reranker.mjs` (offline) ile `src/lib/recommend/reranker.ts` (canlı) aynı mantığın iki kopyası; ağırlık değişirse ikisi de güncellenmeli.
 
-GitHub'da: kod, `src/data/*.json`, `data/eval/` (golden set, LLM puan önbelleği, raporlar), `scripts/`.
+### Veri gerçekleri
+- Keyword'ü olan film ~%57, seri bilgisi ~%14 (TMDB'de gerçekten yok). Filmlerin yarısından fazlası <10 oylu; az bilinen filmlerin önerilerini besledikleri için silinmiyor.
+- Türkçe özet: 16 Ekim'de 1.746 eksik özet çevrildi (~0,36 $). Kaynağı kullanılamayan 157 kayıt kullanıcı kararıyla kapsam dışında (hikâye uydurulmaz).
+- Yeni filmlerin oy/puanı haftalık işte tazelenir; tazelenmezse az oylu cezası yüzünden önerilerden düşerler.
 
 ---
 
-## 7. Yapılacaklar / açık konular
+## 6. Açık işler ve bekleyenler (özet)
 
-### Öncelikli
-0. **Kullanıcının yapacakları (2026-10-02 itibarıyla):**
-   - **Google Search Console:** `filminibul.com`'u ekle (alan adı doğrulaması için Vercel'de DNS kaydı), site haritası olarak `https://filminibul.com/sitemap.xml` gönder. 2026-10-02'de `site:filminibul.com` aramasında sonuç yoktu (arama aracı Google değildi, kesin değil). İstenirse Bing Webmaster Tools'a Search Console'dan aktar.
-   - **Vercel → Domains:** `www.filminibul.com` → `filminibul.com` yönlendirmesi şu an **307 (geçici)**; 308 (kalıcı) yapılmalı.
-   - **Vercel → Environment Variables:** `NEXT_PUBLIC_FIREBASE_*` artık gereksiz, silinebilir.
-   - **Gözlem:** Türk filmlerinin önerileri (zayıf/tuhaf örnek olursa söyle), `/karistir` sonuçları, ilk otomatik pazartesi çalıştırması (2026-10-05 05:00 TR).
-1. ~~Upstash token'ını iptal et~~ **Yapıldı (2026-10-02):** git geçmişindeki token'ın adresi 404 (veritabanı silinmiş), `.env.local`'daki token 403 (iptal). `.env.local`'dan Upstash satırları silindi.
-2. **Haftalık katalog güncellemesi kuruldu (2026-10-02)**, ayrıntı: bölüm 3 → Otomasyon. Kalanlar:
-   - İlk çalıştırma admin panelinden yapıldı (2026-10-02): ekleme adımı çalıştı (100 film), sonra kullanıcı işi iptal etti. İkinci elle çalıştırma **uçtan uca başarılı**: 100 film daha eklendi (katalog 25.074) ve iş main'e `2ec09bc` commit'ini attı (yazar: repo sahibi). Vercel deploy'u panelden doğrulanabilir.
-   - İlk dolgu yapıldı (yukarıda, Veri gerçekleri).
-   - Admin panelinde eklenen filmlerin listesi yok (GitHub Summary'de); istenirse panele taşınır.
-   - **`/karistir` küçük işler:** "Yerlerini değiştir" düğmesi işlevsiz (sıralama simetrik, sonuç değişmez; düğme sayfayı yenilemeden sadece afişleri değiştiriyor) → kaldırılması önerildi, kullanıcı kararı bekliyor. Soğuk ilk çağrı 12 sn ölçüldü (Supabase 8 sn sınırına yakın); sık olursa `blend.sql`'de havuz 1000 → 600.
-3. **Arama hızı: önceden hesaplanmış komşu tablosu — KURULDU (2026-10-02).** Sonuç: benzer film sorgusu medyan 1.833 → **352 ms**, en kötü 5,2 → 1,0 sn; 8 eşzamanlı istekte 0 hata (önce 4'te zaman aşımı). İlk 20 öneri canlı HNSW ile %100 aynı. DB 444 → **379 MB** (halfvec index −98 MB, film_neighbors +33 MB). SQL'ler çalıştırıldı (halfvec_index.sql tek seferde çalıştırıldı, sorun çıkmadı); tablo `build_neighbors.mjs` ile dolduruldu (100 sn hesap + 28 sn yükleme).
-   - **Ölçüm (25.074 film, 120 rastgele film):** canlı `similar_movies_v3` medyan **1,8 sn**, p90 3,1 sn, en kötü 5,2 sn (22.900 filmdeyken medyan ~1 sn). **4 eşzamanlı istekte Supabase 8 sn zaman aşımı** → aynı anda birkaç ziyaretçide benzer filmler hiç gelmeyebilir.
-   - **Kalite değişmez:** canlı HNSW, tam aramanın en yakın 200'ünün %99,8'ini, en yakın 20'nin %100'ünü buluyor. Ayrıca `llm_judge.mjs`'in ölçtüğü 0.82 zaten tam aramayla (yerel embedding) ölçülmüştü; tablo tam aramayla hesaplanıyor.
-   - **Yer dağılımı (önce):** toast (embedding'ler + metinler) 204 MB, HNSW index 195 MB, film tablosu 27 MB; pgvector 0.8.0. Komşu tablosu ~33 MB (25k × 200 komşu, `integer[]` + `smallint[]` benzerlik ×10000). Yer açmak için HNSW index'i **halfvec**'e çevriliyor (embedding sütunu tam hassasiyette kalır; index tahminen ~yarıya iner).
-   - **Kod (main'de):** `scripts/catalog/embeddings.mjs` (tüm embedding'ler; `data/embeddings/v3_live.bin` önbelleği, sadece yenileri indirir), `scripts/catalog/build_neighbors.mjs` (worker'larla tam top-200; bu bilgisayarda ~2,5 dk, 14 çekirdek; TRUNCATE + yükleme), `similar.ts` önce `similar_movies_v4` (tablo), yoksa `similar_movies_v3` (canlı HNSW). Haftalık işe adım eklendi (+ embedding'ler için `actions/cache`, zaman aşımı 90 dk). Tablo yoksa adım uyarıyla atlanır. **GitHub'da çalıştı** (Türk filmleri dolgusunda): 26.575 filmin hepsinin listesi var.
-   - **SQL (çalıştırıldı; yeni Supabase projesinde sırayla):** `scripts/sql/db_sizes.sql` (salt okunur, yer dağılımı + pgvector sürümü) → `scripts/sql/halfvec_index.sql` (3 adım AYRI AYRI) → `scripts/sql/neighbors.sql` → `node scripts/catalog/build_neighbors.mjs`.
-   - Sınır: admin'den eklenen film kendi listesini anında canlı HNSW'den alır; başka filmlerin listelerine pazartesi girer.
-   - **halfvec kalite ölçümü** (yerel, 150 film, tam arama): en yakın 20 birebir aynı, en yakın 200'ün %99,89'u aynı, en büyük benzerlik farkı 0,0004. Benzer filmler halfvec'e hiç dokunmaz (tablo tam hassasiyetle hesaplanır); index'i kullanan iki sorgu da benzerliği tam hassasiyetle yeniden hesaplar.
-   - **Geri alma:** `scripts/sql/halfvec_revert.sql` (embedding sütunu değişmediği için veri kaybı yok; tam index ~2 kat yer ister, script önce yeri kontrol eder). Alternatif (kullanıcı halfvec istemezse): sadece `vote_count >= 100` filmler için kısmi tam hassasiyetli index.
-4. **Tasarım turu devam:** yeni tasarım beğenilmeyen yerler olursa elden geçirilecek (ör. afiş görseli 500 px → retina'da yumuşak olabilir, `w780`'e geçilebilir). Admin paneli ayrıca tasarlanmadı. README ve eski swipe metinleri 2026-10-02'de temizlendi.
+Tam liste ve ayrıntılar `yapilacaklar.md`'de. 17 Ekim itibarıyla:
 
-### Fikir listesi (araştırmadan çıkanlar, sırayla)
-- 👍/👎 (hesapsız, tarayıcıda): kişiselleştirme + **gerçek kullanıcı verisi** toplamak
-- ~~"İki filmi karıştır"~~ (yapıldı, min yöntemiyle)
-- ~~SEO: sitemap, paylaşım görseli (OG), "X'e benzer filmler" başlıkları~~ (yapıldı; Search Console'a bildirilmeli)
-- ~~Seri adlarını Türkçeleştirmek~~ (yapıldı)
-- Tarif aramasını hızlandırmak (3,7–4,9 sn, çoğu OpenAI)
-- İlk açılış gecikmesi → aşağıdaki "Arama hızı" maddesine bakınız
+- **Sıradaki geliştirme:** FL-01–FL-04, `/listeler` için 12 editoryal özel seçki (altyapı → içerik → dizin tasarımı → SEO yayını). Henüz kod yok.
+- **Ölçüm:** SEO pilotunun Search Console indeks / gösterim / tıklama takibi (site eklendi; 28 günlük veri bekleniyor).
+- **Kullanıcı kontrolü gerekenler:** gerçek telefonda görsel / kaydırma kontrolü (MB-06), eski liste aktarımı ve hesap değişimi (BL-06), kişisel öneri ve tercihlerin gerçek hesapta kontrolü (KŞ-06, KŞ-07), OpenAI faturalama ekranında bakiye / uyarı kontrolü (API-01).
+- **Diğer açıklar:** senarist sayfaları (Kİ-02), IMDb / RT puanları (PU-01–03, önce lisans), öneri isabeti geri bildirimi (KŞ-03), ek modlar / gizli cevherler (MD-01/02), doğal dil gerekçeler (GK-01/02), ana sayfa görsel havuzu (GR-01/02), performans / maliyet (PF-01/02), CSV içe aktarma, kişisel istatistik, platform bildirimi.
+- **Takip edilmeli:** tarif araması 2 Ekim'de 3,7–4,9 sn ölçülmüştü; 15 Ekim'deki iki canlı denemede 21,9 ve 12,6 sn sürdü. Ayrıştırılmış ölçüm (OpenAI / Supabase / soğuk başlangıç) yapılmadı.
 
 ### Bilinen sınırlar / teknik borç
-- Niş filmlerde (ör. Triangle) öneriler zayıf: veri sınırı (az keyword, "time loop" filmlerinin çoğu katalogda yok).
-- Keyword çevirileri sözlükte düz JSON; hatalı olanlar elle düzeltilebilir (`src/data/keywords_tr.json`, örn. "halk korku filmi", "gnostisizm").
-- Yeni bir TV/streaming platformu gelirse adı/logosu için `fetch_providers.mjs`'i **bilgisayarda** çalıştırıp `src/data/providers_tr.json`'ı commit'lemek gerekir (Actions `--no-catalog` ile çalışır).
-- **Temizlendi (2026-10-02):** kullanılmayan Firebase girişi (`AuthContext`, `firebase.ts`), dil sistemi (`LanguageContext`, `translations.ts`), boş reklam kutusu (`AdBanner`), eski TMDB istemcisi (`tmdb.ts`'te sadece `GENRE_MAP_TR` kaldı; `NEXT_PUBLIC_TMDB_API_KEY` referansı yok), paketler `firebase`, `@upstash/vector`, `framer-motion`. `dev_dev_arsiv.json` (79 MB) repodan çıkarıldı → yerelde `data/export/` (git geçmişinde hâlâ duruyor). README yeniden yazıldı. **Gizlilik sayfası gerçeğe göre güncellendi** (eskisi swipe beğenileri/izleme listesi/Google girişinden bahsediyordu; tarif metninin OpenAI'ye gittiği, AdSense, Vercel Analytics eklendi). Vercel'de `NEXT_PUBLIC_FIREBASE_*` değişkenleri artık gereksiz.
-- **Tarif araması bulgusu:** LLM bazen tema listesine olmayan şeyler ekleyebilir; "Setting" satırını yalnızca sorguda açıkça ülke/dil/dönem geçerse yazması için istemde kural var (Türkçe yazıldı diye "Turkish" eklemesin). Sonuçlar kalitesiz görünürse önce `vibe_try.mjs` ile istemi ölç.
-- **Geliştirme ortamı:** Bu bilgisayarda `gh` (GitHub CLI) kurulu ama PATH'te değil (`C:\Program Files\GitHub CLI\gh.exe`) ve giriş yapılmadı (`gh auth login --web --git-protocol https`, kendi PowerShell penceresinde). Ağ zaman zaman takılıyor (github.com / TMDB zaman aşımı), yeniden denemek yeterli. **2026-10-02'den beri Claude doğrudan `main`'e push'lar** ve her işi bu dosyaya yazar (kullanıcı isteği).
-- Başsız Chrome (`chrome.exe --headless=new --screenshot`) ile ekran görüntüsü alınabiliyor; 500 px'ten dar pencere açmaz, mobil için iframe sarmalayıcı kullanıldı.
+- Niş filmlerde (ör. Triangle) öneriler veri yetersizliği yüzünden zayıf.
+- Keyword çevirileri düz JSON (`src/data/keywords_tr.json`); hatalılar elle düzeltilebilir.
+- Yeni bir platform gelirse adı / logosu için `fetch_providers.mjs` bilgisayarda çalıştırılıp `src/data/providers_tr.json` commit'lenmeli.
+- Tarif aramasındaki hız sınırı sunucu örneği başına bellek içi; kötüye kullanımda Vercel tarafı sınırlama gerekir.
+- Sunucu, silinen Firebase üyeliğinin token'ını her istekte sormaz; manuel silme akışı `docs/veri-silme-isleyisi.md`'de.
 
 ### Harcama
-Yaklaşık 1 $ (tahmini; embedding ~0.30 + LLM hakem ~0.30 + keyword çevirisi ~0.40). OpenAI bakiyesi ~3 $ ile başlamıştı. 2026-10-02 eklemeleri: ~3.700 film embedding'i + 1.907 keyword çevirisi ≈ 0,3–0,4 $ (tahmini). Artık **ziyaretçi başına değişken maliyet** var: tarif araması ~$0,0002/yeni arama (1.000 arama ≈ $0,20); bakiyeyi ara sıra kontrol et.
+OpenAI: başlangıç işleri ~1 $ (embedding, LLM hakem, keyword çevirisi), 2 Ekim dolguları ~0,3–0,4 $, 16 Ekim özet çevirisi ~0,36 $ (onaylı tavan 4 $). Değişken maliyet yalnız tarif aramasında (~0,0002 $ / yeni arama) ve admin'den film eklemede. Toplu ücretli işler kullanıcı onayı ve bütçe tavanıyla çalıştırılır.
 
 ---
 
-## 8. Önemli dosya haritası
+## 7. Sık kullanılan komutlar
+
+```bash
+npm run dev                                    # yerel site
+npx tsc --noEmit                               # tip kontrolü
+node --test scripts/tests/*.test.mjs           # birim / akış testleri
+
+# Değerlendirme
+node scripts/rerank/llm_judge.mjs              # LLM hakem (ağırlık denemeleri)
+node scripts/rerank/eval.mjs --emb v3          # golden.json recall
+
+# Veri
+node scripts/catalog/add_missing.mjs --dry-run # eksik filmleri listele; --max=N, --ids=1,2
+node scripts/tmdb/refresh_stats.mjs            # 2021+ oy/puan tazeleme (--from=YIL, --dry-run)
+node scripts/catalog/rebuild_static.mjs        # idf + keyword çevirileri + modlar
+node scripts/catalog/build_neighbors.mjs       # komşu tablosu (haftalık iş de çalıştırır)
+```
+
+Supabase SQL'leri `scripts/sql/` altında. Yeni bir Supabase projesi kurulursa sırayla: `v3_setup.sql`, `film_providers.sql`, `admin_db_usage.sql`, `similar_movies.sql`, `vibe_search.sql`, `blend.sql`, `halfvec_index.sql` (adımlar ayrı ayrı), `neighbors.sql` (+ `build_neighbors.mjs`), `analytics.sql` + `analytics_cron.sql`, `seo_02_people.sql`.
+
+---
+
+## 8. Bilgisayarda olup GitHub'da olmayanlar (yedekle!)
+
+`.gitignore`'daki büyük veri klasörleri yalnızca geliştirme bilgisayarında:
+- `data/export/`: Supabase + eski Upstash yedeği; eski v2 embedding'lerinin tek kopyası (`film_embeddings_v2.embeddings.jsonl`, 442 MB).
+- `data/embeddings/`: v3 embedding'leri ve mod vektörleri.
+- `data/tmdb/`: zenginleştirme, çeviri önbelleği, platform verisi.
+- `data/content/`: içerik bakımı kontrol noktaları.
+
+---
+
+## 9. Dosya haritası
 
 ```
-src/lib/recommend/   reranker.ts · similar.ts · moods.ts · providers.ts · embeddingDoc.mjs · types.ts · vibe.ts · trailer.ts
-src/components/      SiteHeader · Footer · film/{FilmCard,TrailerButton,WatchProviders,PlatformFilter} · search/{SearchBox,MoodChips} · home/PosterWall
-src/lib/server/      supabase.ts · tmdbServer.ts · catalogAdd.ts · adminAuth.ts · adminStats.ts · github.ts · workflowRoute.ts
-src/data/            idf.json · keywords_tr.json · moods.json · providers_tr.json
-src/app/             page.tsx · film/[id] · mod/[id] · admin · api/{similar,search-movie,admin}
-scripts/rerank/      reranker.mjs (offline ikiz) · configs.mjs · eval.mjs · llm_judge.mjs · build_*.mjs
-scripts/catalog/     lib.mjs · embeddings.mjs · add_missing.mjs · build_neighbors.mjs · rebuild_static.mjs (haftalık iş)
-scripts/tmdb/        enrich · fetch/upload_providers · translate_keywords · tmdbClient
-scripts/embed/       embed_v3.mjs · upload_v3.mjs
-scripts/export/      supabase/upstash export, inventory, loadEnv
-data/eval/           golden.json · llm_seeds.json · llm_judgments.jsonl · raporlar
+src/app/                 sayfalar (film, ara, mod, karistir, listeler, oyuncu, yonetmen, kaydedilenler, senin-icin, hesap, hakkinda, privacy, admin) + api/
+src/components/          SiteHeader · Footer · film/ · catalog/ (liste, kişi, sonsuz kaydırma) · search/ · auth/ · blend/ · admin/ · preferences/ (tema, dil)
+src/lib/recommend/       reranker · similar · personal · blend · vibe · moods · providers · collections · trailer · embeddingDoc
+src/lib/catalog/         lists · pilot (30 yıl/tür) · people + people-manifest.json (50 kişi) · scrollPage · creditLabel
+src/lib/server/          supabase · tmdbServer · memberAuth · watchlist* / filmSignals* (bulut kayıtları) · personalHandler · vibeOpenAI · catalogAdd · adminAuth · analytics
+src/lib/auth/            firebase (istemci) · pendingFilmAction (girişten sonra tamamlanacak işlem)
+src/lib/i18n/en.json     İngilizce arayüz metinleri
+src/data/                idf · keywords_tr · moods · providers_tr · collections_tr
+scripts/catalog/         haftalık katalog, içerik ve kişi bakımı + doğrulama betikleri
+scripts/rerank/          offline reranker, değerlendirme, LLM hakem, mod üretimi
+scripts/sql/             Supabase şema / RPC dosyaları
+scripts/tests/           node --test testleri
+docs/                    plan, doğrulama raporları ve ekran görüntüleri
+data/eval/               golden set, LLM puan önbelleği, raporlar
 ```
-
-Not: `scripts/rerank/reranker.mjs` (offline deney) ile `src/lib/recommend/reranker.ts` (canlı) aynı mantığın iki kopyası. Ağırlık değişirse ikisini de güncelle.
-
-## 2026-10-12 — Tasarım paketinin uygulamaya aktarılması
-
-- Kabul edilen açık zeminli, tok başlıklı, limon yeşili vurgulu sinema tasarımı uygulandı. Girişte Yıldızlararası karesi, film adı/tarif seçimi, fotoğraflı ruh hâlleri ve gerçek katalogdan Matrix önerileri var.
-- Film detayları, arama, modlar ve karıştırma ekranları aynı görsel dile taşındı. Film detayında fragman düğmesi ve ayrı fragman alanı, yayın platformları, TMDB puan kaynağı ve öneri nedenleri korunuyor. Aynı serinin filmleri ayrı bir bölümde gösteriliyor.
-- Afişlere ve film sayfasına kaydetme eklendi. `/kaydedilenler` bu tarayıcıdaki izleme listesini gösteriyor (`filminibul:saved:v1`); hesap veya veritabanı değişikliği yok. Gizlilik metni güncellendi.
-- Manrope değişken fontu OFL lisansıyla yerel olarak sunuluyor. Hareketli afiş duvarı ve tam sayfa gren/blur katmanı ana akıştan çıkarıldı. Mobil karıştırma dikey, afiş listeleri iki sütun; azaltılmış hareket tercihi destekleniyor.
-- API/RPC sözleşmeleri, öneri sıralayıcısı, analitik veri akışı, canonical yönlendirmeleri ve sitemap mantığı değiştirilmedi. Admin ekranları ayrı koyu tema kapsamına alındı.
-- Yerel doğrulama: `npx tsc --noEmit`, `VERCEL_ENV=preview npm run build`, mevcut 8 analitik/arama geçmişi testi. Yerel ortamda üretim sırları bulunmadığı için gerçek katalog ve üretim sitemap derlemesi Vercel ortamında doğrulanmalı.

@@ -45,7 +45,7 @@ Aynı şekilde az bilinen bir film seçildiğinde sistem yalnızca özetinde ben
 
 Ana film veri kaynağı TMDB'dir.
 
-Yaklaşık **20.000+ filmden oluşan bir dataset** hazırlanmıştır.
+Yaklaşık **20.000+ filmden oluşan bir dataset** hazırlanmıştır. (Ekim 2026 itibarıyla katalog ~26.800 film.)
 
 Dataset oluşturulurken farklı TMDB listelerinden gelen aynı filmler `TMDB movie ID` üzerinden tekilleştirilir.
 
@@ -466,111 +466,52 @@ LLM'nin sonradan tamamen uydurduğu açıklamalar olmamalıdır.
 
 # 11. FRONTEND
 
-Frontend Next.js App Router kullanmaktadır.
+> Güncellendi: 17 Ekim 2026. Önceki metin Next.js 16 ve `ui/` klasörünü anlatıyordu; projede bunlar kullanılmıyor.
 
-Şu anda kullanılan sürüm:
+Frontend **Next.js 14.2 App Router** kullanmaktadır (React 18, Tailwind CSS). Kod depo kökündeki `src/` altındadır; ayrı bir `ui/` klasörü yoktur.
 
-Next.js 16.x
+Geliştirme sunucusu `npm run dev` (`next dev`) ile çalışır.
 
-Windows ortamında Turbopack ile:
+Ana yapı:
 
-`TurbopackInternalError: Erişim engellendi. (os error 5)`
-
-problemi yaşandığı için development sırasında Webpack kullanılmaktadır.
-
-Örneğin:
-
-`next dev --webpack`
-
-Ana frontend klasörü:
-
-`ui/`
-
-App Router yapısı:
-
-ui/
+src/
   app/
-    layout.tsx
-    page.tsx
-    api/
-      search-movie/
-        route.ts
-    film/
-      [id]/
-        page.tsx
+    layout.tsx · page.tsx
+    film/[id]/          film detayı + benzer filmler
+    ara/                tarife göre arama
+    mod/[id]/           ruh hâli listeleri
+    karistir/           iki filmi karıştır
+    listeler/ · listeler/[slug]/ · oyuncu/[id]/ · yonetmen/[id]/   film listeleri ve filmografiler
+    kaydedilenler/ · senin-icin/ · hesap/                          üyelik, kayıtlar, kişisel öneriler
+    admin/              yönetim paneli
+    api/                search-movie, similar/[id], vibe-search, catalog, member, analytics, admin
+  components/ · lib/ · data/
 
-Ana sayfa:
+Temel akış:
 
-`/`
+- Kullanıcı film adını arar (`/api/search-movie?q=matrix`: katalog içinde arama + sunucuda TMDB `search/movie`).
+- Kart seçildiğinde `/film/{tmdb_id}-{slug}` sayfası açılır (yalnız id'li veya eski slug'lı adresler 308 ile güncel adrese gider).
+- Film sayfasında poster / backdrop, Türkçe başlık, orijinal başlık, özet, türler, yıl, puan, süre ve **Benzer Filmler** bulunur.
 
-TMDB movie search endpoint'ine istek atar.
-
-API:
-
-`/api/search-movie?q=matrix`
-
-TMDB `search/movie` endpoint'ini kullanır.
-
-Kullanıcı film arar ve sonuçlar:
-
-- poster
-- Türkçe başlık
-- yıl
-- TMDB rating
-- Türkçe overview
-
-ile gösterilir.
-
-Kart seçildiğinde:
-
-`/film/{tmdb_id}`
-
-sayfasına gidilmesi hedeflenmektedir.
-
-Film detay sayfasında:
-
-- poster/backdrop
-- Türkçe başlık
-- original title
-- overview
-- genres
-- year
-- rating
-- runtime vb.
-
-gösterilecek.
-
-Altında:
-
-## Benzer Filmler
-
-alanı olacaktır.
+Sayfaların ve davranışların güncel listesi: `PROJE-DURUMU.md` → Site.
 
 ---
 
-# 12. NEXT.JS 16 ÖNEMLİ NOT
+# 12. NEXT.JS SÜRÜM NOTU
 
-Next.js 16 App Router davranışlarını dikkate al.
-
-Özellikle dynamic route `params` API'si eski Next sürümlerindeki örneklerle karıştırılmamalıdır.
-
-Next.js'in güncel sürümünde gerekiyorsa async params kullanılmalıdır.
-
-Örneğin mantık:
+Projede **Next.js 14.2** kullanılır. Bu sürümde dynamic route `params` **senkron** bir nesnedir:
 
 type Props = {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 };
 
 export default async function FilmPage({ params }: Props) {
-  const { id } = await params;
+  const { id } = params;
 }
 
-şeklinde olabilir.
+Next.js 15+'a geçilirse `params` Promise olur ve `await params` gerekir; böyle bir yükseltme ayrı ve bilinçli bir iş olarak ele alınmalıdır.
 
-Kod yazmadan önce kullanılan Next.js sürümüyle API davranışının uyumlu olduğundan emin ol.
-
-Eski Next.js 13/14 örneklerini körlemesine uygulama.
+Kod yazmadan önce `package.json`'daki Next.js sürümünü kontrol et; farklı sürümlerin örneklerini körlemesine uygulama.
 
 ---
 
@@ -591,6 +532,8 @@ Aynı mantık film adı ve metadata için gerektiğinde uygulanabilir.
 
 Recommendation engine ise yalnızca Türkçe overview'e bağımlı olmamalıdır.
 
+> **Şu anki uygulama (17 Ekim 2026):** Türkçe özet `tr_overview` alanında tutulur. Türkçe özet yoksa İngilizce metin otomatik gösterilmez; arayüz "Türkçe özet henüz bulunmuyor" der ve "Orijinal özeti göster" seçeneği sunar. Eksik Türkçe özetler haftalık içerik bakımında TMDB çevirisinden ya da İngilizce kaynağın çevrilmesiyle tamamlanır. Site ayrıca TR / EN arayüz sunar; EN seçiminde İngilizce başlık / özet / gerekçe gösterilir.
+
 ---
 
 # 14. BACKEND / OFFLINE PIPELINE
@@ -608,6 +551,8 @@ scripts/
   rerankSimilar.ts
 
 İsimler mevcut projede biraz farklı olabilir.
+
+> **Şu anki uygulama (17 Ekim 2026):** betikler `.mjs` (Node ESM) ve klasörlere ayrılmış: `scripts/tmdb/` (TMDB istemcisi, zenginleştirme, platformlar), `scripts/embed/` (v3 embedding üretimi / yükleme), `scripts/catalog/` (haftalık katalog, komşu tablosu, içerik ve kişi bakımı), `scripts/rerank/` (offline reranker, değerlendirme), `scripts/sql/` (Supabase şeması / RPC'ler), `scripts/tests/`. Benzer filmler önceden hesaplanmış `film_neighbors` tablosundan okunur.
 
 Pipeline kabaca:
 
@@ -754,6 +699,8 @@ Recommendation sistemini sadece "bence iyi olmuş" seviyesinde bırakmak istemiy
 
 # 19. GELECEKTE KİŞİSELLEŞTİRME
 
+> **Durum (17 Ekim 2026):** ilk sürüm uygulandı. Google ile giriş yapan kullanıcı film kaydedebilir ve İzledim / Beğendim / Bana göre değil işaretleyebilir; `/senin-icin` bu sinyallerden mevcut öneri altyapısıyla kişisel öneri üretir (taste vector veya ek LLM çağrısı yok). Ayrıntı: `PROJE-DURUMU.md`.
+
 İlk hedef:
 
 FILM → SIMILAR FILMS
@@ -832,6 +779,8 @@ Ancak şu anda öncelik bu değildir.
 ---
 
 # 21. ŞU ANKİ ÖNCELİKLİ HEDEF
+
+> **Durum (17 Ekim 2026):** aşağıdaki akış canlıda tamamlandı (arama → film sayfası → 20 benzer film + gerekçe). Güncel öncelikler `yapilacaklar.md`'de izlenir.
 
 Şu anda önce aşağıdaki akışı eksiksiz çalıştırmak istiyoruz:
 
