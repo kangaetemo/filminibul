@@ -530,7 +530,7 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 
 ## AR-04 — Tarif araması kalite ölçüm betiği · 18 Ekim 2026 Türkiye saati
 
-- Kullanıcı tarif sonuçlarını zayıf buldu; örnek "ekonomik buhranla ilgili filmler" → kaçış filmi. Canlı inceleme (12 + 3 tarif, ~0,004 USD site maliyeti): çoğu sonuç makul; açık dönem / ülke şartı, ton kayması, düşük puanlı film sızması ve aynı tarifin ara sıra farklı / kötü sonuç vermesi tespit edildi. 18 Ekim denemesinde aynı "ekonomik buhran" tarifi Margin Call, The Big Short, Inside Job getirdi; kullanıcının gördüğü sonuç tutarsızlık sorununun örneği.
+- Kullanıcı tarif sonuçlarını zayıf buldu; örnek "ekonomik buhranla ilgili filmler" → kaçış filmi. Canlı inceleme (12 + 3 tarif, ~0,004 USD site maliyeti): çoğu sonuç makul; açık dönem / ülke şartı, ton kayması, düşük puanlı film sızması tespit edildi. 18 Ekim denemesinde aynı "ekonomik buhran" tarifi Margin Call, The Big Short, Inside Job getirdi; kullanıcının gördüğü kaçış filmi tekrarlanmadı, tutarsızlık olasılığı ölçümle doğrulanacak.
 - Eklendi: `data/eval/vibe_queries.json` (32 tarif; kullanıcı örneği dahil), `scripts/rerank/vibe_judge.mjs` (canlı site veya `--source local` ile uygulamanın `vibe.ts` kodu; gpt-4.1 hakem 0–3; ort. puan / iyi / alakasız / nDCG@10; tür bazında kırılım; önbellek `data/eval/vibe_judgments.jsonl`; rapor `data/eval/vibe_report.md`), `scripts/rerank/tsImport.mjs` (TS modüllerini Node'da yükleme), `.github/workflows/verify-vibe-quality.yml` (elle; puan önbelleği Actions cache'te, rapor özet sayfasında ve artifact'te).
 - Doğrulama: 3 tarifle canlı `--dry-run` başarılı (hakem çağrısı yok; tahmini tam hakem maliyeti 3 tarif için ~0,009 USD, 32 tarif için ~0,1 USD). Yerel mod `vibe.ts` modülünü yükledi. Rapor üretimi sahte puanlarla denendi, deneme dosyaları silindi. İş akışı YAML'ı ayrıştırıldı. Gerçek hakem puanlaması yapılmadı (bu ortamda OpenAI anahtarı yok).
 - Kalan: push; ardından canlı taban çizgisi ölçümü ve iyileştirmeler. AR-04 açık.
@@ -542,4 +542,9 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Uygulama: `src/lib/heroFrames.ts` (kare listesi, saat başı ilk kare seçimi), `src/components/home/HeroFrames.tsx` (oklar, yükleme sonrası geçiş, isteğe bağlı indirme), `src/app/page.tsx` ana sayfa hero'su bileşene taşındı; kullanılmayan çeviri anahtarı kaldırıldı.
 - Doğrulama: `npx tsc --noEmit` ve `VERCEL_ENV=preview next build` başarılı; test paketi değişiklik öncesiyle aynı (105/111; 6 bilinen Windows ESM yol sorunu). Yerel geliştirme sunucusunda masaüstü: 6 karenin ileri / geri döngüsü, yazı ile görünen görselin eşleşmesi (DOM opaklık kontrolü), yalnız açılan karelerin indirilmesi; 375 px mobil: yatay taşma yok, oklar 44×44 px.
 - Kalan: push ve canlı yayın, gerçek telefon kontrolü. GR-01 / GR-02 açık.
-- Ayrıca bulundu ve AR-05 olarak kaydedildi: Türkçe harf içeren film adı araması bozuk ("kış uykusu" → sonuç yok).
+
+## Düzeltme — Türkçe harfli test sorguları · 18 Ekim 2026 Türkiye saati
+
+- Geliştirme bilgisayarındaki (Windows, Git Bash) `curl --data-urlencode` Türkçe harfleri UTF-8 yerine Windows-1254 ile kodladı (`kış` → `k%FD%FE`); sunucu bunları `�` olarak aldı. Yerel deneme uç noktasıyla kanıtlandı (uç nokta silindi, commit'lenmedi). Gerçek tarayıcı / site istemcisi `encodeURIComponent` ile UTF-8 gönderir.
+- Bu yüzden önceki kayıttaki "Türkçe harfli film adı araması bozuk" bulgusu yanlıştı; AR-05 kaldırıldı. UTF-8 ile canlı kontrol: "kış uykusu", "Kış Uykusu", "kış", "ahlat ağacı", "Babam ve Oğlum", "ruhların kaçışı", "Çöpçüler Kralı", "İnsanlık" doğru sonuç veriyor.
+- Aynı nedenle 17 Ekim'deki kötü "düğün komedisi" tarif sonucu geçersiz örnek; AR-04 notu düzeltildi. AR-03'teki 17 Ekim süre ölçümlerinde de Türkçe harfli tariflerin metni bozuktu; süreler genel tabloyu değiştirmez ama yayın sonrası ölçüm UTF-8'li istemciyle (`vibe_judge.mjs` / Node `fetch`) yapılacak.
