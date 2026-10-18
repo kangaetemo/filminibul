@@ -8,6 +8,18 @@
 export const DESCRIPTION_MAX = 160;
 const SITE = " · Filminibul";
 
+/**
+ * Açıklamada adı geçecek benzer filmlerin sırası: aynı serinin filmleri sona. Seride devam filmleri sayfada
+ * ayrı bölümde zaten gösteriliyor; açıklamada "Matrix gibi filmler: Matrix Reloaded…" yerine seri dışı
+ * keşifler daha çok bilgi verir. Seri dışı film yoksa seri filmleri yine kullanılır. Sıra kendi içinde korunur.
+ * @param {{ title: string, collectionName?: string | null }[]} similar
+ * @param {string | null | undefined} collectionName
+ */
+export function snippetTitles(similar, collectionName) {
+    const same = (s) => Boolean(collectionName) && s.collectionName === collectionName;
+    return [...similar.filter((s) => !same(s)), ...similar.filter(same)].map((s) => s.title);
+}
+
 const clip = (text, max) => {
     if (text.length <= max) return text;
     const cut = text.slice(0, max - 1).replace(/\s+\S*$/, "").replace(/[\s,;:.–-]+$/, "");

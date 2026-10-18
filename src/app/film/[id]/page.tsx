@@ -18,7 +18,7 @@ import TrailerButton from "@/components/film/TrailerButton";
 import { getTrailer } from "@/lib/recommend/trailer";
 import PlatformFilter from "@/components/film/PlatformFilter";
 import { FEATURED_PLATFORMS, getLiveProviders, platform, watchableIds } from "@/lib/recommend/providers";
-import { buildFilmSnippet } from "@/lib/filmSnippet.mjs";
+import { buildFilmSnippet, snippetTitles } from "@/lib/filmSnippet.mjs";
 import SimilarHeading from "@/components/film/SimilarHeading";
 import { filmPath, parseFilmParam } from "@/lib/filmUrl";
 import { OG_BASE } from "@/lib/seo";
@@ -57,7 +57,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title: film.title,
         year: film.year,
         overview: film.overview,
-        similarTitles: (similar ?? []).map((s) => s.film.title),
+        similarTitles: snippetTitles((similar ?? []).map((s) => s.film), film.collectionName),
         platforms: watchableIds(providers ?? undefined).map((p) => platform(p).name),
     });
     const image = film.backdropUrl ?? film.posterUrl;

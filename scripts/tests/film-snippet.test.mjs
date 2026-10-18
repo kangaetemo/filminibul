@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildFilmSnippet, DESCRIPTION_MAX } from '../../src/lib/filmSnippet.mjs';
+import { buildFilmSnippet, DESCRIPTION_MAX, snippetTitles } from '../../src/lib/filmSnippet.mjs';
 
 const overview = 'Issac, üvey babasından miras kalan cenaze işleri işletmesini yöneten genç ve içine kapanık bir cenaze görevlisidir. Dost canlısı bir garson olan Cassi ile tanışır.';
 const similar = ['Kızıl Ejder', 'Kuzuların Sessizliği', 'Yedi', 'Zodyak', 'Sessiz Tanık'];
@@ -44,4 +44,18 @@ test('long similar titles are reduced instead of crowding out the rest, and word
     assert.ok(description.length <= DESCRIPTION_MAX, `${description.length}`);
     assert.ok(description.startsWith('Yıldızlararası gibi filmler: Dune'), description);
     assert.ok(!/\S…\S/.test(description));
+});
+
+test('same-series films move behind other similar films, keeping their order', () => {
+    const similar = [
+        { title: 'Matrix Reloaded', collectionName: 'Matrix' }, { title: 'Matrix Revolutions', collectionName: 'Matrix' },
+        { title: 'Dark City', collectionName: null }, { title: 'Matrix Resurrections', collectionName: 'Matrix' },
+        { title: 'Ghost in the Shell', collectionName: 'Ghost in the Shell' }, { title: 'Ex Machina' },
+    ];
+    assert.deepEqual(snippetTitles(similar, 'Matrix'), ['Dark City', 'Ghost in the Shell', 'Ex Machina', 'Matrix Reloaded', 'Matrix Revolutions', 'Matrix Resurrections']);
+    const { description } = buildFilmSnippet({ title: 'Matrix', similarTitles: snippetTitles(similar, 'Matrix'), similarCount: 20 });
+    assert.ok(description.startsWith('Matrix gibi filmler: Dark City, Ghost in the Shell, Ex Machina ve 17 film daha.'), description);
+    // Serisi olmayan filmde ve yalnız seri filmi olduğunda sıra değişmez
+    assert.deepEqual(snippetTitles(similar, null), similar.map((s) => s.title));
+    assert.deepEqual(snippetTitles(similar.slice(0, 2), 'Matrix'), ['Matrix Reloaded', 'Matrix Revolutions']);
 });
