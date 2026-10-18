@@ -559,3 +559,10 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 ## SEO-02 — `/listeler` Search Console kontrolü · 18 Ekim 2026 Türkiye saati
 
 - Kullanıcı `/listeler` sayfasının Search Console'da mevcut olduğunu kontrol ettiğini bildirdi. Kullanıcı bildirimidir; ajan Search Console'u görmedi. 28 günlük dışa aktarımda liste / kişi pilot sayfalarında henüz gösterim yoktu; gösterim / tıklama takibi SEO-02 yayın sonrası maddesinde açık kalır.
+
+## Yayın — 8 commit main'e · 18 Ekim 2026 18:30 Türkiye saati
+
+- Kullanıcı bilgisayara geçince onayıyla `5a705b1..80073f2` main'e fast-forward push edildi (Git Credential Manager ile; force push yok). Kapsam: belge güncellemesi, Search Console / sitemap kayıtları, AR-03 tarif hız düzeltmesi, AR-04 kalite ölçüm betiği ve iş akışı, GR-01 / GR-02 ana sayfa kare havuzu, AR-05 düzeltme kaydı, SEO-03 film sayfası arama metni.
+- Vercel otomatik yayını push'tan ~43 sn sonra canlıdaydı (film sayfası başlığıyla doğrulandı). Push sonrası bilgisayar kapandı; GitHub main ile yerel kopyanın aynı olduğu (80073f2) yeniden açılışta kontrol edildi.
+- Canlı kontroller (yalnız okuma): 5 film sayfasında yeni başlık / açıklama / "X gibi filmler" başlığı, OG açıklaması değişmemiş, HTTP 200, ilk bayt 159–504 ms; ana sayfada saat başı kare (Yıldızlararası) ve oklar; `/api/vibe-search` `Server-Timing` (chat 1.395 / embed 1.661 / db 1.202 ms; tekrar `cache;desc=hit` 13 ms); `/ara` 200 ve 48 film bağlantısı.
+- Açık kalanlar: AR-03 uç gecikmenin tekrarlı ölçümü, AR-04 canlı taban çizgisi, GR-01 / GR-02 gerçek telefon kontrolü, SEO-03 Search Console karşılaştırması (~8 Kasım).
