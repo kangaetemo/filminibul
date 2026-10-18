@@ -595,3 +595,10 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - `vibe_judge.mjs --source local --weights 0,0.1,…`: her tarif bir kez çevrilir, aynı adaylar her ağırlıkla ayrı sıralanır (`<etiket>-w<ağırlık>`); iş akışına `weights` girdisi eklendi.
 - Doğrulama: 5 yeni birim testi (`vibe-themes.test.mjs`: "father-son bond" ~ "father son relationship", iki şartı karşılayan filmin kapsamı daha yüksek, gizli keyword, sınırlar); mevcut tarif akışı testi geçti; test paketi 120/126 (6 bilinen Windows ESM yol sorunu); `tsc`, `next build` başarılı. Sahte OpenAI / Supabase yanıtlarıyla yerel mod denemesi: ağırlık 0'da The Road 3. sırada, 0,3'te 1. sırada; depodaki ölçüm dosyaları deneme sonrası geri yüklendi.
 - Kalan: kullanıcı iş akışını bu dalda `source=local`, `weights=0,0.1,0.2,0.3` ile çalıştıracak; en iyi ağırlık seçilip main'e alınacak. AR-04 açık.
+
+## AR-04 — Tema eşleştirmesi ölçüldü ve 0,2 ile yayına alındı · 18 Ekim 2026 ~23:45 Türkiye saati
+
+- Kullanıcı iş akışını `vibe/tema-eslestirme` dalında `source=local`, `label=tema`, `weights=0,0.1,0.2,0.3` ile çalıştırıp raporu paylaştı ([#39159531321](https://github.com/kangaetemo/filminibul/actions/runs/39159531321); `data/eval/` güncellendi). 32 tarif, her tarif bir kez çevrildi, aynı adaylar dört ağırlıkla sıralandı.
+- Sonuç (ort. puan): canlı taban 2,17 · w0 2,18 · w0,1 2,19 · **w0,2 2,20** · w0,3 2,19; iyi %77 → %78, alakasız %0. Ağırlık 0,3'te ilk 10'ların %17'si değişti. Grup bazında ton 2,20 → 2,30 (Noel aile 2,5 → 2,9, yağmurlu-melankolik 2,1 → 2,4, II. Dünya Savaşı 2,7 → 2,9); küçük düşüşler perili ev 2,7 → 2,6, gerçek mahkeme 1,7 → 1,6. Genel artış ölçüm gürültüsü sınırında; ek maliyet yok, "neden eşleşti" etiketleri daha zengin.
+- İki şartlı tarifler değişmedi; canlı katalog kontrolü: köpek + çocuk tarifinin klasikleri (My Dog Skip, Because of Winn-Dixie, Old Yeller, Lassie Come Home) katalogda yok. Darboğaz sıralama değil aday / katalog kapsamı.
+- Kullanıcı onayıyla `VIBE_THEME_WEIGHT = 0.2`; sıralama değiştiği için sunucular arası tarif önbelleği anahtarı `vibe-search-v2` yapıldı (eski sıralamalı sonuçlar 6 sa beklemeden düşer).

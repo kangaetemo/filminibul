@@ -118,9 +118,11 @@ const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 
 /**
  * Tema eşleşmesinin sıralamaya katkısı (AR-04). Son skor = benzerlik + kalite (≤0,04) + ağırlık × tema kapsamı.
- * 0 = eski davranış. Değer yerel ölçümle (scripts/rerank/vibe_judge.mjs --source local --weights …) seçilir.
+ * 0 = eski davranış. 18 Ekim yerel ölçümü (32 tarif, aynı adaylar, gpt-4.1 hakem): 0 → 2,18 · 0,1 → 2,19 ·
+ * 0,2 → 2,20 · 0,3 → 2,19; kazanç çoğunlukla ruh hâli tariflerinde (ton 2,20 → 2,30). Değiştirmeden önce yeniden ölç:
+ * scripts/rerank/vibe_judge.mjs --source local --weights …
  */
-export const VIBE_THEME_WEIGHT = 0;
+export const VIBE_THEME_WEIGHT = 0.2;
 
 /** Semantic benzerlik ana sinyal; oy/puan sadece eşitliği bozacak kadar (≤0.04) etki eder. */
 function qualityBonus(c: Candidate): number {
