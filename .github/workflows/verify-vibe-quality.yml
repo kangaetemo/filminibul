@@ -42,14 +42,15 @@ jobs:
       - name: Bağımlılıklar (yerel mod TypeScript ister)
         if: inputs.source == 'local'
         run: npm ci --no-audit --no-fund
+      # Önbellek ayrı klasöre gelir ve depodaki data/eval dosyalarıyla birleştirilir (üzerine yazmaz).
       - name: Önceki puanları ve çalıştırmaları geri yükle
         uses: actions/cache/restore@v4
         with:
-          path: |
-            data/eval/vibe_judgments.jsonl
-            data/eval/vibe_runs.json
-          key: vibe-eval-${{ github.run_id }}-${{ github.run_attempt }}
-          restore-keys: vibe-eval-
+          path: .vibe-eval-cache
+          key: vibe-eval-v2-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: vibe-eval-v2-
+      - name: Önbelleği depodaki puanlarla birleştir
+        run: node scripts/rerank/vibe_merge_cache.mjs .vibe-eval-cache
       - name: Sonuçları al ve LLM hakemle puanla
         run: |
           set -- --source "$SOURCE" --max-cost "$MAX_COST"
@@ -69,14 +70,15 @@ jobs:
       - name: Raporu özet sayfasına yaz
         if: always() && hashFiles('data/eval/vibe_report.md') != ''
         run: cat data/eval/vibe_report.md >> "$GITHUB_STEP_SUMMARY"
-      - name: Puanları ve çalıştırmaları sakla
+      - name: Puanları ve çalıştırmaları önbelleğe hazırla
         if: always() && hashFiles('data/eval/vibe_judgments.jsonl') != ''
+        run: mkdir -p .vibe-eval-cache && cp data/eval/vibe_judgments.jsonl data/eval/vibe_runs.json .vibe-eval-cache/
+      - name: Puanları ve çalıştırmaları sakla
+        if: always() && hashFiles('.vibe-eval-cache/vibe_judgments.jsonl') != ''
         uses: actions/cache/save@v4
         with:
-          path: |
-            data/eval/vibe_judgments.jsonl
-            data/eval/vibe_runs.json
-          key: vibe-eval-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .vibe-eval-cache
+          key: vibe-eval-v2-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Rapor dosyalarını indirilebilir bırak
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

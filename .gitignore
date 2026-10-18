@@ -41,3 +41,5 @@ next-env.d.ts
 
 # Content maintenance checkpoints
 /data/content/
+
+/.vibe-eval-cache/
