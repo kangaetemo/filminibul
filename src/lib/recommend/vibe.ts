@@ -16,6 +16,7 @@ import { supabaseRpc } from "@/lib/server/supabase";
 import { createVibeOpenAI, VibeProviderError } from "@/lib/server/vibeOpenAI.mjs";
 import { toFilmDTO } from "./similar";
 import { matchThemes, themeCoverage, type ThemeMatch } from "./vibeThemes.mjs";
+import { countryFit, eraFit, parseConditions, type VibeConditions } from "./vibeConditions.mjs";
 import type { Candidate, FilmDTO } from "./types";
 
 export const VIBE_MIN_CHARS = 4;
@@ -124,6 +125,23 @@ const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
  */
 export const VIBE_THEME_WEIGHT = 0.2;
 
+/**
+ * Tarifte açıkça geçen dönem ("80'lerde") ve ülke / dil ("Kore yapımı") şartlarına uyan filmlerin katkısı ve
+ * aday olmak için en az oy sayısı (AR-04). Varsayılanlar eski davranış; değerler tek yerel ölçümde
+ * (vibe_judge.mjs --variants …) her biri ayrı ve hepsi birlikte denenerek seçilir.
+ */
+export const VIBE_ERA_WEIGHT = 0;
+export const VIBE_COUNTRY_WEIGHT = 0;
+export const VIBE_MIN_VOTES = 100;
+
+export interface VibeRankOptions {
+    themeWeight?: number;
+    eraWeight?: number;
+    countryWeight?: number;
+    conditions?: VibeConditions;
+    limit?: number;
+}
+
 /** Semantic benzerlik ana sinyal; oy/puan sadece eşitliği bozacak kadar (≤0.04) etki eder. */
 function qualityBonus(c: Candidate): number {
     return clamp01(((c.rating ?? 0) - 6) / 3) * 0.02 + clamp01((Math.log10(Math.max(c.vote_count ?? 1, 1)) - 2) / 3) * 0.02;
@@ -144,13 +162,17 @@ function reasonLabels(matches: ThemeMatch[], language: "tr" | "en"): string[] {
     return [...matches].sort((a, b) => b.similarity * b.weight - a.similarity * a.weight).slice(0, 3).map((m) => (language === "en" ? m.keyword : kwDict.tr[m.keyword] ?? m.keyword));
 }
 
+const NO_CONDITIONS: VibeConditions = { decades: [], countries: [], languages: [] };
+
 /** Aday listesini sıralar; ücretli çağrı yok. Değerlendirme betiği aynı adaylarla farklı ağırlıkları dener. */
-export function rankVibe(rows: Candidate[], themes: string[], { themeWeight = VIBE_THEME_WEIGHT, limit = RESULT_LIMIT }: { themeWeight?: number; limit?: number } = {}): VibeFilm[] {
+export function rankVibe(rows: Candidate[], themes: string[], { themeWeight = VIBE_THEME_WEIGHT, eraWeight = VIBE_ERA_WEIGHT, countryWeight = VIBE_COUNTRY_WEIGHT, conditions = NO_CONDITIONS, limit = RESULT_LIMIT }: VibeRankOptions = {}): VibeFilm[] {
     return rows
         .filter((r) => r.poster_path && !(r.keywords ?? []).some((k) => ADULT.has(k)))
         .map((r) => {
             const matches = matchThemes(themes, r.keywords, { hidden: HIDDEN, idf: keywordWeight });
-            const score = r.similarity + qualityBonus(r) + themeWeight * themeCoverage(matches, themes.length);
+            const score = r.similarity + qualityBonus(r) + themeWeight * themeCoverage(matches, themes.length)
+                + eraWeight * (eraFit(r.year, conditions.decades) ?? 0)
+                + countryWeight * (countryFit(r.countries, r.language, conditions) ?? 0);
             return { film: toFilmDTO(r), matched: reasonLabels(matches, "tr"), matchedEn: reasonLabels(matches, "en"), score: Math.round(score * 1000) / 1000 };
         })
         .sort((a, b) => b.score - a.score)
@@ -173,8 +195,14 @@ function cleanQuery(rawQuery: string): string {
     return query;
 }
 
+/** Embedding'e en yakın adaylar (Supabase). Oy sınırı farklı aday havuzlarını denemek için ayrı çağrılabilir. */
+export async function vibeRows(vector: number[], minVotes = VIBE_MIN_VOTES): Promise<Candidate[]> {
+    // pgvector metin biçimi: "[0.1,0.2,...]"
+    return supabaseRpc<Candidate[]>("vibe_search_v3", { query_embedding: `[${vector.join(",")}]`, match_limit: POOL, ...(minVotes !== 100 && { min_votes: minVotes }) }, 3600);
+}
+
 /** Ücretli kısım: tarif → film belgesi (LLM) → embedding → Supabase adayları. Hız sınırı burada uygulanır. */
-export async function vibeCandidates(rawQuery: string, ip = "unknown", timing: VibeTiming = {}): Promise<{ query: string; doc: string; themes: string[]; rows: Candidate[] }> {
+export async function vibeCandidates(rawQuery: string, ip = "unknown", timing: VibeTiming = {}): Promise<{ query: string; doc: string; themes: string[]; conditions: VibeConditions; vector: number[]; rows: Candidate[] }> {
     const query = cleanQuery(rawQuery);
     try { openai.ensureAvailable(); } catch (error) { providerError(error); }
     checkRate(ip);
@@ -188,13 +216,12 @@ export async function vibeCandidates(rawQuery: string, ip = "unknown", timing: V
     started = Date.now();
     const vector = await embedDoc(doc);
     timing.embed = Date.now() - started;
-    // pgvector metin biçimi: "[0.1,0.2,...]"
     started = Date.now();
-    const rows = await supabaseRpc<Candidate[]>("vibe_search_v3", { query_embedding: `[${vector.join(",")}]`, match_limit: POOL }, 3600);
+    const rows = await vibeRows(vector);
     timing.db = Date.now() - started;
     // Sorgu metni loglanmaz; yalnız aşama süreleri (Vercel loglarında yavaş aramaları ayırmak için)
     console.info("vibe_timing", timing);
-    return { query, doc, themes: parseThemes(doc), rows };
+    return { query, doc, themes: parseThemes(doc), conditions: parseConditions(query, doc), vector, rows };
 }
 
 export async function vibeSearch(rawQuery: string, ip = "unknown", timing: VibeTiming = {}): Promise<VibeResult> {
@@ -202,8 +229,8 @@ export async function vibeSearch(rawQuery: string, ip = "unknown", timing: VibeT
     const cached = cache.get(key);
     if (cached && Date.now() - cached.at < CACHE_TTL_MS) return cached.value;
 
-    const { query, themes, rows } = await vibeCandidates(rawQuery, ip, timing);
-    const value: VibeResult = { query, films: rankVibe(rows, themes) };
+    const { query, themes, conditions, rows } = await vibeCandidates(rawQuery, ip, timing);
+    const value: VibeResult = { query, films: rankVibe(rows, themes, { conditions }) };
     cache.set(key, { at: Date.now(), value });
     if (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value as string);
     return value;

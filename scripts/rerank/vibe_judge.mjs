@@ -14,6 +14,7 @@
 //   node scripts/rerank/vibe_judge.mjs --label canli-0              # canlı sonuçları puanla, "canli-0" adıyla kaydet
 //   node scripts/rerank/vibe_judge.mjs --source local --label filtre-v1
 //   node scripts/rerank/vibe_judge.mjs --source local --label tema --weights 0,0.1,0.2,0.3   # aynı adaylar, 4 tema ağırlığı
+//   node scripts/rerank/vibe_judge.mjs --source local --label sart --variants base,donem,ulke,oy30,hepsi,tema0
 //   node scripts/rerank/vibe_judge.mjs --only ekonomik-buhran,70ler-mafya
 //   node scripts/rerank/vibe_judge.mjs --report-only                # yalnız kayıtlı çalıştırmalar + önbellekle rapor
 //   seçenekler: --model gpt-4.1 · --max-cost 0.5 · --base https://filminibul.com
@@ -41,6 +42,18 @@ const BASE = opt("--base", "https://filminibul.com").replace(/\/+$/, "");
 const ONLY = opt("--only", "").split(",").filter(Boolean);
 // Yalnız --source local: aynı adaylar bu tema ağırlıklarıyla ayrı ayrı sıralanır ("<etiket>-w<ağırlık>" çalıştırmaları)
 const WEIGHTS = opt("--weights", "").split(",").filter(Boolean).map(Number).filter((w) => Number.isFinite(w) && w >= 0 && w <= 2);
+// Yalnız --source local: hazır sıralama seçenekleri ("<etiket>-<ad>" çalıştırmaları). Hepsi aynı çeviriyle;
+// oy sınırı farklı olanlar için yalnız Supabase sorgusu tekrarlanır. Tanımsız alanlar koddaki varsayılanı kullanır.
+const VARIANT_PRESETS = {
+    base: {}, // canlıdaki ayarlar
+    donem: { eraWeight: 0.08 }, // tarifteki dönem şartı ("80'lerde")
+    ulke: { countryWeight: 0.08 }, // tarifteki ülke / dil şartı ("Kore yapımı")
+    oy30: { minVotes: 30 }, // 100 yerine en az 30 oy
+    hepsi: { eraWeight: 0.08, countryWeight: 0.08, minVotes: 30 },
+    tema0: { themeWeight: 0 }, // tema ağırlığının yan etkisi
+};
+const VARIANTS = opt("--variants", "").split(",").filter(Boolean);
+for (const v of VARIANTS) if (!VARIANT_PRESETS[v]) { console.error(`❌ Bilinmeyen varyant: ${v} (seçenekler: ${Object.keys(VARIANT_PRESETS).join(", ")})`); process.exit(1); }
 const DRY_RUN = flag("--dry-run");
 const REPORT_ONLY = flag("--report-only");
 const TOP = 10;
@@ -83,11 +96,20 @@ async function fetchLocal(q, i) {
         vibe = await importSrc("lib/recommend/vibe.ts");
     }
     const timing = {};
-    const { themes, rows } = await vibe.vibeCandidates(q, `eval-${i}`, timing); // her tarif ayrı "IP": yerel hız sınırına takılmasın
+    const { themes, conditions, vector, rows } = await vibe.vibeCandidates(q, `eval-${i}`, timing); // her tarif ayrı "IP": yerel hız sınırına takılmasın
     const variants = {};
-    for (const w of WEIGHTS.length ? WEIGHTS : [undefined]) {
-        variants[w === undefined ? LABEL : `${LABEL}-w${w}`] = vibe.rankVibe(rows, themes, w === undefined ? {} : { themeWeight: w }).slice(0, TOP).map((v) => slim(v.film));
+    const rank = (pool, options) => vibe.rankVibe(pool, themes, { conditions, ...options }).slice(0, TOP).map((v) => slim(v.film));
+    if (VARIANTS.length) {
+        const pools = new Map([[vibe.VIBE_MIN_VOTES, rows]]);
+        for (const name of VARIANTS) {
+            const { minVotes = vibe.VIBE_MIN_VOTES, ...options } = VARIANT_PRESETS[name];
+            if (!pools.has(minVotes)) pools.set(minVotes, await vibe.vibeRows(vector, minVotes));
+            variants[`${LABEL}-${name}`] = rank(pools.get(minVotes), options);
+        }
+    } else {
+        for (const w of WEIGHTS.length ? WEIGHTS : [undefined]) variants[w === undefined ? LABEL : `${LABEL}-w${w}`] = rank(rows, w === undefined ? {} : { themeWeight: w });
     }
+    if (conditions.decades.length || conditions.countries.length) timing.conditions = conditions;
     return { variants, timing: JSON.stringify(timing) };
 }
 

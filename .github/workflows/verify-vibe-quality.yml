@@ -19,6 +19,10 @@ on:
         description: "Yalnız local: tema ağırlıkları, virgülle (ör. 0,0.1,0.2,0.3); boşsa koddaki varsayılan"
         type: string
         default: ""
+      variants:
+        description: "Yalnız local: hazır varyantlar, virgülle (base, donem, ulke, oy30, hepsi, tema0)"
+        type: string
+        default: ""
       max_cost:
         description: "Hakem için azami USD"
         type: string
@@ -57,12 +61,14 @@ jobs:
           [ -n "$LABEL" ] && set -- "$@" --label "$LABEL"
           [ -n "$ONLY" ] && set -- "$@" --only "$ONLY"
           [ -n "$WEIGHTS" ] && set -- "$@" --weights "$WEIGHTS"
+          [ -n "$VARIANTS" ] && set -- "$@" --variants "$VARIANTS"
           node scripts/rerank/vibe_judge.mjs "$@"
         env:
           SOURCE: ${{ inputs.source }}
           LABEL: ${{ inputs.label }}
           ONLY: ${{ inputs.only }}
           WEIGHTS: ${{ inputs.weights }}
+          VARIANTS: ${{ inputs.variants }}
           MAX_COST: ${{ inputs.max_cost }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SUPABASE_URL: ${{ inputs.source == 'local' && secrets.SUPABASE_URL || '' }}
