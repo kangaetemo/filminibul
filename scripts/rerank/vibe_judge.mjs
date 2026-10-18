@@ -13,6 +13,7 @@
 //   node scripts/rerank/vibe_judge.mjs --dry-run                    # sonuçları alır, hakem maliyetini tahmin eder, puanlamaz
 //   node scripts/rerank/vibe_judge.mjs --label canli-0              # canlı sonuçları puanla, "canli-0" adıyla kaydet
 //   node scripts/rerank/vibe_judge.mjs --source local --label filtre-v1
+//   node scripts/rerank/vibe_judge.mjs --source local --label tema --weights 0,0.1,0.2,0.3   # aynı adaylar, 4 tema ağırlığı
 //   node scripts/rerank/vibe_judge.mjs --only ekonomik-buhran,70ler-mafya
 //   node scripts/rerank/vibe_judge.mjs --report-only                # yalnız kayıtlı çalıştırmalar + önbellekle rapor
 //   seçenekler: --model gpt-4.1 · --max-cost 0.5 · --base https://filminibul.com
@@ -38,6 +39,8 @@ const MODEL = opt("--model", "gpt-4.1");
 const MAX_COST = Number(opt("--max-cost", "0.5"));
 const BASE = opt("--base", "https://filminibul.com").replace(/\/+$/, "");
 const ONLY = opt("--only", "").split(",").filter(Boolean);
+// Yalnız --source local: aynı adaylar bu tema ağırlıklarıyla ayrı ayrı sıralanır ("<etiket>-w<ağırlık>" çalıştırmaları)
+const WEIGHTS = opt("--weights", "").split(",").filter(Boolean).map(Number).filter((w) => Number.isFinite(w) && w >= 0 && w <= 2);
 const DRY_RUN = flag("--dry-run");
 const REPORT_ONLY = flag("--report-only");
 const TOP = 10;
@@ -68,16 +71,24 @@ async function fetchLive(q) {
     }
 }
 
-let localSearch;
+let vibe;
+/**
+ * Yerel kod: her tarif OpenAI'de bir kez çevrilir, aynı adaylar her tema ağırlığıyla ayrı sıralanır.
+ * Böylece varyantlar arasındaki fark LLM çevirisinin değişkenliğinden değil, yalnız sıralamadan gelir.
+ */
 async function fetchLocal(q, i) {
-    if (!localSearch) {
+    if (!vibe) {
         requireEnv("OPENAI_API_KEY", "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY");
         const { importSrc } = await import("./tsImport.mjs");
-        localSearch = (await importSrc("lib/recommend/vibe.ts")).vibeSearch;
+        vibe = await importSrc("lib/recommend/vibe.ts");
     }
     const timing = {};
-    const result = await localSearch(q, `eval-${i}`, timing); // her tarif ayrı "IP": yerel hız sınırına takılmasın
-    return { films: result.films.slice(0, TOP).map((v) => slim(v.film)), timing: JSON.stringify(timing) };
+    const { themes, rows } = await vibe.vibeCandidates(q, `eval-${i}`, timing); // her tarif ayrı "IP": yerel hız sınırına takılmasın
+    const variants = {};
+    for (const w of WEIGHTS.length ? WEIGHTS : [undefined]) {
+        variants[w === undefined ? LABEL : `${LABEL}-w${w}`] = vibe.rankVibe(rows, themes, w === undefined ? {} : { themeWeight: w }).slice(0, TOP).map((v) => slim(v.film));
+    }
+    return { variants, timing: JSON.stringify(timing) };
 }
 
 // ---------- Hakem ----------
@@ -157,21 +168,27 @@ async function main() {
 
     if (!REPORT_ONLY) {
         console.log(`🔎 ${queries.length} tarif · kaynak: ${SOURCE}${SOURCE === "live" ? ` (${BASE})` : ""} · etiket: ${LABEL}`);
-        const results = { ...(runs[LABEL]?.results ?? {}) };
+        const results = {}; // etiket → { tarifId: { q, films } }
         const timings = {};
         for (const [i, item] of queries.entries()) {
             if (SOURCE === "live" && i > 0) await sleep(LIVE_GAP_MS);
             const started = Date.now();
             try {
-                const { films, timing } = SOURCE === "local" ? await fetchLocal(item.q, i) : await fetchLive(item.q);
-                results[item.id] = { q: item.q, films };
+                let byLabel, timing;
+                if (SOURCE === "local") ({ variants: byLabel, timing } = await fetchLocal(item.q, i));
+                else { const live = await fetchLive(item.q); byLabel = { [LABEL]: live.films }; timing = live.timing; }
+                for (const [label, films] of Object.entries(byLabel)) {
+                    results[label] ??= { ...(runs[label]?.results ?? {}) };
+                    results[label][item.id] = { q: item.q, films };
+                }
                 timings[item.id] = { ms: Date.now() - started, timing };
-                console.log(`  ${String(i + 1).padStart(2)}. ${item.id.padEnd(24)} ${String(Date.now() - started).padStart(6)} ms · ${films.slice(0, 3).map((f) => f.title).join(" | ")}`);
+                const first = Object.values(byLabel)[0];
+                console.log(`  ${String(i + 1).padStart(2)}. ${item.id.padEnd(24)} ${String(Date.now() - started).padStart(6)} ms · ${first.slice(0, 3).map((f) => f.title).join(" | ")}`);
             } catch (err) {
                 console.error(`  ❌ ${item.id}: ${err.message}`);
             }
         }
-        runs[LABEL] = { at: new Date().toISOString(), source: SOURCE, base: SOURCE === "live" ? BASE : null, results, timings };
+        for (const [label, res] of Object.entries(results)) runs[label] = { at: new Date().toISOString(), source: SOURCE, base: SOURCE === "live" ? BASE : null, results: res, timings };
         writeFileSync(RUNS_PATH, JSON.stringify(runs, null, 1));
     }
 

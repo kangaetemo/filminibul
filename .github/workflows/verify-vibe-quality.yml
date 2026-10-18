@@ -15,6 +15,10 @@ on:
         description: "Yalnız bu tarif id'leri, virgülle (boşsa hepsi)"
         type: string
         default: ""
+      weights:
+        description: "Yalnız local: tema ağırlıkları, virgülle (ör. 0,0.1,0.2,0.3); boşsa koddaki varsayılan"
+        type: string
+        default: ""
       max_cost:
         description: "Hakem için azami USD"
         type: string
@@ -51,11 +55,13 @@ jobs:
           set -- --source "$SOURCE" --max-cost "$MAX_COST"
           [ -n "$LABEL" ] && set -- "$@" --label "$LABEL"
           [ -n "$ONLY" ] && set -- "$@" --only "$ONLY"
+          [ -n "$WEIGHTS" ] && set -- "$@" --weights "$WEIGHTS"
           node scripts/rerank/vibe_judge.mjs "$@"
         env:
           SOURCE: ${{ inputs.source }}
           LABEL: ${{ inputs.label }}
           ONLY: ${{ inputs.only }}
+          WEIGHTS: ${{ inputs.weights }}
           MAX_COST: ${{ inputs.max_cost }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SUPABASE_URL: ${{ inputs.source == 'local' && secrets.SUPABASE_URL || '' }}

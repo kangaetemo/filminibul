@@ -9,16 +9,19 @@
 // Maliyet: arama başına ~$0.0002 (gpt-4.1-mini + embedding). Sonuçlar sunucuda önbelleklenir ve IP başına
 // hız sınırı vardır, çünkü bu uç nokta herkese açık ve OpenAI'ye para ödüyor.
 
+import idf from "@/data/idf.json";
 import keywordsTr from "@/data/keywords_tr.json";
 import { EMBEDDING_DIMS, EMBEDDING_MODEL } from "@/lib/recommend/embeddingDoc.mjs";
 import { supabaseRpc } from "@/lib/server/supabase";
 import { createVibeOpenAI, VibeProviderError } from "@/lib/server/vibeOpenAI.mjs";
 import { toFilmDTO } from "./similar";
+import { matchThemes, themeCoverage, type ThemeMatch } from "./vibeThemes.mjs";
 import type { Candidate, FilmDTO } from "./types";
 
 export const VIBE_MIN_CHARS = 4;
 export const VIBE_MAX_CHARS = 240;
-const POOL = 60;
+// Aday havuzu: tema eşleşmesi derindeki uygun filmleri öne alabilsin diye 60 → 150 (SQL en fazla 300 aday bakar)
+const POOL = 150;
 const RESULT_LIMIT = 24;
 
 export class VibeError extends Error {
@@ -29,7 +32,7 @@ export class VibeError extends Error {
 
 export interface VibeFilm {
     film: FilmDTO;
-    /** Aramanın temalarıyla filmin keyword'lerinin kesişimi (Türkçe), en fazla 3 */
+    /** Aramanın temalarıyla eşleşen gerçek film keyword'leri (Türkçe), en fazla 3 */
     matched: string[];
     matchedEn: string[];
     score: number;
@@ -113,25 +116,43 @@ async function embedDoc(doc: string): Promise<number[]> {
 
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 
+/**
+ * Tema eşleşmesinin sıralamaya katkısı (AR-04). Son skor = benzerlik + kalite (≤0,04) + ağırlık × tema kapsamı.
+ * 0 = eski davranış. Değer yerel ölçümle (scripts/rerank/vibe_judge.mjs --source local --weights …) seçilir.
+ */
+export const VIBE_THEME_WEIGHT = 0;
+
 /** Semantic benzerlik ana sinyal; oy/puan sadece eşitliği bozacak kadar (≤0.04) etki eder. */
-function finalScore(c: Candidate): number {
-    const quality = clamp01(((c.rating ?? 0) - 6) / 3) * 0.02 + clamp01((Math.log10(Math.max(c.vote_count ?? 1, 1)) - 2) / 3) * 0.02;
-    return c.similarity + quality;
+function qualityBonus(c: Candidate): number {
+    return clamp01(((c.rating ?? 0) - 6) / 3) * 0.02 + clamp01((Math.log10(Math.max(c.vote_count ?? 1, 1)) - 2) / 3) * 0.02;
 }
 
-function parseThemes(doc: string): Set<string> {
+const idfTable = idf as { n: number; keywords: Record<string, number> };
+const IDF_MAX = Math.log(idfTable.n + 1) + 1;
+/** Nadir keyword daha değerli: film önerilerindeki reranker ile aynı IDF, 0–1'e ölçekli. */
+const keywordWeight = (k: string) => (Math.log((idfTable.n + 1) / ((idfTable.keywords[k] ?? 0) + 1)) + 1) / IDF_MAX;
+
+function parseThemes(doc: string): string[] {
     const line = doc.split("\n").find((l) => l.toLowerCase().startsWith("themes:"));
-    return new Set((line?.slice(7) ?? "").split(",").map((t) => t.trim().toLowerCase()).filter(Boolean));
+    return Array.from(new Set((line?.slice(7) ?? "").split(",").map((t) => t.trim().toLowerCase()).filter(Boolean)));
 }
 
-function matchedThemes(themes: Set<string>, keywords: string[] | null, language: "tr" | "en" = "tr"): string[] {
-    const out: string[] = [];
-    for (const k of keywords ?? []) {
-        if (HIDDEN.has(k) || !themes.has(k.toLowerCase())) continue;
-        out.push(language === "en" ? k : kwDict.tr[k] ?? k);
-        if (out.length === 3) break;
-    }
-    return out;
+/** "Neden eşleşti" etiketleri: tema ile eşleşen gerçek keyword'ler (Türkçe / İngilizce), en fazla 3. */
+function reasonLabels(matches: ThemeMatch[], language: "tr" | "en"): string[] {
+    return [...matches].sort((a, b) => b.similarity * b.weight - a.similarity * a.weight).slice(0, 3).map((m) => (language === "en" ? m.keyword : kwDict.tr[m.keyword] ?? m.keyword));
+}
+
+/** Aday listesini sıralar; ücretli çağrı yok. Değerlendirme betiği aynı adaylarla farklı ağırlıkları dener. */
+export function rankVibe(rows: Candidate[], themes: string[], { themeWeight = VIBE_THEME_WEIGHT, limit = RESULT_LIMIT }: { themeWeight?: number; limit?: number } = {}): VibeFilm[] {
+    return rows
+        .filter((r) => r.poster_path && !(r.keywords ?? []).some((k) => ADULT.has(k)))
+        .map((r) => {
+            const matches = matchThemes(themes, r.keywords, { hidden: HIDDEN, idf: keywordWeight });
+            const score = r.similarity + qualityBonus(r) + themeWeight * themeCoverage(matches, themes.length);
+            return { film: toFilmDTO(r), matched: reasonLabels(matches, "tr"), matchedEn: reasonLabels(matches, "en"), score: Math.round(score * 1000) / 1000 };
+        })
+        .sort((a, b) => b.score - a.score)
+        .slice(0, limit);
 }
 
 // ---- Ana fonksiyon ----
@@ -143,15 +164,16 @@ export interface VibeTiming {
     db?: number;
 }
 
-export async function vibeSearch(rawQuery: string, ip = "unknown", timing: VibeTiming = {}): Promise<VibeResult> {
+function cleanQuery(rawQuery: string): string {
     const query = rawQuery.replace(/\s+/g, " ").trim();
     if (query.length < VIBE_MIN_CHARS) throw new VibeError("Biraz daha ayrıntı yaz.", 400);
     if (query.length > VIBE_MAX_CHARS) throw new VibeError(`En fazla ${VIBE_MAX_CHARS} karakter yazabilirsin.`, 400);
+    return query;
+}
 
-    const key = normalizeQuery(query);
-    const cached = cache.get(key);
-    if (cached && Date.now() - cached.at < CACHE_TTL_MS) return cached.value;
-
+/** Ücretli kısım: tarif → film belgesi (LLM) → embedding → Supabase adayları. Hız sınırı burada uygulanır. */
+export async function vibeCandidates(rawQuery: string, ip = "unknown", timing: VibeTiming = {}): Promise<{ query: string; doc: string; themes: string[]; rows: Candidate[] }> {
+    const query = cleanQuery(rawQuery);
     try { openai.ensureAvailable(); } catch (error) { providerError(error); }
     checkRate(ip);
 
@@ -170,15 +192,16 @@ export async function vibeSearch(rawQuery: string, ip = "unknown", timing: VibeT
     timing.db = Date.now() - started;
     // Sorgu metni loglanmaz; yalnız aşama süreleri (Vercel loglarında yavaş aramaları ayırmak için)
     console.info("vibe_timing", timing);
+    return { query, doc, themes: parseThemes(doc), rows };
+}
 
-    const themes = parseThemes(doc);
-    const films = rows
-        .filter((r) => r.poster_path && !(r.keywords ?? []).some((k) => ADULT.has(k)))
-        .map((r) => ({ film: toFilmDTO(r), matched: matchedThemes(themes, r.keywords), matchedEn: matchedThemes(themes, r.keywords, "en"), score: Math.round(finalScore(r) * 1000) / 1000 }))
-        .sort((a, b) => b.score - a.score)
-        .slice(0, RESULT_LIMIT);
+export async function vibeSearch(rawQuery: string, ip = "unknown", timing: VibeTiming = {}): Promise<VibeResult> {
+    const key = normalizeQuery(cleanQuery(rawQuery));
+    const cached = cache.get(key);
+    if (cached && Date.now() - cached.at < CACHE_TTL_MS) return cached.value;
 
-    const value: VibeResult = { query, films };
+    const { query, themes, rows } = await vibeCandidates(rawQuery, ip, timing);
+    const value: VibeResult = { query, films: rankVibe(rows, themes) };
     cache.set(key, { at: Date.now(), value });
     if (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value as string);
     return value;
