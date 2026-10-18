@@ -555,3 +555,7 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Kullanıcı onayıyla uygulandı: `src/lib/filmSnippet.mjs` (+ `.d.mts`) başlık / açıklama üreticisi; `src/app/film/[id]/page.tsx` meta başlık ve açıklaması (benzer filmler 1,5 sn zaman sınırıyla, Türkiye yayın platformları `watchableIds`); `src/components/film/SimilarHeading.tsx` "X gibi filmler" bölüm başlığı (TR / EN); kullanılmayan iki çeviri anahtarı kaldırıldı. OG paylaşım açıklaması değişmedi.
 - Doğrulama: 6 yeni birim testi (`scripts/tests/film-snippet.test.mjs`: başlık biçimi, uzun ad, ≤160 karakter, platform sınırı, kelime ortasından kesmeme, benzer film yoksa eski davranış); test paketi 111/117 (6 bilinen Windows ESM yol sorunu); `npx tsc --noEmit` ve `VERCEL_ENV=preview next build` başarılı. Canlı benzer film listeleriyle örnek çıktı: "Love Me Dead gibi filmler: Broken Bird, Bone Lake, Succubus ve 17 film daha. Konusu: …" (159 karakter). Film sayfası yerelde üretim sırları olmadığı için tarayıcıda açılamadı; görsel / HTML kontrolü yayından sonra.
 - Kalan: push ve yayın; yayın tarihini kaydedip 2–3 hafta sonra Search Console karşılaştırması. SEO-03 açık.
+
+## SEO-02 — `/listeler` Search Console kontrolü · 18 Ekim 2026 Türkiye saati
+
+- Kullanıcı `/listeler` sayfasının Search Console'da mevcut olduğunu kontrol ettiğini bildirdi. Kullanıcı bildirimidir; ajan Search Console'u görmedi. 28 günlük dışa aktarımda liste / kişi pilot sayfalarında henüz gösterim yoktu; gösterim / tıklama takibi SEO-02 yayın sonrası maddesinde açık kalır.

@@ -124,7 +124,7 @@ Türkçe öncelikli film keşif sitesi. Sevilen bir filme benzeyenleri bulur, ta
 Tam liste ve ayrıntılar `yapilacaklar.md`'de. 17 Ekim itibarıyla:
 
 - **Sıradaki geliştirme:** FL-01–FL-04, `/listeler` için 12 editoryal özel seçki (altyapı → içerik → dizin tasarımı → SEO yayını). Henüz kod yok.
-- **Ölçüm:** SEO pilotunun Search Console indeks / gösterim / tıklama takibi (site eklendi, sitemap gönderildi; 28 günlük veri bekleniyor).
+- **Ölçüm:** SEO pilotunun Search Console indeks / gösterim / tıklama takibi (site eklendi, sitemap gönderildi, `/listeler` Search Console'da görünüyor — 18 Ekim kullanıcı kontrolü; liste / kişi sayfalarının gösterimleri ve 28 günlük veri bekleniyor).
 - **Kullanıcı kontrolü gerekenler:** gerçek telefonda görsel / kaydırma kontrolü (MB-06), eski liste aktarımı ve hesap değişimi (BL-06), kişisel öneri ve tercihlerin gerçek hesapta kontrolü (KŞ-06, KŞ-07), OpenAI faturalama ekranında bakiye / uyarı kontrolü (API-01).
 - **Diğer açıklar:** senarist sayfaları (Kİ-02), IMDb / RT puanları (PU-01–03, önce lisans), öneri isabeti geri bildirimi (KŞ-03), ek modlar / gizli cevherler (MD-01/02), doğal dil gerekçeler (GK-01/02), ana sayfa görsel havuzu (GR-01/02), performans / maliyet (PF-01/02), CSV içe aktarma, kişisel istatistik, platform bildirimi.
 - **Takip edilmeli:** tarif araması 2 Ekim'de 3,7–4,9 sn ölçülmüştü; 15 Ekim'deki iki canlı denemede 21,9 ve 12,6 sn sürdü. Ayrıştırılmış ölçüm (OpenAI / Supabase / soğuk başlangıç) yapılmadı.
