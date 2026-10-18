@@ -14,7 +14,7 @@
 //   node scripts/rerank/vibe_judge.mjs --label canli-0              # canlı sonuçları puanla, "canli-0" adıyla kaydet
 //   node scripts/rerank/vibe_judge.mjs --source local --label filtre-v1
 //   node scripts/rerank/vibe_judge.mjs --source local --label tema --weights 0,0.1,0.2,0.3   # aynı adaylar, 4 tema ağırlığı
-//   node scripts/rerank/vibe_judge.mjs --source local --label sart --variants base,donem,ulke,oy30,hepsi,tema0
+//   node scripts/rerank/vibe_judge.mjs --source local --label sart --variants base,eski,donem0,ulke0,oy100,tema0
 //   node scripts/rerank/vibe_judge.mjs --only ekonomik-buhran,70ler-mafya
 //   node scripts/rerank/vibe_judge.mjs --report-only                # yalnız kayıtlı çalıştırmalar + önbellekle rapor
 //   seçenekler: --model gpt-4.1 · --max-cost 0.5 · --base https://filminibul.com
@@ -44,13 +44,15 @@ const ONLY = opt("--only", "").split(",").filter(Boolean);
 const WEIGHTS = opt("--weights", "").split(",").filter(Boolean).map(Number).filter((w) => Number.isFinite(w) && w >= 0 && w <= 2);
 // Yalnız --source local: hazır sıralama seçenekleri ("<etiket>-<ad>" çalıştırmaları). Hepsi aynı çeviriyle;
 // oy sınırı farklı olanlar için yalnız Supabase sorgusu tekrarlanır. Tanımsız alanlar koddaki varsayılanı kullanır.
+// 19 Ekim'den beri canlıda tema 0,2 + dönem 0,08 + ülke 0,08 + oy ≥ 30; varyantlar tek tek kapatır.
+// (19 Ekim ölçümünün varyantları — donem / ulke / oy30 / hepsi — o günkü canlıya göre "açma" yönündeydi.)
 const VARIANT_PRESETS = {
     base: {}, // canlıdaki ayarlar
-    donem: { eraWeight: 0.08 }, // tarifteki dönem şartı ("80'lerde")
-    ulke: { countryWeight: 0.08 }, // tarifteki ülke / dil şartı ("Kore yapımı")
-    oy30: { minVotes: 30 }, // 100 yerine en az 30 oy
-    hepsi: { eraWeight: 0.08, countryWeight: 0.08, minVotes: 30 },
-    tema0: { themeWeight: 0 }, // tema ağırlığının yan etkisi
+    eski: { eraWeight: 0, countryWeight: 0, minVotes: 100 }, // 19 Ekim öncesi (yalnız tema 0,2)
+    donem0: { eraWeight: 0 },
+    ulke0: { countryWeight: 0 },
+    oy100: { minVotes: 100 },
+    tema0: { themeWeight: 0 },
 };
 const VARIANTS = opt("--variants", "").split(",").filter(Boolean);
 for (const v of VARIANTS) if (!VARIANT_PRESETS[v]) { console.error(`❌ Bilinmeyen varyant: ${v} (seçenekler: ${Object.keys(VARIANT_PRESETS).join(", ")})`); process.exit(1); }

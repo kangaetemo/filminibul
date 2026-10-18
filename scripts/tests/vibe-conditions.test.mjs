@@ -20,9 +20,14 @@ test('countries come from Turkish words and city names, without common false pos
     }
 });
 
-test('the LLM Setting line adds decades, countries and languages', () => {
+test('the LLM Setting line adds countries and languages, but decades only come from the request text', () => {
     const doc = 'Genres: Crime\nThemes: mafia\nSetting: United States · English-language · 1970s\nStory: x';
-    assert.deepEqual(parseConditions('bir mafya filmi', doc), { decades: [1970], countries: ['US'], languages: ['en'] });
+    assert.deepEqual(parseConditions('bir mafya filmi', doc), { decades: [], countries: ['US'], languages: ['en'] });
+    assert.deepEqual(parseConditions("70'lerde geçen bir mafya filmi", doc).decades, [1970]);
+    assert.deepEqual(parseConditions("İkinci Dünya Savaşı'nda geçen gerçek bir hikâye", 'Setting: Europe · 1940s').decades, []);
+    for (const [name, code] of [['France', 'FR'], ['Germany', 'DE'], ['Turkey', 'TR'], ['Hong Kong', 'HK'], ['UK', 'GB']]) {
+        assert.deepEqual(parseConditions('x', `Setting: ${name}`).countries, [code], name);
+    }
     assert.deepEqual(parseConditions('bir mafya filmi', 'Genres: Crime\nStory: x'), { decades: [], countries: [], languages: [] });
 });
 

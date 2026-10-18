@@ -1,9 +1,12 @@
 // Tarif araması (AR-04): tarifteki açık dönem ve ülke / dil şartları.
 //
 // Neden: 18–19 Ekim ölçümlerinde dönem şartlı tarifler ("70'lerde geçen mafya filmi", "80'lerde geçen çocuk
-// macerası") en zayıflar arasındaydı; embedding dönemi yalnız hafifçe gözetiyor. Şart iki kaynaktan okunur:
-// Türkçe tarifin kendisi ve LLM'in ürettiği belgedeki "Setting:" satırı (istem, bu satırı yalnız tarifte açıkça
-// ülke / dil / dönem geçtiğinde yazdırıyor). Şart yoksa hiçbir film etkilenmez.
+// macerası") en zayıflar arasındaydı; embedding dönemi yalnız hafifçe gözetiyor. Şart yoksa hiçbir film etkilenmez.
+//
+// Ülke / dil: Türkçe tarif + LLM belgesindeki "Setting:" satırı (istem bu satırı yalnız tarifte açıkça geçince yazdırır).
+// Dönem: YALNIZ tarif metni ("80'lerde"). 19 Ekim ölçümünde Setting satırındaki dönem zarar verdi: "İkinci Dünya
+// Savaşı'nda geçen" → "1940s" → 1940'larda çekilmiş eski filmler öne çıktı (Grand Illusion 1937, hakem 0). Filmin
+// yılı çekiliş yılıdır, hikâyenin geçtiği dönem değil; yalnız kullanıcı açıkça on yıl yazınca kullanılır.
 
 // Türkçe ülke / milliyet kökleri → ISO 3166 ülke kodları (+ ana dil, ISO 639-1). Kök, kelimenin başında aranır
 // ("Koreli", "Fransız yapımı"); yanlış eşleşmeye açık kökler EXACT / EXCLUDE ile sınırlanır.
@@ -44,10 +47,14 @@ function settingLine(doc) {
 const regionName = new Intl.DisplayNames(["en"], { type: "region" });
 const languageName = new Intl.DisplayNames(["en"], { type: "language" });
 const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const REGION_BY_NAME = new Map();
+// Artık kullanılmayan kodlar ("Germany" → DD, "France" → FX olmasın) ve LLM'in sık yazdığı kısa adlar
+const RETIRED = new Set(["DD", "FX", "YU", "CS", "SU", "ZR", "BU", "TP", "AN", "NT", "DY", "HV", "NH", "RH", "VD", "YD", "QO", "QU", "UK", "EU", "EZ", "UN", "XA", "XB", "XK"]);
+const REGION_ALIASES = { turkey: "TR", "hong kong": "HK", korea: "KR", usa: "US", "united states of america": "US", uk: "GB", england: "GB", britain: "GB", "great britain": "GB", "soviet union": "RU", taiwan: "TW", "czech republic": "CZ" };
+const REGION_BY_NAME = new Map(Object.entries(REGION_ALIASES));
 for (const a of LETTERS) for (const b of LETTERS) {
+    if (RETIRED.has(a + b)) continue;
     const name = regionName.of(a + b);
-    if (name && name !== a + b) REGION_BY_NAME.set(name.toLowerCase(), a + b);
+    if (name && name !== a + b && !REGION_BY_NAME.has(name.toLowerCase())) REGION_BY_NAME.set(name.toLowerCase(), a + b);
 }
 const LANGUAGE_CODES = ["en", "ko", "ja", "fr", "tr", "it", "es", "de", "hi", "zh", "cn", "fa", "ru", "pt", "da", "sv", "no", "fi", "th", "el", "pl", "hu", "ar", "ta", "te", "ml", "is", "nb"];
 const LANGUAGE_BY_NAME = new Map(LANGUAGE_CODES.map((c) => [languageName.of(c)?.toLowerCase(), c]));
@@ -61,7 +68,6 @@ export function parseConditions(query, doc) {
     const decades = new Set(decadesFromText(query));
     const countries = new Set(), languages = new Set();
     const setting = settingLine(doc);
-    for (const m of setting.matchAll(/\b(1[89]\d0|20[0-2]0)s\b/g)) decades.add(Number(m[1]));
     for (const part of setting.split(/[·,]/).map((p) => p.trim().toLowerCase()).filter(Boolean)) {
         const lang = LANGUAGE_BY_NAME.get(part.replace(/-language$/, "").replace(/ language$/, ""));
         if (lang && /language/.test(part)) languages.add(lang);

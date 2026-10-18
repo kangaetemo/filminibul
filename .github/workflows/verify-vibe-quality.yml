@@ -20,7 +20,7 @@ on:
         type: string
         default: ""
       variants:
-        description: "Yalnız local: hazır varyantlar, virgülle (base, donem, ulke, oy30, hepsi, tema0)"
+        description: "Yalnız local: hazır varyantlar, virgülle (base, eski, donem0, ulke0, oy100, tema0)"
         type: string
         default: ""
       max_cost:

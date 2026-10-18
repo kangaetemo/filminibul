@@ -127,12 +127,15 @@ export const VIBE_THEME_WEIGHT = 0.2;
 
 /**
  * Tarifte açıkça geçen dönem ("80'lerde") ve ülke / dil ("Kore yapımı") şartlarına uyan filmlerin katkısı ve
- * aday olmak için en az oy sayısı (AR-04). Varsayılanlar eski davranış; değerler tek yerel ölçümde
- * (vibe_judge.mjs --variants …) her biri ayrı ve hepsi birlikte denenerek seçilir.
+ * aday olmak için en az oy sayısı (AR-04). 19 Ekim yerel ölçümü (32 tarif, aynı çeviriler; taban 2,19):
+ * oy alt sınırı 100 → 30: +0,047 ± 0,034 (8 tarif iyileşti, hiçbiri kötüleşmedi) · ülke şartı +0,006 (1 iyileşen,
+ * kötüleşen yok) · dönem şartı 80'ler tarifinde +0,2, ama LLM Setting satırındaki dönem İkinci Dünya Savaşı tarifini
+ * −0,3 bozdu → dönem artık yalnız tarif metninden (vibeConditions.mjs). Üçü birlikte 2,24. Değiştirmeden önce ölç:
+ * vibe_judge.mjs --source local --variants …
  */
-export const VIBE_ERA_WEIGHT = 0;
-export const VIBE_COUNTRY_WEIGHT = 0;
-export const VIBE_MIN_VOTES = 100;
+export const VIBE_ERA_WEIGHT = 0.08;
+export const VIBE_COUNTRY_WEIGHT = 0.08;
+export const VIBE_MIN_VOTES = 30;
 
 export interface VibeRankOptions {
     themeWeight?: number;
@@ -198,7 +201,7 @@ function cleanQuery(rawQuery: string): string {
 /** Embedding'e en yakın adaylar (Supabase). Oy sınırı farklı aday havuzlarını denemek için ayrı çağrılabilir. */
 export async function vibeRows(vector: number[], minVotes = VIBE_MIN_VOTES): Promise<Candidate[]> {
     // pgvector metin biçimi: "[0.1,0.2,...]"
-    return supabaseRpc<Candidate[]>("vibe_search_v3", { query_embedding: `[${vector.join(",")}]`, match_limit: POOL, ...(minVotes !== 100 && { min_votes: minVotes }) }, 3600);
+    return supabaseRpc<Candidate[]>("vibe_search_v3", { query_embedding: `[${vector.join(",")}]`, match_limit: POOL, min_votes: minVotes }, 3600);
 }
 
 /** Ücretli kısım: tarif → film belgesi (LLM) → embedding → Supabase adayları. Hız sınırı burada uygulanır. */
