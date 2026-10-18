@@ -560,9 +560,18 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 
 - Kullanıcı `/listeler` sayfasının Search Console'da mevcut olduğunu kontrol ettiğini bildirdi. Kullanıcı bildirimidir; ajan Search Console'u görmedi. 28 günlük dışa aktarımda liste / kişi pilot sayfalarında henüz gösterim yoktu; gösterim / tıklama takibi SEO-02 yayın sonrası maddesinde açık kalır.
 
-## Yayın — 8 commit main'e · 18 Ekim 2026 18:30 Türkiye saati
+## Yayın — 8 commit main'e · 18 Ekim 2026 ~21:30 Türkiye saati
 
 - Kullanıcı bilgisayara geçince onayıyla `5a705b1..80073f2` main'e fast-forward push edildi (Git Credential Manager ile; force push yok). Kapsam: belge güncellemesi, Search Console / sitemap kayıtları, AR-03 tarif hız düzeltmesi, AR-04 kalite ölçüm betiği ve iş akışı, GR-01 / GR-02 ana sayfa kare havuzu, AR-05 düzeltme kaydı, SEO-03 film sayfası arama metni.
 - Vercel otomatik yayını push'tan ~43 sn sonra canlıdaydı (film sayfası başlığıyla doğrulandı). Push sonrası bilgisayar kapandı; GitHub main ile yerel kopyanın aynı olduğu (80073f2) yeniden açılışta kontrol edildi.
 - Canlı kontroller (yalnız okuma): 5 film sayfasında yeni başlık / açıklama / "X gibi filmler" başlığı, OG açıklaması değişmemiş, HTTP 200, ilk bayt 159–504 ms; ana sayfada saat başı kare (Yıldızlararası) ve oklar; `/api/vibe-search` `Server-Timing` (chat 1.395 / embed 1.661 / db 1.202 ms; tekrar `cache;desc=hit` 13 ms); `/ara` 200 ve 48 film bağlantısı.
 - Açık kalanlar: AR-03 uç gecikmenin tekrarlı ölçümü, AR-04 canlı taban çizgisi, GR-01 / GR-02 gerçek telefon kontrolü, SEO-03 Search Console karşılaştırması (~8 Kasım).
+
+
+## AN-01 — Yönetim istatistiklerine 24 saat görünümü · 18 Ekim 2026 ~22:15 Türkiye saati
+
+- Düzeltme: bir önceki yayın kaydında saat "18:30 Türkiye saati" yazılmıştı; Git Bash `TZ=Europe/Istanbul` ayarını uygulamadığı için bu UTC'ydi. Doğrusu ~21:30 Türkiye saati; yapılacaklar notları da düzeltildi.
+- Kullanıcı `/admin/analytics` için 24 saatlik görünüm istedi. Rapor tamamen Supabase SQL fonksiyonunda ve gün bazında olduğu için veritabanı tarafı genişletildi: `analytics_report_details(p_from)` (aramalar, öneri sırası, kaynaklar, giriş sayfaları, filmler, film bağlantıları, olay dökümü; iki rapor ortak kullanır), `analytics_hourly_rows(p_from)` (günlük sayımla aynı kurallar, saat dilimli), `analytics_report_hours(p_hours=24)` (1–168 saat; saatlik seri, 24 saatin tekil oturumu, bütçe). `analytics_report(p_days)` imzası ve çıktısı değişmedi, yalnız ayrıntılar ortak fonksiyona taşındı. Yetkiler yalnız service_role.
+- Uygulama: aralık seçicisine "24 saat" (`?hours=24`); saatlik grafik / tablo; "Oturum (24 saat)" kartı; "En son bakılan filmler" ve "Tüm aramalar" saat dilimli başlangıçla süzülür, bağlantılar / form seçimi korur (`analyticsRange`, `rangeQuery`, `rawStartFilter`, `rawStartLabel`). SQL çalıştırılmadan 24 saat seçilirse sayfa kurulum talimatı gösterir; gün aralıkları etkilenmez.
+- Doğrulama: PGlite (Postgres 16 WASM) üzerinde eski ve yeni `analytics.sql` aynı sentetik veriyle (2.500 olay, 60 oturum, 40 gün + arşiv günleri) yüklendi: `analytics_report` 1 / 7 / 30 / 90 / 365 günde birebir aynı JSON; `analytics_report_hours(24)` 24 dilim, son dilim içinde bulunulan saat, sayfa / arama / öneri tıklama / tekil oturum toplamları ham olaylarla eşleşiyor, ayrıntılar ortak fonksiyonla aynı; 0 → 1 ve 9999 → 168 saat sınırı; `analytics_maintain()` çalışıyor; dosya ikinci kez hatasız çalışıyor. Karşılaştırma betiği depoya eklenmedi (PGlite bağımlılığı yok). 3 yeni birim testi (`analytics-range.test.mjs`); test paketi 114/120 (6 bilinen Windows ESM yol sorunu); `tsc` ve `next build` başarılı. Yönetim sayfası giriş ve üretim verisi istediği için tarayıcıda açılmadı.
+- Kalan: kullanıcı Supabase SQL Editor'de güncel `scripts/sql/analytics.sql`'i çalıştıracak; ardından 24 saat görünümü canlıda kontrol edilecek. AN-01 açık.

@@ -1,16 +1,16 @@
 import Link from "next/link";
-import { analyticsSearchHistory, SEARCH_PAGE_SIZE, type SearchHistoryFilters, type SearchHistory as History } from "@/lib/server/analytics";
+import { analyticsSearchHistory, rangeQuery, rawStartLabel, SEARCH_PAGE_SIZE, type AnalyticsRange, type SearchHistoryFilters, type SearchHistory as History } from "@/lib/server/analytics";
 
 const labels: Record<string, string> = { search: "Film adı", vibe: "Tarif", blend: "Karıştırma seçimi" };
 const dateFormat = new Intl.DateTimeFormat("tr-TR", { timeZone: "Europe/Istanbul", dateStyle: "short", timeStyle: "medium" });
 const n = (value: number) => value.toLocaleString("tr-TR");
 const inputClass = "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm";
 
-export default async function SearchHistory({ rawStart, days, filters }: { rawStart: string; days: number; filters: SearchHistoryFilters }) {
+export default async function SearchHistory({ rawStart, range, filters }: { rawStart: string; range: AnalyticsRange; filters: SearchHistoryFilters }) {
     let history: History | undefined;
     try { history = await analyticsSearchHistory(rawStart, filters); } catch { /* Keep the rest of the dashboard usable. */ }
     const href = (page: number) => {
-        const params = new URLSearchParams({ days: String(days), search_page: String(page) });
+        const params = new URLSearchParams({ ...rangeQuery(range), search_page: String(page) });
         if (filters.term) params.set("search_term", filters.term);
         if (filters.context) params.set("search_context", filters.context);
         if (filters.emptyOnly) params.set("search_empty", "1");
@@ -19,14 +19,14 @@ export default async function SearchHistory({ rawStart, days, filters }: { rawSt
     const pages = history ? Math.max(1, Math.ceil(history.total / SEARCH_PAGE_SIZE)) : 1;
     return <section id="tum-aramalar" className="min-w-0 scroll-mt-6 rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
         <h2 className="text-lg font-semibold">Tüm aramalar</h2>
-        <p className="mt-2 text-sm text-slate-500">En yeniden eskiye, her arama ayrı kayıt olarak gösterilir. {rawStart} tarihinden başlayan kayıtlar; en fazla son 30 gün. Tek kez arananlar da dahildir.</p>
-        <form key={JSON.stringify([days,filters.term,filters.context,filters.emptyOnly])} action="/admin/analytics#tum-aramalar" method="get" className="my-5 flex flex-wrap items-end gap-3">
-            <input type="hidden" name="days" value={days}/>
+        <p className="mt-2 text-sm text-slate-500">En yeniden eskiye, her arama ayrı kayıt olarak gösterilir. {rawStartLabel(rawStart)} itibarıyla başlayan kayıtlar; en fazla son 30 gün. Tek kez arananlar da dahildir.</p>
+        <form key={JSON.stringify([range,filters.term,filters.context,filters.emptyOnly])} action="/admin/analytics#tum-aramalar" method="get" className="my-5 flex flex-wrap items-end gap-3">
+            {Object.entries(rangeQuery(range)).map(([name, value]) => <input key={name} type="hidden" name={name} value={value}/>)}
             <label className="min-w-0 flex-1 basis-48 text-sm">Arama metni<input type="search" name="search_term" defaultValue={filters.term} maxLength={120} placeholder="Listede ara…" className={`mt-1 ${inputClass}`}/></label>
             <div className="text-sm"><label htmlFor="search-context">Tür</label><select id="search-context" name="search_context" defaultValue={filters.context} className={`mt-1 ${inputClass}`}><option value="">Tümü</option>{Object.entries(labels).map(([value,label]) => <option key={value} value={value}>{label}</option>)}</select></div>
             <label className="flex items-center gap-2 py-2 text-sm"><input type="checkbox" name="search_empty" value="1" defaultChecked={filters.emptyOnly}/>Yalnızca sonuçsuz</label>
             <button className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-medium text-white">Filtrele</button>
-            <Link href={`/admin/analytics?days=${days}#tum-aramalar`} className="px-2 py-2 text-sm text-teal-800 underline">Sıfırla</Link>
+            <Link href={`/admin/analytics?${new URLSearchParams(rangeQuery(range))}#tum-aramalar`} className="px-2 py-2 text-sm text-teal-800 underline">Sıfırla</Link>
         </form>
         {!history ? <p role="status" className="text-sm text-slate-500">Arama kayıtları şu an okunamadı. Sayfayı yenileyerek tekrar deneyebilirsin.</p> : <>
             <p className="mb-3 text-sm text-slate-500">{n(history.total)} kayıt{history.total > 0 && ` · ${n((history.page - 1) * SEARCH_PAGE_SIZE + 1)}–${n((history.page - 1) * SEARCH_PAGE_SIZE + history.rows.length)} gösteriliyor`}</p>

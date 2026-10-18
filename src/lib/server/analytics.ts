@@ -14,6 +14,32 @@ export async function analyticsRpc<T>(fn: string, body: Record<string, unknown>)
 }
 
 export const SEARCH_PAGE_SIZE = 50;
+
+/**
+ * Raporun ham veri başlangıcı → PostgREST filtresi. Gün raporunda "YYYY-MM-DD" (Türkiye gece yarısı),
+ * 24 saat raporunda saat dilimli ISO zaman damgası gelir. Başka biçim kabul edilmez.
+ */
+export function rawStartFilter(rawStart: string): string | null {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(rawStart)) return `gte.${rawStart}T00:00:00+03:00`;
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}(:?\d{2})?)$/.test(rawStart) && !Number.isNaN(Date.parse(rawStart))) return `gte.${new Date(rawStart).toISOString()}`;
+    return null;
+}
+
+/** Tarih aralığı seçimi: "24 saat" veya gün sayısı; bağlantılarda ve formlarda korunacak adres parametresi. */
+export type AnalyticsRange = { hours: 24; days?: undefined } | { days: number; hours?: undefined };
+export const RANGE_DAYS = [7, 30, 90, 365];
+export function analyticsRange(params?: Record<string, string | string[] | undefined>): AnalyticsRange {
+    if (params?.hours === "24") return { hours: 24 };
+    const days = Number(params?.days);
+    return { days: RANGE_DAYS.includes(days) ? days : 7 };
+}
+/** Ham veri başlangıcının okunur hâli: gün raporunda tarih, 24 saat raporunda Türkiye saatiyle tarih + saat. */
+export function rawStartLabel(rawStart: string): string {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(rawStart)) return rawStart;
+    const time = Date.parse(rawStart);
+    return Number.isNaN(time) ? rawStart : new Date(time).toLocaleString("tr-TR", { timeZone: "Europe/Istanbul", dateStyle: "short", timeStyle: "short" });
+}
+export const rangeQuery =(range: AnalyticsRange): Record<string, string> => (range.hours ? { hours: String(range.hours) } : { days: String(range.days) });
 export type SearchHistoryFilters = { page: number; term: string; context: string; emptyOnly: boolean };
 export type SearchHistoryRow = { created_at: string; query: string | null; context: string; result_count: string };
 export type SearchHistory = { rows: SearchHistoryRow[]; total: number; page: number };
@@ -34,11 +60,12 @@ export function searchHistoryFilters(params?: Record<string, string | string[] |
 export async function analyticsSearchHistory(rawStart: string, filters: SearchHistoryFilters): Promise<SearchHistory> {
     const url = process.env.SUPABASE_URL?.replace(/\/+$/, "");
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!url || !key || !/^\d{4}-\d{2}-\d{2}$/.test(rawStart)) throw new Error("Analytics database is not configured");
+    const since = rawStartFilter(rawStart);
+    if (!url || !key || !since) throw new Error("Analytics database is not configured");
     const params = new URLSearchParams({
         select: "created_at,query:data->>query,context:data->>context,result_count:data->>result_count",
         name: "eq.search_performed",
-        created_at: `gte.${rawStart}T00:00:00+03:00`,
+        created_at: since,
         order: "created_at.desc,id.desc",
         limit: String(SEARCH_PAGE_SIZE),
     });
@@ -69,10 +96,11 @@ export type RecentFilmView = { created_at: string; film_id: string; path: string
 export async function recentFilmViews(rawStart: string, page = 1): Promise<{ rows: RecentFilmView[]; more: boolean }> {
     const url = process.env.SUPABASE_URL?.replace(/\/+$/, "");
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!url || !key || !/^\d{4}-\d{2}-\d{2}$/.test(rawStart)) throw new Error("Analytics database is not configured");
+    const since = rawStartFilter(rawStart);
+    if (!url || !key || !since) throw new Error("Analytics database is not configured");
     const params = new URLSearchParams({
         select: "created_at,film_id:data->>film_id,path", name: "eq.film_opened",
-        created_at: `gte.${rawStart}T00:00:00+03:00`, order: "created_at.desc,id.desc",
+        created_at: since, order: "created_at.desc,id.desc",
         limit: "51", offset: String((page - 1) * 50),
     });
     const response = await fetch(`${url}/rest/v1/analytics_events?${params}`, {

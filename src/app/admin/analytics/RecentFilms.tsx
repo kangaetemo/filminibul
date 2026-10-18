@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { recentFilmViews } from "@/lib/server/analytics";
+import { rangeQuery, recentFilmViews, type AnalyticsRange } from "@/lib/server/analytics";
 import { supabaseSelect } from "@/lib/server/supabase";
 import { displayTitle } from "@/lib/recommend/similar";
 import { filmPath } from "@/lib/filmUrl";
 
-export default async function RecentFilms({ rawStart, days, page }: { rawStart: string; days: number; page: number }) {
+export default async function RecentFilms({ rawStart, range, page }: { rawStart: string; range: AnalyticsRange; page: number }) {
     try {
         const { rows, more } = await recentFilmViews(rawStart, page);
         const ids = Array.from(new Set(rows.map(r => Number(r.film_id)).filter(id => Number.isSafeInteger(id) && id > 0)));
@@ -18,9 +18,9 @@ export default async function RecentFilms({ rawStart, days, page }: { rawStart: 
                 {!rows.length && <tr><td colSpan={2} className="p-4 text-slate-500">Bu aralıkta görüntüleme kaydı yok.</td></tr>}
             </tbody></table></div>
             <nav aria-label="Film görüntüleme sayfaları" className="mt-4 flex min-h-11 items-center justify-between text-sm">
-                {page > 1 ? <Link href={`?days=${days}&film_page=${page - 1}#recent-films`} className="underline">← Daha yeni</Link> : <span />}
+                {page > 1 ? <Link href={`?${new URLSearchParams({ ...rangeQuery(range), film_page: String(page - 1) })}#recent-films`} className="underline">← Daha yeni</Link> : <span />}
                 <span className="text-slate-500">Sayfa {page}</span>
-                {more ? <Link href={`?days=${days}&film_page=${page + 1}#recent-films`} className="underline">Daha eski →</Link> : <span />}
+                {more ? <Link href={`?${new URLSearchParams({ ...rangeQuery(range), film_page: String(page + 1) })}#recent-films`} className="underline">Daha eski →</Link> : <span />}
             </nav>
         </section>;
     } catch {

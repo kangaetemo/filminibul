@@ -109,26 +109,12 @@ begin
     delete from analytics_budget where day < today - 2;
 end $$;
 
-create or replace function public.analytics_report(p_days integer default 7)
-returns jsonb language plpgsql stable security invoker set search_path = public, pg_temp as $$
-declare
-    today date := (now() at time zone 'Europe/Istanbul')::date;
-    first_day date := today - least(365, greatest(1, p_days)) + 1;
-    raw_start date := greatest(first_day, today - 29);
-    answer jsonb;
-begin
+-- Detail tables from raw events since p_from. Shared by the day report and the 24-hour report
+-- so both count queries, recommendation ranks, sources and landings the same way.
+create or replace function public.analytics_report_details(p_from timestamptz)
+returns jsonb language sql stable security invoker set search_path = public, pg_temp as $$
     with raw as (
-        select * from analytics_events where created_at >= (raw_start::timestamp at time zone 'Europe/Istanbul')
-    ), daily as (
-        select * from analytics_daily where day >= first_day and day < today - 29
-        union all select * from analytics_daily_rows(raw_start)
-    ), series as (
-        select d::date as day, coalesce(r.sessions,0) as sessions, coalesce(r.views,0) as views,
-            coalesce(r.searches,0) as searches, coalesce(r.no_results,0) as no_results,
-            coalesce(r.impressions,0) as impressions, coalesce(r.matched_clicks,0) as matched_clicks,
-            coalesce(r.recommendation_clicks,0) as recommendation_clicks, coalesce(r.blends,0) as blends,
-            coalesce(r.trailers,0) as trailers, coalesce(r.platforms,0) as platforms, coalesce(r.moods,0) as moods
-        from generate_series(first_day::timestamp, today::timestamp, interval '1 day') d left join daily r on r.day = d::date
+        select * from analytics_events where created_at >= p_from
     ), search_clicks as (
         select session_id, data->>'search_id' as search_id, max(created_at) as clicked_at
         from raw where name = 'film_clicked' and data ? 'search_id'
@@ -184,8 +170,6 @@ begin
         from raw where name = 'recommendation_clicked' group by data->>'source_film_id', data->>'film_id'
     )
     select jsonb_build_object(
-        'raw_start', raw_start, 'days', least(365, greatest(1,p_days)),
-        'daily', (select coalesce(jsonb_agg(to_jsonb(s) order by s.day), '[]'::jsonb) from series s),
         'queries', (select coalesce(jsonb_agg(to_jsonb(q)), '[]'::jsonb) from (select * from queries order by searches desc, query limit 20) q),
         'no_result_queries', (select coalesce(jsonb_agg(to_jsonb(q)), '[]'::jsonb) from (select * from queries where no_results > 0 order by no_results desc, query limit 20) q),
         'ranks', (select coalesce(jsonb_agg(to_jsonb(r) order by r.rank), '[]'::jsonb) from ranks r),
@@ -193,14 +177,99 @@ begin
         'landings', (select coalesce(jsonb_agg(to_jsonb(l)), '[]'::jsonb) from (select * from landings order by sessions desc, path limit 15) l),
         'films', (select coalesce(jsonb_agg(to_jsonb(f)), '[]'::jsonb) from (select * from film_titles order by opens desc, film_id limit 20) f),
         'pairs', (select coalesce(jsonb_agg(to_jsonb(p)), '[]'::jsonb) from (select * from pairs order by clicks desc, source_film_id limit 15) p),
-        'events', (select coalesce(jsonb_agg(to_jsonb(e)), '[]'::jsonb) from (select name, count(*) as count from raw group by name order by count(*) desc) e),
+        'events', (select coalesce(jsonb_agg(to_jsonb(e)), '[]'::jsonb) from (select name, count(*) as count from raw group by name order by count(*) desc) e)
+    );
+$$;
+
+create or replace function public.analytics_report(p_days integer default 7)
+returns jsonb language plpgsql stable security invoker set search_path = public, pg_temp as $$
+declare
+    today date := (now() at time zone 'Europe/Istanbul')::date;
+    first_day date := today - least(365, greatest(1, p_days)) + 1;
+    raw_start date := greatest(first_day, today - 29);
+    answer jsonb;
+begin
+    with daily as (
+        select * from analytics_daily where day >= first_day and day < today - 29
+        union all select * from analytics_daily_rows(raw_start)
+    ), series as (
+        select d::date as day, coalesce(r.sessions,0) as sessions, coalesce(r.views,0) as views,
+            coalesce(r.searches,0) as searches, coalesce(r.no_results,0) as no_results,
+            coalesce(r.impressions,0) as impressions, coalesce(r.matched_clicks,0) as matched_clicks,
+            coalesce(r.recommendation_clicks,0) as recommendation_clicks, coalesce(r.blends,0) as blends,
+            coalesce(r.trailers,0) as trailers, coalesce(r.platforms,0) as platforms, coalesce(r.moods,0) as moods
+        from generate_series(first_day::timestamp, today::timestamp, interval '1 day') d left join daily r on r.day = d::date
+    )
+    select analytics_report_details(raw_start::timestamp at time zone 'Europe/Istanbul') || jsonb_build_object(
+        'raw_start', raw_start, 'days', least(365, greatest(1,p_days)),
+        'daily', (select coalesce(jsonb_agg(to_jsonb(s) order by s.day), '[]'::jsonb) from series s),
         'budget_used', coalesce((select used from analytics_budget where day = today),0)
     ) into answer;
     return answer;
 end $$;
 
-revoke execute on function public.analytics_ingest(uuid,text,jsonb), public.analytics_daily_rows(date), public.analytics_maintain(), public.analytics_report(integer) from public, anon, authenticated;
-grant execute on function public.analytics_ingest(uuid,text,jsonb), public.analytics_daily_rows(date), public.analytics_maintain(), public.analytics_report(integer) to service_role;
+-- Hourly counts since p_from (Turkey time). Same counting rules as analytics_daily_rows,
+-- bucketed by hour; keep the two in step when a metric changes.
+create or replace function public.analytics_hourly_rows(p_from timestamptz)
+returns table(hour timestamp, sessions bigint, views bigint, searches bigint, no_results bigint, impressions bigint,
+    matched_clicks bigint, recommendation_clicks bigint, blends bigint, trailers bigint, platforms bigint, moods bigint)
+language sql stable security invoker set search_path = public, pg_temp as $$
+    with e as (
+        select *, date_trunc('hour', created_at at time zone 'Europe/Istanbul') as hour
+        from analytics_events where created_at >= p_from
+    ), impressions as (
+        select distinct on (visit_id, data->>'source_film_id', data->>'film_id', data->>'rank') *
+        from e where name = 'recommendation_impression' order by visit_id, data->>'source_film_id', data->>'film_id', data->>'rank', created_at
+    ), clicks as (
+        select visit_id, data->>'source_film_id' as source_id, data->>'film_id' as target_id,
+            data->>'rank' as rank, max(created_at) as clicked_at
+        from e where name = 'recommendation_clicked'
+        group by visit_id, data->>'source_film_id', data->>'film_id', data->>'rank'
+    ), exposure as (
+        select i.hour, count(*) as impressions, count(*) filter (where c.clicked_at >= i.created_at) as matched_clicks
+        from impressions i left join clicks c on c.visit_id = i.visit_id and c.source_id = i.data->>'source_film_id'
+            and c.target_id = i.data->>'film_id' and c.rank = i.data->>'rank'
+        group by i.hour
+    )
+    select e.hour, count(distinct e.session_id), count(*) filter (where name in ('page_view','film_opened')),
+        count(*) filter (where name = 'search_performed'), count(*) filter (where name = 'search_performed' and data->>'result_count' = '0'),
+        coalesce(max(x.impressions), 0), coalesce(max(x.matched_clicks), 0), count(*) filter (where name = 'recommendation_clicked'),
+        count(*) filter (where name = 'blend_completed'), count(*) filter (where name = 'trailer_clicked'),
+        count(*) filter (where name = 'platform_clicked'), count(*) filter (where name = 'mood_selected')
+    from e left join exposure x using (hour) group by e.hour order by e.hour;
+$$;
+
+-- Last N hours (default 24) in whole Turkey-time hours, the current hour included.
+create or replace function public.analytics_report_hours(p_hours integer default 24)
+returns jsonb language plpgsql stable security invoker set search_path = public, pg_temp as $$
+declare
+    span integer := least(168, greatest(1, p_hours));
+    this_hour timestamp := date_trunc('hour', now() at time zone 'Europe/Istanbul');
+    first_hour timestamp := this_hour - (span - 1) * interval '1 hour';
+    since timestamptz := first_hour at time zone 'Europe/Istanbul';
+    answer jsonb;
+begin
+    with series as (
+        select to_char(h, 'YYYY-MM-DD HH24:00') as hour, coalesce(r.sessions,0) as sessions, coalesce(r.views,0) as views,
+            coalesce(r.searches,0) as searches, coalesce(r.no_results,0) as no_results,
+            coalesce(r.impressions,0) as impressions, coalesce(r.matched_clicks,0) as matched_clicks,
+            coalesce(r.recommendation_clicks,0) as recommendation_clicks, coalesce(r.blends,0) as blends,
+            coalesce(r.trailers,0) as trailers, coalesce(r.platforms,0) as platforms, coalesce(r.moods,0) as moods
+        from generate_series(first_hour, this_hour, interval '1 hour') h left join analytics_hourly_rows(since) r on r.hour = h
+    )
+    select analytics_report_details(since) || jsonb_build_object(
+        'raw_start', since, 'hours', span,
+        'hourly', (select coalesce(jsonb_agg(to_jsonb(s) order by s.hour), '[]'::jsonb) from series s),
+        'sessions_total', (select count(distinct session_id) from analytics_events where created_at >= since),
+        'budget_used', coalesce((select used from analytics_budget where day = (now() at time zone 'Europe/Istanbul')::date),0)
+    ) into answer;
+    return answer;
+end $$;
+
+revoke execute on function public.analytics_ingest(uuid,text,jsonb), public.analytics_daily_rows(date), public.analytics_maintain(), public.analytics_report(integer),
+    public.analytics_report_details(timestamptz), public.analytics_hourly_rows(timestamptz), public.analytics_report_hours(integer) from public, anon, authenticated;
+grant execute on function public.analytics_ingest(uuid,text,jsonb), public.analytics_daily_rows(date), public.analytics_maintain(), public.analytics_report(integer),
+    public.analytics_report_details(timestamptz), public.analytics_hourly_rows(timestamptz), public.analytics_report_hours(integer) to service_role;
 commit;
 
 -- Required: enable pg_cron in Supabase Dashboard > Database > Extensions first.
