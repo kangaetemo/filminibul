@@ -580,3 +580,10 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 
 - Kullanıcı onayıyla: film sayfası meta açıklamasında aynı serinin filmleri benzer film listesinin sonuna alınır (`src/lib/filmSnippet.mjs` → `snippetTitles`; sayfadaki "Aynı evrende" bölümüyle aynı seri karşılaştırması). Seri dışı film yoksa seri filmleri yine yazılır; sıra kendi içinde korunur. Sayfadaki öneri listesi değişmedi.
 - Doğrulama: yeni birim testi (Matrix örneği: "Matrix gibi filmler: Dark City, Ghost in the Shell, Ex Machina ve 17 film daha."; serisiz filmde ve yalnız seri filmi olduğunda sıra aynı); test paketi 115/121 (6 bilinen Windows ESM yol sorunu); `tsc` ve `next build` başarılı. Canlı kontrol yayından sonra.
+
+## AR-04 — Tarif araması taban çizgisi · 18 Ekim 2026 ~22:45 Türkiye saati
+
+- Kullanıcı "Tarif araması kalitesini ölç" iş akışını canlı kaynakla çalıştırdı: [#39157508327](https://github.com/kangaetemo/filminibul/actions/runs/39157508327) başarılı (6 dk 57 sn). Özet sayfası ve artifact oturum açmadan görünmediği için kullanıcı `vibe-quality-report` dosyasını indirip paylaştı; içerik `data/eval/` altına kaydedildi.
+- Sonuç (32 tarif × ilk 10, gpt-4.1 hakem): ort. 2,17 / 3, iyi %76, alakasız %1, puan dağılımı 0/1/2/3 = 3 / 73 / 110 / 134. Zayıf alan çok şartlı "konu" tarifleri (ort. 1,97): sonuçlar baskın temayı buluyor, ikinci şartı (baba-oğul, yalnız çocuk, gerçek olay, iki arkadaş) çoğu zaman kaçırıyor. Dönem şartlı iki tarif 1,8–1,9. En iyi: spor 2,9, II. Dünya Savaşı 2,8, perili ev 2,7.
+- Aynı çalıştırmada canlı tarif süreleri 2,7–9,6 sn (ilk tarif soğuk başlangıç). İş akışı uyarısı: kullanılan Actions sürümleri Node 20 hedefliyor (GitHub Node 24'e zorluyor); şimdilik çalışıyor, ileride sürümler güncellenmeli.
+- Kalan: iyileştirmeler yerel modda ölçülerek; AR-04 açık.
