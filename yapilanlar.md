@@ -647,3 +647,13 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - O bilgisayarda yalnız bu sunucu için SSH anahtarı üretildi (`~/.ssh/filminibul_vds`, ed25519). Özel anahtar repoya konmaz; başka cihazdan açılan oturum kendi anahtarını üretip kullanıcıya `authorized_keys`'e ekletmeli.
 - **Başka cihazdaki oturum için sıradaki adımlar:** (1) kullanıcıdan IP, SSH portu ve giriş kullanıcısını al; (2) `ssh -o BatchMode=yes <kullanıcı>@<IP> 'cat /etc/os-release; nproc; free -h; df -h /'` ile bağlantıyı ve sistemi doğrula; (3) şifreli giriş, anahtarla bağlantı doğrulanmadan kapatılmaz (dışarıda kalma riski); (4) kurulum sırası: sağlamlaştırma (ufw 22 / 80 / 443, unattended-upgrades, swap) → self-host Supabase (Docker Compose) → mevcut Supabase'ten şema + veri + Storage + cron aktarımı → Next.js + Caddy → gizli adresle doğrulama (ALT-02 listesi) → DNS geçişi. Vercel ve eski Supabase doğrulama bitene kadar silinmez.
 - Yalnızca takip dosyaları değişti; sunucuda, kodda veya veride değişiklik yapılmadı.
+
+
+## ALT-01 — VPS'e erişim ve ilk sağlamlaştırma · 20 Ekim 2026 Türkiye saati
+
+- Kullanıcının diğer Windows bilgisayarından sunucuya erişim var: ping ~26 ms, 22 açık (önceki kurumsal ağ denemesindeki zaman aşımı burada yok). Sunucu publickey ve password girişine izin veriyor.
+- Bu bilgisayarda yalnız bu sunucu için ayrı bir SSH anahtarı üretildi (`~/.ssh/filminibul_vds`, ed25519); kullanıcı public key'i sağlayıcı paneli üzerinden `root` hesabının `authorized_keys` dosyasına ekledi. `ssh -i ~/.ssh/filminibul_vds -o BatchMode=yes root@<IP>` ile anahtarla giriş doğrulandı.
+- Sistem: hostname `vds-285`, Ubuntu 24.04.5 LTS (çekirdek 6.8), 4 vCPU, 7,8 GiB RAM, 58 GB disk (%8 dolu), 1,9 GiB swapfile, saat dilimi Europe/Istanbul. Docker kurulu değil. Sağlayıcının `00-hephosting.conf` dosyası `PermitRootLogin yes` ve `PasswordAuthentication yes` ayarlıyor (sshd'de ilk eşleşen kazandığı için `60-cloudimg-settings.conf`'taki `no` etkisiz).
+- Sağlamlaştırma: ufw etkin; gelen trafikte varsayılan red, yalnız 22 / 80 / 443 (IPv4 + IPv6) açık. `unattended-upgrades` etkin ve `20auto-upgrades` ile günlük paket listesi yenileme + otomatik güncelleme açık. Doğrulama: ayrı yeni SSH bağlantısıyla giriş çalıştı; dışarıdan 22 açık, 80 / 3000 / 5432 / 8000 kapalı; bekleyen güvenlik güncellemesi ve reboot gereği yok.
+- Kalan: şifreli giriş ve root girişi kullanıcı isteğiyle şimdilik açık (sonra kapatılabilir; kapatmadan önce anahtarla giriş tekrar test edilmeli). Docker yayınladığı portlarda ufw'yu atlar: self-host Supabase kurulurken Postgres (5432) ve Kong (8000) yalnız `127.0.0.1`'e bağlanmalı. Sonraki adım: Docker + self-host Supabase (ALT-01 taslak planı adım 2).
+- Kod ve veride değişiklik yapılmadı; değişen sunucu ayarları ve takip dosyaları.
