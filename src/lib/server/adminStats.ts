@@ -19,8 +19,9 @@ export interface DbUsage {
     remainingFilms: number;
 }
 
-// Supabase ücretsiz plan veritabanı sınırı
-const DB_LIMIT_BYTES = 500 * 1024 * 1024;
+// Veritabanına ayrılan pay (VPS'te self-host; disk başka projelerle paylaşıldığı için kendi koyduğumuz sınır).
+// Katalog betiğindeki durma eşiği (scripts/catalog/add_missing.mjs DB_STOP_MB) bununla birlikte değiştirilmeli.
+const DB_LIMIT_BYTES = 5 * 1024 * 1024 * 1024;
 
 /** scripts/sql/admin_db_usage.sql çalıştırılmamışsa null (panel uyarı gösterir) */
 export async function getDbUsage(): Promise<DbUsage | null> {

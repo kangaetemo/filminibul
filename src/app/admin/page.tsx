@@ -113,7 +113,7 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
     );
 }
 
-const mb = (b: number) => `${Math.round(b / 1024 / 1024)} MB`;
+const mb = (b: number) => b >= 1024 ** 3 ? `${(b / 1024 ** 3).toLocaleString("tr-TR", { maximumFractionDigits: 1 })} GB` : `${Math.round(b / 1024 / 1024)} MB`;
 
 function DbUsageBar({ usage }: { usage: DbUsage | null }) {
     if (!usage) {

@@ -15,7 +15,8 @@
 //   node scripts/catalog/add_missing.mjs --max=300        # üst sınırı değiştir
 //   node scripts/catalog/add_missing.mjs --ids=481084,123 # sadece bu TMDB id'lerini ekle
 //
-// Güvenlik: veritabanı DB_STOP_MB'ı geçtiyse ekleme yapmaz (Supabase ücretsiz plan 500 MB).
+// Güvenlik: veritabanı DB_STOP_MB'ı geçtiyse ekleme yapmaz (veritabanı payı 5 GB; admin panelindeki sınırla aynı,
+// src/lib/server/adminStats.ts DB_LIMIT_BYTES).
 
 import { turkishOverview } from "../../src/lib/filmContent.mjs";
 import { buildDoc } from "../../src/lib/recommend/embeddingDoc.mjs";
@@ -36,7 +37,7 @@ const TURKISH_MIN_VOTES = 5;
 const TURKISH_PAGES = 150; // ≥5 oylu Türk filmi ~1.500 (2026-10), sayfa başı 20
 const POPULAR_MIN_VOTES = 300;
 const POPULAR_PAGES = 500; // TMDB discover en fazla 500 sayfa (10.000 film) verir
-const DB_STOP_MB = 480;
+const DB_STOP_MB = 4900;
 const BYTES_PER_FILM = 17_000; // tablo + index, yaklaşık (admin panelindeki hesapla aynı)
 const EMBED_BATCH = 50;
 
