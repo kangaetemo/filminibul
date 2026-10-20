@@ -1,4 +1,5 @@
 import { MAX_SAVED_FILMS, savedFilm } from "../watchlistModel.mjs";
+import { sameOrigin } from "../requestOrigin.mjs";
 
 const reply = (data, status = 200) => Response.json(data, { status, headers: { "Cache-Control": "private, no-store, max-age=0", Vary: "Authorization" } });
 const validId = id => Number.isSafeInteger(id) && id > 0;
@@ -17,7 +18,7 @@ export function createWatchlistHandler({ verify, storage, loadFilms, now = Date.
         try {
             if (!["GET", "PUT", "POST", "DELETE"].includes(request.method)) return reply({ error: "method_not_allowed" }, 405);
             const uid = await verify(request.headers.get("authorization"));
-            if (request.method !== "GET" && request.headers.get("origin") !== new URL(request.url).origin) return reply({ error: "invalid_origin" }, 403);
+            if (request.method !== "GET" && !sameOrigin(request)) return reply({ error: "invalid_origin" }, 403);
             const rateKey = `${uid}:${request.method === "GET" ? "read" : "write"}`;
             const recent = (requests.get(rateKey) || []).filter(at => now() - at < 60000);
             if (recent.length >= (request.method === "GET" ? 30 : 180)) return reply({ error: "too_many_requests" }, 429);
@@ -54,11 +55,27 @@ export function createWatchlistHandler({ verify, storage, loadFilms, now = Date.
             const existing = new Set((await storage.list(uid)).map(record => record.id));
             let available = MAX_SAVED_FILMS - existing.size;
             const results = await parallel(unique, async film => {
-                if (!existing.has(film.id) && available-- <= 0) return { id: film.id, ok: false };
-                try { await storage.save(uid, film); return { id: film.id, ok: true }; }
+                const added = !existing.has(film.id);
+                if (added && available-- <= 0) return { id: film.id, ok: false, limit: true };
+                try { await storage.save(uid, film); return { id: film.id, ok: true, added }; }
                 catch { return { id: film.id, ok: false }; }
             });
-            if (request.method === "PUT") return results[0].ok ? reply({ id: unique[0].id, saved: true }) : reply({ error: available < 0 ? "watchlist_limit" : "watchlist_unavailable" }, available < 0 ? 409 : 503);
+            // Sınır kontrolü ile yazma arasında başka bir cihaz da ekleme yapmış olabilir. Yazdıktan sonra
+            // yeniden say; en eski MAX_SAVED_FILMS kayıt kalır, ötesine düşen yeni eklemelerimiz geri alınır.
+            // Aynı anda çalışan istekler aynı sıralamayı gördüğü için liste sınırda kalır.
+            if (results.some(result => result.ok && result.added)) {
+                const after = await storage.list(uid);
+                if (after.length > MAX_SAVED_FILMS) {
+                    const ordered = [...after].sort((a, b) => (Date.parse(a.savedAt) || 0) - (Date.parse(b.savedAt) || 0) || a.id - b.id);
+                    const overflow = new Set(ordered.slice(MAX_SAVED_FILMS).map(record => record.id));
+                    for (const result of results) {
+                        if (!result.ok || !result.added || !overflow.has(result.id)) continue;
+                        try { await storage.remove(uid, result.id); Object.assign(result, { ok: false, limit: true }); }
+                        catch { /* Geri alınamadı: kayıt sınırın üstünde kalır, okuma yine çalışır. */ }
+                    }
+                }
+            }
+            if (request.method === "PUT") return results[0].ok ? reply({ id: unique[0].id, saved: true }) : reply({ error: results[0].limit ? "watchlist_limit" : "watchlist_unavailable" }, results[0].limit ? 409 : 503);
             return reply({ importedIds: results.filter(result => result.ok).map(result => result.id), failedIds: results.filter(result => !result.ok).map(result => result.id) });
         } catch (error) {
             const safe = ["sign_in_required", "member_not_configured", "member_unavailable", "watchlist_unavailable", "watchlist_not_private", "watchlist_limit"];

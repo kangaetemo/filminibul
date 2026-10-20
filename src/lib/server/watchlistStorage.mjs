@@ -41,7 +41,9 @@ export function createWatchlistStorage({ url = process.env.SUPABASE_URL, key = p
         if (!await bucket()) return [];
         const prefix = ownerPrefix(uid);
         const out = [];
-        for (let offset = 0; offset <= MAX_SAVED_FILMS; offset += 100) {
+        // Sınırın biraz ötesine kadar okunur: aynı anda yapılan eklemeler listeyi kısa süre sınırın üstüne
+        // çıkarabilir (yazma tarafı fazlayı geri alır); bu durumda okuma hata vermemeli.
+        for (let offset = 0; offset < MAX_SAVED_FILMS + 200; offset += 100) {
             const response = await call(`object/list/${WATCHLIST_BUCKET}`, { method: "POST", body: JSON.stringify({ prefix: `${prefix}/`, limit: 100, offset, sortBy: { column: "created_at", order: "desc" } }) });
             if (!response.ok) throw new WatchlistStorageError("watchlist_unavailable");
             const page = await response.json();
@@ -52,10 +54,9 @@ export function createWatchlistStorage({ url = process.env.SUPABASE_URL, key = p
                 const id = Number(name.slice(0, -5));
                 if (Number.isSafeInteger(id)) out.push({ id, savedAt: object.created_at });
             }
-            if (out.length > MAX_SAVED_FILMS) throw new WatchlistStorageError("watchlist_limit", 409);
             if (page.length < 100) return out;
         }
-        throw new WatchlistStorageError("watchlist_limit", 409);
+        return out;
     }
     async function readFilm(uid, id) {
         if (!await bucket()) return null;

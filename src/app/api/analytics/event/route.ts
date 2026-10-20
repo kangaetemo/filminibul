@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseBatch } from "@/lib/analytics/schema";
 import { analyticsRpc } from "@/lib/server/analytics";
+import { sameOrigin } from "@/lib/requestOrigin.mjs";
 export const dynamic = "force-dynamic";
 const ignoredAgent = /bot|crawler|spider|headless|lighthouse|vercel-screenshot/i;
 export async function POST(request: NextRequest) {
@@ -8,8 +9,7 @@ export async function POST(request: NextRequest) {
     if (process.env.ANALYTICS_ENABLED !== "true") return empty();
     // Never collect signed-in admin activity (also excluded in the browser on /admin).
     if (request.cookies.has("fb_admin") || request.headers.get("dnt") === "1" || request.headers.get("sec-gpc") === "1" || ignoredAgent.test(request.headers.get("user-agent") ?? "")) return empty();
-    const origin = request.headers.get("origin");
-    if (origin !== request.nextUrl.origin || request.headers.get("sec-fetch-site") === "cross-site") return new NextResponse(null, { status: 403 });
+    if (!sameOrigin(request) || request.headers.get("sec-fetch-site") === "cross-site") return new NextResponse(null, { status: 403 });
     if (!request.headers.get("content-type")?.startsWith("application/json")) return new NextResponse(null, { status: 415 });
     // Bound the stream itself; Content-Length can be absent or forged.
     const reader = request.body?.getReader();

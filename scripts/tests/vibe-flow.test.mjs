@@ -25,10 +25,12 @@ function moduleUrl(path) {
 test('real vibe flow stops chat/embedding quota, preserves cached results and resumes after pause', async () => {
     const oldFetch = globalThis.fetch, oldNow = Date.now, oldWarn = console.warn;
     const oldEnv = { OPENAI_API_KEY: process.env.OPENAI_API_KEY, SUPABASE_URL: process.env.SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY };
-    let clock = 1000, mode = 'chat-quota'; const calls = [], warnings = [];
+    let clock = 1000, mode = 'chat-quota', rateCalls = 0; const calls = [], warnings = [];
     Date.now = () => clock; console.warn = (...values) => warnings.push(values);
     process.env.OPENAI_API_KEY = 'fixture-only'; process.env.SUPABASE_URL = 'https://catalog.invalid'; process.env.SUPABASE_SERVICE_ROLE_KEY = 'fixture-only';
     globalThis.fetch = async url => {
+        // Paylaşılan hız sınırı sayacı (GV-04) ayrıca sayılır; sağlayıcı ve katalog çağrı sayıları değişmez.
+        if (url.includes('/rpc/rate_limit_take')) { rateCalls++; return Response.json(true); }
         calls.push(url);
         if (url.endsWith('/chat/completions')) return mode === 'chat-quota'
             ? Response.json({ error: { code: 'credit_balance_exhausted', type: 'insufficient_quota', message: 'private query' } }, { status: 429 })
@@ -52,6 +54,7 @@ test('real vibe flow stops chat/embedding quota, preserves cached results and re
         await assert.rejects(vibeSearch('farklı bir uzay hikayesi', 'fixture-ip'), { code: 'vibe_service_unavailable', status: 503 });
         assert.equal(calls.length, 6); assert.equal(calls.filter(url => url.includes('/rpc/')).length, 1);
         assert.deepEqual(await vibeSearch('UMUTLU   bir uzay hikayesi', 'fixture-ip'), cached); assert.equal(calls.length, 6);
+        assert.equal(rateCalls, 3, 'only uncached searches that reach the provider take a shared rate slot');
         assert.ok(!JSON.stringify(warnings).includes('private query')); assert.ok(!JSON.stringify(warnings).includes('fixture-only'));
     } finally {
         globalThis.fetch = oldFetch; Date.now = oldNow; console.warn = oldWarn;

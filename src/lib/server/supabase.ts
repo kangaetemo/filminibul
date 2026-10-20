@@ -60,3 +60,16 @@ export async function supabaseRpc<T>(fn: string, body: Record<string, unknown>, 
     if (!res.ok) throw new Error(`Supabase RPC ${fn} ${res.status}: ${(await res.text()).slice(0, 300)}`);
     return res.json() as Promise<T>;
 }
+
+/** Önbelleksiz RPC: her çağrıda değişen sonuçlar için (ör. paylaşılan hız sınırı sayacı). */
+export async function supabaseRpcFresh<T>(fn: string, body: Record<string, unknown>, timeoutMs = 5000): Promise<T> {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+        method: "POST",
+        headers: headers(),
+        body: JSON.stringify(body),
+        cache: "no-store",
+        signal: AbortSignal.timeout(timeoutMs),
+    });
+    if (!res.ok) throw new Error(`Supabase RPC ${fn} ${res.status}: ${(await res.text()).slice(0, 300)}`);
+    return res.json() as Promise<T>;
+}

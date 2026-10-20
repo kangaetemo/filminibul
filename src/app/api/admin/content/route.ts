@@ -6,6 +6,7 @@ import { CATALOG_TAG } from "@/lib/server/supabase";
 import { getFilmRow, searchCatalog } from "@/lib/recommend/similar";
 import { getMovieDetails } from "@/lib/server/tmdbServer";
 import { cleanOverview } from "@/lib/filmContent.mjs";
+import { sameOrigin } from "@/lib/requestOrigin.mjs";
 
 const authorized = () => isValidSession(cookies().get(ADMIN_COOKIE)?.value);
 const validId = (value: unknown) => Number.isSafeInteger(Number(value)) && Number(value) > 0;
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
 }
 export async function PATCH(request: NextRequest) {
     if (!await authorized()) return NextResponse.json({ error: "Oturum gerekli" }, { status: 401 });
-    if (request.headers.get("origin") !== request.nextUrl.origin) return NextResponse.json({ error: "Geçersiz kaynak" }, { status: 403 });
+    if (!sameOrigin(request)) return NextResponse.json({ error: "Geçersiz kaynak" }, { status: 403 });
     const body = await request.json().catch(() => null);
     if (!body || !validId(body.id) || typeof body.tr_title !== "string" || body.tr_title.length > 300 || typeof body.tr_overview !== "string" || body.tr_overview.length > 8000) return NextResponse.json({ error: "Geçersiz film veya metin" }, { status: 400 });
     try {
@@ -40,7 +41,7 @@ export async function PATCH(request: NextRequest) {
 }
 export async function POST(request: NextRequest) {
     if (!await authorized()) return NextResponse.json({ error: "Oturum gerekli" }, { status: 401 });
-    if (request.headers.get("origin") !== request.nextUrl.origin) return NextResponse.json({ error: "Geçersiz kaynak" }, { status: 403 });
+    if (!sameOrigin(request)) return NextResponse.json({ error: "Geçersiz kaynak" }, { status: 403 });
     const body = await request.json().catch(() => null);
     if (!validId(body?.id)) return NextResponse.json({ error: "Geçersiz film" }, { status: 400 });
     try {

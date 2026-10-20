@@ -1,4 +1,5 @@
 import { signalOperation } from "../filmSignalsModel.mjs";
+import { sameOrigin } from "../requestOrigin.mjs";
 const reply = (data, status = 200) => Response.json(data, { status, headers: { "Cache-Control": "private, no-store, max-age=0", Vary: "Authorization" } });
 export function createFilmSignalsHandler({ verify, storage, loadFilms, now = Date.now }) {
     const requests = new Map();
@@ -6,7 +7,7 @@ export function createFilmSignalsHandler({ verify, storage, loadFilms, now = Dat
         try {
             if (!["GET", "PUT"].includes(request.method)) return reply({ error: "method_not_allowed" }, 405);
             const uid = await verify(request.headers.get("authorization"));
-            if (request.method === "PUT" && request.headers.get("origin") !== new URL(request.url).origin) return reply({ error: "invalid_origin" }, 403);
+            if (request.method === "PUT" && !sameOrigin(request)) return reply({ error: "invalid_origin" }, 403);
             const key = `${uid}:${request.method}`, recent = (requests.get(key) || []).filter(at => now() - at < 60000);
             if (recent.length >= (request.method === "GET" ? 30 : 180)) return reply({ error: "too_many_requests" }, 429);
             requests.set(key, [...recent, now()]);

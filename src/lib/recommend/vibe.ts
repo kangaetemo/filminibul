@@ -12,7 +12,7 @@
 import idf from "@/data/idf.json";
 import keywordsTr from "@/data/keywords_tr.json";
 import { EMBEDDING_DIMS, EMBEDDING_MODEL } from "@/lib/recommend/embeddingDoc.mjs";
-import { supabaseRpc } from "@/lib/server/supabase";
+import { supabaseRpc, supabaseRpcFresh } from "@/lib/server/supabase";
 import { createVibeOpenAI, VibeProviderError } from "@/lib/server/vibeOpenAI.mjs";
 import { toFilmDTO } from "./similar";
 import { matchThemes, themeCoverage, type ThemeMatch } from "./vibeThemes.mjs";
@@ -55,7 +55,7 @@ const kwDict = keywordsTr as { tr: Record<string, string>; hidden: string[] };
 const HIDDEN = new Set(kwDict.hidden);
 const ADULT = new Set(["softcore", "pink film", "erotic movie", "sexploitation", "roman porno"]);
 
-// ---- Önbellek ve hız sınırı (sunucu örneği başına; Vercel'de her sıcak örnek kendi kopyasına sahip) ----
+// ---- Önbellek (sunucu örneği başına) ve hız sınırı (bütün örneklerin ortak sayacı, veritabanında) ----
 
 const CACHE_TTL_MS = 6 * 3600_000;
 const CACHE_MAX = 300;
@@ -65,14 +65,26 @@ const RATE_WINDOW_MS = 60_000;
 const RATE_MAX = 8; // IP başına dakikada 8 yeni (önbellekte olmayan) arama
 const hits = new Map<string, number[]>();
 
-function checkRate(ip: string): void {
+/** Yedek: veritabanındaki ortak sayaca ulaşılamazsa yalnız bu örneğin bellek sayacı kullanılır. */
+function takeLocalRate(ip: string): boolean {
     const now = Date.now();
     const recent = (hits.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
-    if (recent.length >= RATE_MAX) throw new VibeError("Çok hızlı arıyorsun, bir dakika sonra tekrar dene.", 429);
+    if (recent.length >= RATE_MAX) return false;
     recent.push(now);
     hits.set(ip, recent);
     // Bellek şişmesin: çok IP birikirse süresi dolmuş kayıtları temizle
     if (hits.size > 5000) hits.forEach((v, k) => v.every((t) => now - t >= RATE_WINDOW_MS) && hits.delete(k));
+    return true;
+}
+
+async function checkRate(ip: string): Promise<void> {
+    // IP veritabanına açık yazılmaz; yalnız özeti sayaç anahtarı olur.
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`filminibul:${ip}`));
+    const bucket = `vibe:ip:${Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("").slice(0, 32)}`;
+    let allowed: boolean;
+    try { allowed = (await supabaseRpcFresh<boolean>("rate_limit_take", { p_bucket: bucket, p_window_seconds: RATE_WINDOW_MS / 1000, p_max: RATE_MAX })) === true; }
+    catch { allowed = takeLocalRate(ip); }
+    if (!allowed) throw new VibeError("Çok hızlı arıyorsun, bir dakika sonra tekrar dene.", 429);
 }
 
 export const normalizeQuery = (q: string) => q.toLocaleLowerCase("tr").replace(/\s+/g, " ").trim();
@@ -208,7 +220,7 @@ export async function vibeRows(vector: number[], minVotes = VIBE_MIN_VOTES): Pro
 export async function vibeCandidates(rawQuery: string, ip = "unknown", timing: VibeTiming = {}): Promise<{ query: string; doc: string; themes: string[]; conditions: VibeConditions; vector: number[]; rows: Candidate[] }> {
     const query = cleanQuery(rawQuery);
     try { openai.ensureAvailable(); } catch (error) { providerError(error); }
-    checkRate(ip);
+    await checkRate(ip);
 
     let started = Date.now();
     const doc = await expandToDoc(query);
