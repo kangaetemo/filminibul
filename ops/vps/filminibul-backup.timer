@@ -1,0 +1,9 @@
+[Unit]
+Description=Filminibul gece yedegi her gun 04:15 (Europe/Istanbul)
+
+[Timer]
+OnCalendar=*-*-* 04:15:00 Europe/Istanbul
+Persistent=true
+
+[Install]
+WantedBy=timers.target

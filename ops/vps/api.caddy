@@ -1,0 +1,12 @@
+# filminibul — GitHub Actions icin Supabase API (yalniz REST ve Storage). Diger yollar 404.
+# Caddyfile icinden import ediliyor.
+api.filminibul.com {
+	@izinli path /rest/v1/* /storage/v1/*
+	handle @izinli {
+		reverse_proxy 127.0.0.1:8000
+	}
+	handle {
+		respond "Not found" 404
+	}
+	header -Server
+}

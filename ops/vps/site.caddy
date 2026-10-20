@@ -1,0 +1,11 @@
+# filminibul — asil alan adi. www -> ciplak alan adi 308 (Vercel'deki davranisla ayni).
+# Ayni-kaynak denetimleri kodda X-Forwarded-Host / X-Forwarded-Proto ile yapilir (ALT-04);
+# Caddy bu basliklari kendisi ekler, istemciden gelenleri dikkate almaz.
+filminibul.com {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:3000
+}
+
+www.filminibul.com {
+	redir https://filminibul.com{uri} 308
+}

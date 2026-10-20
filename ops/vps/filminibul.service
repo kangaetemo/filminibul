@@ -1,0 +1,21 @@
+[Unit]
+Description=Filminibul Next.js
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=filminibul
+Group=filminibul
+WorkingDirectory=/opt/filminibul/current
+Environment=NODE_ENV=production
+Environment=NEXT_TELEMETRY_DISABLED=1
+ExecStart=/opt/filminibul/current/node_modules/.bin/next start -H 127.0.0.1 -p 3000
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

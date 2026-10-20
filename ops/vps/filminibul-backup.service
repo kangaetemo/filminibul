@@ -1,0 +1,11 @@
+[Unit]
+Description=Filminibul gece yedegi (Cloudflare R2)
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/filminibul/backup.sh
+TimeoutStartSec=45min
+Nice=10
+IOSchedulingClass=idle

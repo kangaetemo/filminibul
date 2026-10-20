@@ -1,0 +1,10 @@
+[Unit]
+Description=Filminibul otomatik yayın kontrolü (2 dakikada bir)
+
+[Timer]
+OnBootSec=2min
+OnUnitInactiveSec=2min
+Persistent=false
+
+[Install]
+WantedBy=timers.target
