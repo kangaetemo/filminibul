@@ -22,6 +22,13 @@ Next.js veri önbelleği (fetch / `unstable_cache`) sürümler arasında ortak: 
 Kayıt dosyası `caddy:caddy` sahipli olmalı: `caddy validate` root olarak çalışınca dosyayı root sahipli açar ve sonraki
 `systemctl reload caddy` başarısız olur (21 Ekim'de yaşandı) → `chown caddy:caddy /var/log/caddy/*.log`.
 
+**Envoy sağlık kontrolü (21 Ekim, PF-03):** Supabase'in `volumes/api/envoy/cds.yaml` dosyası `rest` kümesini 5 sn'de bir
+`GET /` ile kontrol ediyordu; PostgREST bu adreste her seferinde OpenAPI belgesini üretiyor (iki ağır şema sorgusu, ~1,3 sn,
+~1,3 MB). Veritabanı CPU'sunun ve `supabase-rest` üzerinden geçen ~24 GB trafiğin asıl kaynağı buydu. `rest` kümesinde
+`path: /__saglik` + `expected_statuses: 200–404` yapıldı (PostgREST bilinmeyen tabloya şema önbelleğinden, veritabanına
+gitmeden 404 döner; çökerse / şema yüklenemezse 503 → sağlıksız). Yedek `cds.yaml.bak-<zaman>`. **Supabase güncellenince
+bu dosya eski hâline dönebilir**; güncellemeden sonra `grep -n -A3 http_health_check volumes/api/envoy/cds.yaml` ile kontrol et.
+
 **Uyarı:** sunucuda başka bir site daha var. `/etc/caddy/Caddyfile` asla baştan yazılmaz, yalnız satır eklenir;
 her değişiklikten sonra `caddy validate` → `systemctl reload caddy` ve iki sitenin de açıldığı kontrol edilir.
 Port kullanmadan önce `ss -tlnp` ile boş olduğu doğrulanır (127.0.0.1:3001 diğer siteye ait).
