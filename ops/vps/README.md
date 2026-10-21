@@ -1,6 +1,19 @@
 # Filminibul VPS işletimi
 
-Sunucudaki dosyaların kopyası (gizli bilgi içermez). Sunucudaki asıl yerleri:
+20 Ekim 2026'dan beri filminibul.com tamamen kendi sunucumuzda çalışıyor: Next.js sitesi (systemd + Caddy) ve
+self-host Supabase (Docker Compose: Postgres + pgvector, PostgREST, Storage, pg_cron). Supabase bulutu ve Vercel artık
+kullanılmıyor (kapanış adımları `yapilacaklar.md` → ALT-03). Sunucu 4 vCPU / 8 GB RAM / 60 GB NVMe, Ubuntu 24.04 LTS;
+IP adresi ve erişim bilgisi bu herkese açık repoya yazılmaz.
+
+```
+İnternet ─► Caddy (80/443, Let's Encrypt)
+              ├─ filminibul.com      ─► Next.js 127.0.0.1:3000 ─► Supabase API 127.0.0.1:8000
+              ├─ www.filminibul.com  ─► 308 https://filminibul.com
+              └─ api.filminibul.com  ─► yalnız /rest/v1, /storage/v1 ─► 127.0.0.1:8000  (GitHub Actions işleri)
+Postgres (5432 / 6543) ve Supabase Studio dışarıya kapalı.
+```
+
+Bu klasör sunucudaki dosyaların kopyasıdır (gizli bilgi içermez). Sunucudaki asıl yerleri:
 
 | Dosya | Sunucuda |
 | --- | --- |
@@ -32,6 +45,45 @@ bu dosya eski hâline dönebilir**; güncellemeden sonra `grep -n -A3 http_healt
 **Uyarı:** sunucuda başka bir site daha var. `/etc/caddy/Caddyfile` asla baştan yazılmaz, yalnız satır eklenir;
 her değişiklikten sonra `caddy validate` → `systemctl reload caddy` ve iki sitenin de açıldığı kontrol edilir.
 Port kullanmadan önce `ss -tlnp` ile boş olduğu doğrulanır (127.0.0.1:3001 diğer siteye ait).
+
+## Yayın (GitHub `main` → sunucu)
+
+`filminibul-deploy.timer` her 2 dakikada `deploy.sh`'yi çalıştırır. `main`'de yeni commit varsa
+`/opt/filminibul/releases/<commit>` klasörüne klonlar, `npm ci` + `next build` yapar (bu sırada eski sürüm yayında kalır),
+`/opt/filminibul/current` bağını çevirip `filminibul` servisini yeniden başlatır. 60 sn içinde `http://127.0.0.1:3000/`
+200 vermezse önceki sürüme döner. Yalnız `*.md` / `docs/` değişen commit'ler derlenmez. Son 3 sürüm saklanır.
+Haftalık katalog işinin `src/data` commit'leri de aynı yolla yayına çıkar. Ön izleme (preview) yayını yoktur.
+
+```sh
+systemctl status filminibul filminibul-deploy.timer   # servis ve zamanlayıcı
+journalctl -u filminibul-deploy -n 50                 # son yayın denemeleri
+journalctl -u filminibul -f                           # site logu
+cat /opt/filminibul/deployed-sha                      # yayındaki commit
+TARGET=<tam commit> /opt/filminibul/deploy.sh         # belirli commit'e geç / geri dön (derlenmişse hemen)
+FORCE=1 /opt/filminibul/deploy.sh                     # belge-only atlamasını kapat
+systemctl stop filminibul-deploy.timer                # bir sürümde kalmak için (yoksa main'e geri ilerler)
+```
+
+Ortam değişkenleri `/opt/filminibul/site.env` dosyasındadır (her sürüme `.env.production.local` olarak bağlanır).
+Yalnız sunucu tarafı değişkenler (ör. `ADMIN_PASSWORD`, `OPENAI_API_KEY`) için `systemctl restart filminibul` yeter;
+`NEXT_PUBLIC_*` değerleri derlemeye gömüldüğü için değişince yeni bir derleme gerekir (main'e gelen bir sonraki kod commit'i
+ya da yeni commit'e `TARGET=`).
+
+GitHub Actions iş akışları veritabanına `api.filminibul.com` üzerinden bağlanır; repodaki sırlar `SUPABASE_URL`
+(`https://api.filminibul.com`), `SUPABASE_SERVICE_ROLE_KEY` (self-host anahtarı), `TMDB_API_KEY`, `OPENAI_API_KEY`.
+
+## Veritabanına SQL uygulama
+
+Studio dışarı açık olmadığından `scripts/sql/` dosyaları sunucuda `psql` ile uygulanır (repo sunucuda
+`/opt/filminibul/current` altında da var):
+
+```sh
+docker exec -i supabase-db psql -U postgres -d postgres -v ON_ERROR_STOP=1 < scripts/sql/<dosya>.sql
+docker exec -it supabase-db psql -U postgres -d postgres     # etkileşimli
+```
+
+Supabase servisleri: `cd /opt/supabase && docker compose ps` (yeniden başlatma `sh run.sh start` /
+`docker compose restart <servis>`). Veritabanı payı 5 GB (admin panelindeki doluluk ve `add_missing.mjs` buna göre).
 
 ## Yedek
 
@@ -66,6 +118,15 @@ Son başarılı yedek: `/opt/filminibul/backup-last-ok`.
    `pg_restore -U postgres -d postgres --data-only storage-meta.dump` (bucket ve nesne satırları), Supabase'i başlat.
 5. Site: Node 22, `filminibul` kullanıcısı, `site.env` (yeni Supabase anahtarıyla), `deploy.sh` + birimler, Caddy blokları.
    GitHub Actions sırları (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`) yeni anahtara güncellenir.
+6. DNS: `filminibul.com`, `www` ve `api` A kayıtları yeni sunucuya; Caddy sertifikaları kendisi alır. Ardından site,
+   `/api/similar/603`, admin girişi, üye listesi yazımı ve bir GitHub Actions doğrulama işi (ör. `verify-blend`) denenir.
 
 20 Ekim 2026'da ilk yedek (`gunluk/2026-10-20T1419Z`) R2'den indirilip ayrı bir veritabanına (3. adım) geri yüklendi:
 film tablolarının veri özetleri, fonksiyon / index sayıları ve `similar_movies_v4(603)` sonucu canlıyla aynıydı.
+Storage'ın (4. adım) ve sıfırdan sunucu kurulumunun tamamı henüz denenmedi.
+
+## Bilinen açıklar
+
+Dışarıdan erişilebilirlik kontrolü GitHub Actions'ta (`.github/workflows/uptime.yml`, 15 dk'da bir; hata olursa "Kesinti"
+issue'su açılır). Disk / bellek / CPU uyarısı ve yedek başarısızlığı bildirimi henüz yok (`backup-last-ok` elle bakılır). Sunucuda başka bir site de çalıştığı için yük ikisinin toplamıdır. Açık maddeler:
+`yapilacaklar.md` → ALT-03, ALT-06.

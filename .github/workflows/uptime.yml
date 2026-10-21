@@ -1,0 +1,121 @@
+name: Site erişilebilirlik kontrolü
+# Dışarıdan (GitHub sunucularından) filminibul.com ve api.filminibul.com'u yoklar.
+# Hata olursa açık bir "kesinti" issue'su açar (zaten açıksa yorum ekler);
+# her şey düzelince issue'yu kapatır. Başarısız çalışma GitHub e-postası da gönderir.
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      simulate_failure:
+        description: "Bildirimi denemek için kasıtlı hata üret"
+        type: boolean
+        default: false
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: uptime
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Adresleri yokla
+        id: probe
+        env:
+          SIMULATE: ${{ inputs.simulate_failure && '1' || '0' }}
+        run: |
+          # beklenen_kod|adres  (api kökü anahtarsız 401 döner: Caddy + Kong ayakta demektir)
+          checks="200|https://filminibul.com/
+          200|https://filminibul.com/api/similar/603?limit=1
+          308|https://www.filminibul.com/
+          401|https://api.filminibul.com/rest/v1/"
+          if [ "$SIMULATE" = "1" ]; then
+            checks="$checks
+          200|https://filminibul.com/__uptime-deneme-hatasi"
+          fi
+          failed=""
+          report=""
+          while IFS='|' read -r expected url; do
+            expected=$(echo "$expected" | xargs)
+            code=000; t=0
+            # Aralıklı ağ kopmalarında yanlış alarm olmasın: 3 deneme, 20 sn arayla
+            for attempt in 1 2 3; do
+              out=$(curl -sS -o /dev/null -w '%{http_code} %{time_total}' --max-time 30 "$url" 2>/dev/null || true)
+              code=${out%% *}; t=${out##* }
+              [ "$code" = "$expected" ] && break
+              [ "$attempt" -lt 3 ] && sleep 20
+            done
+            if [ "$code" = "$expected" ]; then
+              line="✅ \`$url\` → $code (${t} sn)"
+            else
+              line="❌ \`$url\` → $code (beklenen $expected, 3 deneme)"
+              failed="yes"
+            fi
+            echo "$line"
+            report="$report- $line"$'\n'
+          done <<< "$checks"
+
+          # Sertifika süresi: 14 günden az kaldıysa uyar (Caddy normalde kendisi yeniler)
+          for host in filminibul.com api.filminibul.com; do
+            end=$(echo | openssl s_client -servername "$host" -connect "$host:443" 2>/dev/null | openssl x509 -noout -enddate 2>/dev/null | cut -d= -f2)
+            if [ -z "$end" ]; then
+              line="❌ \`$host\` sertifikası okunamadı"; failed="yes"
+            else
+              days=$(( ($(date -d "$end" +%s) - $(date +%s)) / 86400 ))
+              if [ "$days" -lt 14 ]; then
+                line="❌ \`$host\` sertifikasının bitmesine $days gün var"; failed="yes"
+              else
+                line="✅ \`$host\` sertifikası $days gün geçerli"
+              fi
+            fi
+            echo "$line"
+            report="$report- $line"$'\n'
+          done
+
+          {
+            echo "failed=$failed"
+            echo "report<<EOF"
+            printf '%s' "$report"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          printf '%s' "$report" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Kesinti issue'sunu aç veya güncelle
+        if: steps.probe.outputs.failed == 'yes'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          REPORT: ${{ steps.probe.outputs.report }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          title="Kesinti: site dışarıdan erişilemiyor"
+          now=$(TZ=Europe/Istanbul date '+%d.%m.%Y %H:%M')
+          body=$(printf '%s Türkiye saati kontrolü başarısız.\n\n%s\n[Çalışma](%s)' "$now" "$REPORT" "$RUN_URL")
+          number=$(gh issue list --state open --search "in:title \"$title\"" --json number,title --jq ".[] | select(.title == \"$title\") | .number" | head -1)
+          if [ -n "$number" ]; then
+            gh issue comment "$number" --body "$body"
+          else
+            gh issue create --title "$title" --assignee "${{ github.repository_owner }}" --body "$body" \
+              || gh issue create --title "$title" --body "$body"
+          fi
+
+      - name: Düzeldiyse issue'yu kapat
+        if: steps.probe.outputs.failed != 'yes'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          REPORT: ${{ steps.probe.outputs.report }}
+        run: |
+          title="Kesinti: site dışarıdan erişilemiyor"
+          number=$(gh issue list --state open --search "in:title \"$title\"" --json number,title --jq ".[] | select(.title == \"$title\") | .number" | head -1)
+          if [ -n "$number" ]; then
+            now=$(TZ=Europe/Istanbul date '+%d.%m.%Y %H:%M')
+            gh issue close "$number" --comment "$(printf '%s Türkiye saati: tüm kontroller yeniden başarılı.\n\n%s' "$now" "$REPORT")"
+          fi
+
+      - name: Çalışmayı başarısız işaretle
+        if: steps.probe.outputs.failed == 'yes'
+        run: exit 1
