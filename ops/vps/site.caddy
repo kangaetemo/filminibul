@@ -16,8 +16,9 @@ filminibul.com {
 
 	# Arama motoru olmayan, robots.txt'ye uymayan ya da siteye faydasi olmayan tarayicilar:
 	# her film sayfasi veritabanina gittigi icin Next.js'e hic ulasmadan 403 alirlar.
-	# Google, Bing, Yandex, DuckDuckGo ve sosyal ag onizlemeleri (WhatsApp, X, Facebook) bu listede YOK.
-	@kotu_bot header_regexp User-Agent (?i)(AhrefsBot|SemrushBot|MJ12bot|DotBot|PetalBot|Bytespider|DataForSeoBot|BLEXBot|Barkrowler|serpstatbot|SeekportBot|AwarioBot|ImagesiftBot|Amazonbot|GPTBot|ClaudeBot|anthropic-ai|CCBot|meta-externalagent|PerplexityBot|Timpibot|omgili|python-requests|Scrapy)
+	# Google, Bing, Yandex, DuckDuckGo, sosyal ag onizlemeleri ve yapay zeka botlari (GPTBot, ClaudeBot,
+	# PerplexityBot, CCBot, Amazonbot, meta-externalagent; kullanici karari 21 Ekim) bu listede YOK.
+	@kotu_bot header_regexp User-Agent (?i)(AhrefsBot|SemrushBot|MJ12bot|DotBot|PetalBot|Bytespider|DataForSeoBot|BLEXBot|Barkrowler|serpstatbot|SeekportBot|AwarioBot|ImagesiftBot|Timpibot|omgili|python-requests|Scrapy)
 	respond @kotu_bot 403
 
 	# Zaafiyet tarayicilari (WordPress, PHP, .env, .git): Next.js'in 404 sayfasini cizdirmeden kapat.
