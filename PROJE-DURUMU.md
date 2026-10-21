@@ -1,6 +1,6 @@
 # Filminibul: Proje Durumu
 
-Son güncelleme: 17 Ekim 2026 (Türkiye saati) · Canlı: [filminibul.com](https://filminibul.com) · Kod: GitHub `kangaetemo/filminibul`, `main` (Vercel otomatik deploy).
+Son güncelleme: 21 Ekim 2026 (Türkiye saati) · Canlı: [filminibul.com](https://filminibul.com) · Kod: GitHub `kangaetemo/filminibul`, `main` (kendi sunucumuzda otomatik yayın, [`ops/vps/README.md`](ops/vps/README.md)).
 
 > Bu dosya **sitenin şu anki hâlini** özetler. Ayrıntılı iş takibi: [`yapilacaklar.md`](yapilacaklar.md) (açık / kapanan maddeler) ve [`yapilanlar.md`](yapilanlar.md) (tarihli kayıtlar, doğrulamalar). Çalışma kuralları: [`AGENTS.md`](AGENTS.md). Öneri sisteminin hedef mimarisi ve ilkeleri: [`proje-tanimi.md`](proje-tanimi.md).
 >
@@ -15,7 +15,8 @@ Türkçe öncelikli film keşif sitesi. Sevilen bir filme benzeyenleri bulur, ta
 | Konu | Şu anki durum |
 |---|---|
 | Framework | **Next.js 14.2** (App Router), React 18, Tailwind 3. `params` senkron nesne; Next 15+'a geçilirse `await params` gerekir. |
-| Veritabanı | Supabase (ücretsiz plan, 500 MB). 16 Ekim ölçümü ~423 MB. Upstash kullanılmıyor. |
+| Barındırma | 20 Ekim 2026'dan beri tek VPS (4 vCPU / 8 GB / 60 GB NVMe, Ubuntu 24.04): Next.js `next start` (systemd) arkasında Caddy (HTTPS). Vercel ve Supabase bulutu kullanılmıyor; kapanış adımları ALT-03. Ayrıntı: [`ops/vps/README.md`](ops/vps/README.md). |
+| Veritabanı | Aynı sunucuda self-host Supabase (Docker: Postgres 17 + pgvector, PostgREST, Storage, pg_cron). Pay 5 GB; 20 Ekim ~402 MB. Her gece 04:15 Cloudflare R2'ye doğrulamalı yedek. Upstash kullanılmıyor. |
 | Üyelik | Firebase Authentication, yalnız Google girişi (e-posta girişi kodda var, `NEXT_PUBLIC_EMAIL_AUTH_ENABLED=false`). Sunucu ID token'ı doğrular (`src/lib/server/memberAuth.mjs`). |
 | Kullanıcı verisi | Özel Supabase Storage bucket'ı `member-watchlists`: hesap başına kaydedilen filmler + `signals/` altında izledim / beğendim / bana göre değil. |
 | Embedding | OpenAI `text-embedding-3-large`, `dimensions: 1536`, başlıksız film belgesi. Tek kaynak: `src/lib/recommend/embeddingDoc.mjs` |
@@ -63,8 +64,8 @@ Türkçe öncelikli film keşif sitesi. Sevilen bir filme benzeyenleri bulur, ta
 - **Nerede izlenir?:** TMDB / JustWatch Türkiye verisi, kompakt "Platformlar" filtresi (URL'de `p`, tercih tarayıcıda hatırlanır).
 - **Paylaşım:** bağlantıyı doğrudan kopyalama + X / WhatsApp / Telegram / Instagram yönlendirmesi + destekleniyorsa sistem paylaşımı.
 - **SEO:** sitemap (filmler + modlar + 80 pilot liste / kişi sayfası), robots (`/admin`, `/api/` kapalı), canonical, paylaşım önizlemeleri, Movie / Person / ItemList / BreadcrumbList JSON-LD. Sonsuz kaydırmada görünen grup URL'ye `?page=N` olarak yansır, JS kapalıyken gerçek sonraki sayfa bağlantıları çalışır. Site **Google Search Console'a eklendi ve `https://filminibul.com/sitemap.xml` gönderildi** (kullanıcı bildirimi, 17 Ekim 2026).
-- **Görseller** doğrudan TMDB CDN'inden (`src/lib/tmdbImageLoader.ts`); Vercel görsel optimizasyonu kullanılmıyor (ücretsiz kota dolmuştu).
-- **Ürün istatistikleri:** kendi Supabase tablolarında (`docs/analytics.md`); üyelik kimliğiyle ilişkilendirilmez, ham olaylar 30 gün / günlük özetler 365 gün. Ayrıca Vercel Analytics.
+- **Görseller** doğrudan TMDB CDN'inden (`src/lib/tmdbImageLoader.ts`); Next görsel optimizasyonu kullanılmıyor (Vercel döneminde ücretsiz kota dolduğu için kapatılmıştı; VPS'te de bu ayar korunuyor).
+- **Ürün istatistikleri:** kendi Supabase tablolarında (`docs/analytics.md`); üyelik kimliğiyle ilişkilendirilmez, ham olaylar 30 gün / günlük özetler 365 gün. `@vercel/analytics` 21 Ekim'de kaldırıldı ve gizlilik metni VPS barındırmasına göre güncellendi; ön izleme / noindex derlemeleri `SITE_ENV=preview` ile yapılır.
 
 ### Tasarım
 - Açık ve koyu tema: ilk ziyarette cihaz tercihi, elle seçim tarayıcıda hatırlanır, geçişte 220 ms renk geçişi. Açık tema krem zemin, koyu tema kömür; vurgu sıcak amber. Renkler `src/app/globals.css` içindeki CSS değişkenlerinde, Tailwind token'ları `tailwind.config.ts`'te.
@@ -75,30 +76,36 @@ Türkçe öncelikli film keşif sitesi. Sevilen bir filme benzeyenleri bulur, ta
 
 ## 3. Otomasyon (GitHub Actions)
 
+İş akışları GitHub sunucularında çalışır ve veritabanına `https://api.filminibul.com` (yalnız `/rest/v1`, `/storage/v1`) üzerinden service_role anahtarıyla bağlanır.
+
 | İş | Zaman (TR) | Ne yapar |
 |---|---|---|
-| `update-catalog.yml` | Pazartesi 05:00 + elle / admin | Eksik filmleri ekler (≤100; TR vizyonları, Türk filmleri, TMDB'de çok oylu eksikler), 2021+ oy/puan tazeler, komşu tablosu, `idf.json`, `keywords_tr.json`, `moods.json`, seri adları. Değişen `src/data/*.json` commit'lenir. DB 480 MB'ı geçerse eklemez. |
+| `update-catalog.yml` | Pazartesi 05:00 + elle / admin | Eksik filmleri ekler (≤100; TR vizyonları, Türk filmleri, TMDB'de çok oylu eksikler), 2021+ oy/puan tazeler, komşu tablosu, `idf.json`, `keywords_tr.json`, `moods.json`, seri adları. Değişen `src/data/*.json` commit'lenir (sunucu bu commit'i 2 dk içinde yayına alır). DB 4,9 GB'ı geçerse eklemez. |
 | `refresh-providers.yml` | Pazartesi 06:00 + elle | Türkiye platform bilgisi (>%1 hata veya tablonun %70'inden az veri varsa durur) |
 | `refresh-content.yml` | Salı 07:00 + elle | Türkçe özet / başlık temizliği, eksik çeviriler, orijinal dil afişi; rapor `docs/content-maintenance-report.json` |
 | `refresh-seo-people.yml` | Çarşamba 08:30 + elle | 50 pilot kişinin filmografisini doğrular ve atomik yeniler (OpenAI yok) |
 | Diğerleri (yalnız elle) | — | `verify-*` doğrulama işleri, `collect/persist-seo-people`, `complete-content-approved` (bütçe sınırlı çeviri), `finalize-content`, `prepare-watchlists` |
 
+Dışarıdan erişilebilirlik kontrolü: `uptime.yml` (15 dk'da bir, hata → "Kesinti" issue'su).
+
+Sunucudaki zamanlanmış işler (systemd): otomatik yayın (2 dk'da bir, `filminibul-deploy.timer`) ve gece yedeği (04:15, `filminibul-backup.timer`). Veritabanında pg_cron: analytics bakımı (03:15).
+
 ---
 
-## 4. Ortam değişkenleri (değerler `.env.local` / Vercel / GitHub Secrets'ta)
+## 4. Ortam değişkenleri (değerler `.env.local` / sunucuda `/opt/filminibul/site.env` / GitHub Secrets'ta)
 
 | Değişken | Nerede gerekli |
 |---|---|
-| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | `.env.local`, Vercel, GitHub Secrets. Asla `NEXT_PUBLIC_` olmamalı. |
-| `TMDB_API_KEY` | `.env.local`, Vercel, GitHub Secrets (yalnız sunucu) |
-| `OPENAI_API_KEY` | Vercel (tarif araması, admin'den film ekleme), GitHub Secrets (katalog / içerik işleri) |
-| `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Vercel, `.env.local`. **Google girişi bunlara bağlı, silinmemeli.** |
+| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | `site.env` (sunucu içindeki Supabase adresi), GitHub Secrets (`https://api.filminibul.com`), `.env.local`. Anahtar self-host Supabase'in anahtarı (`/opt/supabase/.env`). Asla `NEXT_PUBLIC_` olmamalı. |
+| `TMDB_API_KEY` | `site.env`, GitHub Secrets, `.env.local` (yalnız sunucu) |
+| `OPENAI_API_KEY` | `site.env` (tarif araması, admin'den film ekleme), GitHub Secrets (katalog / içerik işleri) |
+| `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | `site.env`, `.env.local`. **Google girişi bunlara bağlı, silinmemeli.** Derlemeye gömülür; değişince yeniden derleme gerekir. |
 | `NEXT_PUBLIC_EMAIL_AUTH_ENABLED` | İsteğe bağlı, varsayılan `false` |
-| `ADMIN_PASSWORD` | Vercel (+ istersen `.env.local`) |
-| `GITHUB_TOKEN` (+ isteğe bağlı `GITHUB_REPO`) | Vercel: fine-grained, yalnız bu repo, Actions: Read and write (admin'den iş başlatma) |
-| `ANALYTICS_ENABLED`, `NEXT_PUBLIC_ANALYTICS_ENABLED` | Production'da `true`, preview'da `false` (`docs/analytics.md`) |
+| `ADMIN_PASSWORD` | `site.env` (+ istersen `.env.local`) |
+| `GITHUB_TOKEN` (+ isteğe bağlı `GITHUB_REPO`) | `site.env`: fine-grained, yalnız bu repo, Actions: Read and write (admin'den iş başlatma) |
+| `ANALYTICS_ENABLED`, `NEXT_PUBLIC_ANALYTICS_ENABLED` | Canlıda `true`, yerelde / denemede `false` (`docs/analytics.md`) |
 
-Şablon: [`.env.example`](.env.example).
+Şablon: [`.env.example`](.env.example). Gerçek değerler yalnız sunucuda ve GitHub Secrets'ta; uygulama anahtarları ayrıca kullanıcının şifre yöneticisinde tutulmalı (yedeğe konmuyor).
 
 ---
 
@@ -121,8 +128,9 @@ Türkçe öncelikli film keşif sitesi. Sevilen bir filme benzeyenleri bulur, ta
 
 ## 6. Açık işler ve bekleyenler (özet)
 
-Tam liste ve ayrıntılar `yapilacaklar.md`'de. 17 Ekim itibarıyla:
+Tam liste ve ayrıntılar `yapilacaklar.md`'de. 21 Ekim itibarıyla:
 
+- **Altyapı:** VPS taşıması canlıda (ALT-01, ALT-04, ALT-05 kapandı). Açık: ALT-02 kalan doğrulamaları (zamanlanmış iş akışlarının yeni veritabanına ilk gerçek yazımı, tarif kalite / süre ölçümü), ALT-03 Vercel ve eski Supabase projesinin kapatılması (DNS'in Vercel'den taşınması, `@vercel/analytics` ve gizlilik metni, alan adı **15 Aralık 2026**'da yenilenmeli), ALT-06 sunucu sağlamlaştırma / izleme. Yer kısıtı kalktığı için katalog dolgusu (KT-01) yapılabilir.
 - **Sıradaki geliştirme:** FL-01–FL-04, `/listeler` için 12 editoryal özel seçki (altyapı → içerik → dizin tasarımı → SEO yayını). Henüz kod yok.
 - **Ölçüm:** SEO pilotunun Search Console indeks / gösterim / tıklama takibi (site eklendi, sitemap gönderildi, `/listeler` Search Console'da görünüyor — 18 Ekim kullanıcı kontrolü; liste / kişi sayfalarının gösterimleri ve 28 günlük veri bekleniyor).
 - **Kullanıcı kontrolü gerekenler:** gerçek telefonda görsel / kaydırma kontrolü (MB-06), eski liste aktarımı ve hesap değişimi (BL-06), kişisel öneri ve tercihlerin gerçek hesapta kontrolü (KŞ-06, KŞ-07), OpenAI faturalama ekranında bakiye / uyarı kontrolü (API-01).
@@ -133,7 +141,7 @@ Tam liste ve ayrıntılar `yapilacaklar.md`'de. 17 Ekim itibarıyla:
 - Niş filmlerde (ör. Triangle) öneriler veri yetersizliği yüzünden zayıf.
 - Keyword çevirileri düz JSON (`src/data/keywords_tr.json`); hatalılar elle düzeltilebilir.
 - Yeni bir platform gelirse adı / logosu için `fetch_providers.mjs` bilgisayarda çalıştırılıp `src/data/providers_tr.json` commit'lenmeli.
-- Tarif aramasındaki hız sınırı sunucu örneği başına bellek içi; kötüye kullanımda Vercel tarafı sınırlama gerekir.
+- Tarif araması ve admin girişi hız sınırları veritabanındaki ortak sayaçta (GV-02, GV-04); `api.filminibul.com` üzerinde ayrıca istek sınırı yok, tek koruma service_role anahtarı.
 - Sunucu, silinen Firebase üyeliğinin token'ını her istekte sormaz; manuel silme akışı `docs/veri-silme-isleyisi.md`'de.
 
 ### Harcama
@@ -159,14 +167,14 @@ node scripts/catalog/rebuild_static.mjs        # idf + keyword çevirileri + mod
 node scripts/catalog/build_neighbors.mjs       # komşu tablosu (haftalık iş de çalıştırır)
 ```
 
-Supabase SQL'leri `scripts/sql/` altında. Yeni bir Supabase projesi kurulursa sırayla: `v3_setup.sql`, `film_providers.sql`, `admin_db_usage.sql`, `similar_movies.sql`, `vibe_search.sql`, `blend.sql`, `halfvec_index.sql` (adımlar ayrı ayrı), `neighbors.sql` (+ `build_neighbors.mjs`), `analytics.sql` + `analytics_cron.sql`, `seo_02_people.sql`.
+Supabase SQL'leri `scripts/sql/` altında; sunucuda `docker exec -i supabase-db psql …` ile uygulanır ([`ops/vps/README.md`](ops/vps/README.md)). Sunucu kaybında veritabanı sıfırdan kurulmaz, gece yedeğinden geri yüklenir (aynı belge). Boş bir veritabanı kurulursa sırayla: `v3_setup.sql`, `film_providers.sql`, `admin_db_usage.sql`, `similar_movies.sql`, `vibe_search.sql`, `blend.sql`, `halfvec_index.sql` (adımlar ayrı ayrı), `neighbors.sql` (+ `build_neighbors.mjs`), `analytics.sql` + `analytics_cron.sql`, `seo_02_people.sql`, `security.sql`.
 
 ---
 
 ## 8. Bilgisayarda olup GitHub'da olmayanlar (yedekle!)
 
 `.gitignore`'daki büyük veri klasörleri yalnızca geliştirme bilgisayarında:
-- `data/export/`: Supabase + eski Upstash yedeği; eski v2 embedding'lerinin tek kopyası (`film_embeddings_v2.embeddings.jsonl`, 442 MB).
+- `data/export/`: eski Supabase bulutu + eski Upstash yedeği (canlı veritabanının gece yedeği R2'de, bkz. `ops/vps/README.md`); eski v2 embedding'lerinin tek kopyası (`film_embeddings_v2.embeddings.jsonl`, 442 MB).
 - `data/embeddings/`: v3 embedding'leri ve mod vektörleri.
 - `data/tmdb/`: zenginleştirme, çeviri önbelleği, platform verisi.
 - `data/content/`: içerik bakımı kontrol noktaları.
@@ -189,5 +197,6 @@ scripts/rerank/          offline reranker, değerlendirme, LLM hakem, mod üreti
 scripts/sql/             Supabase şema / RPC dosyaları
 scripts/tests/           node --test testleri
 docs/                    plan, doğrulama raporları ve ekran görüntüleri
+ops/vps/                 sunucudaki yayın / yedek betikleri, systemd birimleri, Caddy blokları (kopya) + işletim ve geri yükleme talimatı
 data/eval/               golden set, LLM puan önbelleği, raporlar
 ```

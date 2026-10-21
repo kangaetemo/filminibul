@@ -2,18 +2,20 @@
 
 ## Kurulum
 
-1. Supabase SQL Editor'de `scripts/sql/analytics.sql` dosyasını çalıştır. Mevcut katalog tablolarına yazmaz. Şema yeniden çalıştırılabilir.
-2. Supabase Dashboard → Database → Extensions'da **pg_cron**'u etkinleştir. Ardından SQL Editor'de `scripts/sql/analytics_cron.sql` dosyasını çalıştır. Günlük iş 03:15 Türkiye saatinde özet çıkarır ve eski kayıtları temizler. Cron kurulmadan olay toplamayı açma.
-3. Vercel'de mevcut `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` ve `ADMIN_PASSWORD` sunucu değişkenlerinin bulunduğunu kontrol et. Servis anahtarı `NEXT_PUBLIC_` ile başlamamalı.
-4. Aşağıdaki iki değişkeni Production ortamına ekle ve yeniden deploy et:
+> **Durum (21 Ekim 2026):** canlıda kurulu ve açık. Tablolar, RPC'ler ve pg_cron işi 20 Ekim'de VPS'teki self-host Supabase'e taşındı. Aşağıdaki adımlar yeniden kurulum içindir; Supabase Studio dışarı açık olmadığından SQL sunucuda `docker exec -i supabase-db psql -U postgres -d postgres -v ON_ERROR_STOP=1 < dosya.sql` ile uygulanır (`ops/vps/README.md`). Gece yedeğinden geri yüklemede tablolar yedekle gelir, cron işi ayrıca kurulur (aynı belge, 3. adım).
+
+1. `scripts/sql/analytics.sql` dosyasını uygula. Mevcut katalog tablolarına yazmaz. Şema yeniden çalıştırılabilir.
+2. `create extension if not exists pg_cron;` ile **pg_cron**'u etkinleştir, ardından `scripts/sql/analytics_cron.sql` dosyasını uygula. Günlük iş 03:15 Türkiye saatinde özet çıkarır ve eski kayıtları temizler. Cron kurulmadan olay toplamayı açma.
+3. Sunucudaki `/opt/filminibul/site.env` dosyasında `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` ve `ADMIN_PASSWORD` değişkenlerinin bulunduğunu kontrol et. Servis anahtarı `NEXT_PUBLIC_` ile başlamamalı.
+4. Aşağıdaki iki değişkeni aynı dosyaya ekle ve siteyi yeniden derle:
 
    ```env
    ANALYTICS_ENABLED=true
    NEXT_PUBLIC_ANALYTICS_ENABLED=true
    ```
 
-   Preview ortamlarında ikisini de `false` tut. `NEXT_PUBLIC_` değeri build sırasında pakete girer; değiştirince yeni deploy gerekir. Toplamayı acilen durdurmak için sunucu bayrağını `false` yapıp yeniden deploy et.
-5. `/admin` üzerinden **Ürün istatistiklerini aç** bağlantısına gir. Veriler yalnızca bu kurulumdan sonra birikir; Vercel geçmişi buraya aktarılmaz.
+   Yerel geliştirmede ve deneme kopyalarında ikisini de `false` tut. `NEXT_PUBLIC_` değeri build sırasında pakete girer; değiştirince yeni derleme gerekir. Toplamayı acilen durdurmak için sunucu bayrağını (`ANALYTICS_ENABLED`) `false` yapıp `systemctl restart filminibul` yeterli; olay uç noktası gelen olayları yazmadan boş yanıt döner.
+5. `/admin` üzerinden **Ürün istatistiklerini aç** bağlantısına gir. Veriler yalnızca bu kurulumdan sonra birikir; Vercel Analytics geçmişi buraya aktarılmaz.
 6. Deneme için ayrı, admin oturumu olmayan bir sekme/tarayıcı kullan. Bir film aç, benzer kartların görünmesini en az bir saniye bekle ve birine tıkla. Film adı ara ve yazmayı durdur. Panelde film açma, arama, öneri gösterimi ve tıklaması görünmeli. Admin çerezi taşıyan istekler sayılmaz.
 
 Cron kontrolü:
@@ -62,7 +64,7 @@ API ön yüklemeleri, Next.js link prefetch'i ve benzer film sorgusunu ısıtma 
 - Ham olaylar bugünün de dahil olduğu son **30 Türkiye takvim günü**, kimlik ve sorgu içermeyen günlük özetler **365 gün** tutulur. Ayrıntı tabloları en fazla 30 günü gösterir; 90/365 günlük grafik günlük özetleri kullanır. Cron başarısız olursa temizleme durur; iş ve depolama durumunu kontrol et. `select public.analytics_maintain();` elle de çalıştırılabilir ve geciken günleri özetler.
 - Veritabanında ortak limit: günlük **5.000 olay**, oturum başına dakikada **100** ve saatte **600** olay. Limite gelince API 429 döner; site çalışmaya devam eder ama ölçüm eksik kalır. Günlük sınır panelde görünür. Trafik arttığında SQL fonksiyonundaki sınırı kapasiteye göre artır. Limitler ham veri boyutunu sınırlamaya yardım eder; depolama kullanımını ayrıca izle.
 - Açık analitik uç noktası bağımsız kimlik doğrulaması gerektirmez. Origin kontrolü ve temel bot filtresi otomatik sahte veriyi tamamen engellemez; sunucu dışı istemci Origin ve oturum kimliğini taklit edebilir. Günlük ortak limit sahte oturumlarla sınırsız yazmayı engeller; yoğun kötü trafik bütçeyi tüketebilir. Büyüme halinde WAF/edge rate limit eklenebilir.
-- `sendBeacon`/`keepalive` ile 20 olaylık küçük paketler gönderilir. Başarısız paketler yeniden denenmez; bir işlem hatası siteyi durdurmaz. Engelleyiciler, sekmenin kapanması ve bağlantı kesintileri nedeniyle Vercel ile birebir eşit sayılar bekleme.
+- `sendBeacon`/`keepalive` ile 20 olaylık küçük paketler gönderilir. Başarısız paketler yeniden denenmez; bir işlem hatası siteyi durdurmaz. Engelleyiciler, sekmenin kapanması ve bağlantı kesintileri nedeniyle başka analitik araçlarıyla (ör. Search Console) birebir eşit sayılar bekleme.
 
 ## Kontrol komutları
 
@@ -72,4 +74,4 @@ npx tsc --noEmit
 npm run build
 ```
 
-Production build mevcut sitemap nedeniyle geçerli Supabase ortam değişkenleri gerektirir. Vercel Preview build üretim sitemap kataloğunu oluşturmaz ve sitemap üzerinden Supabase çağrısı yapmaz. Önizlemede gerçek katalog, arama ve admin raporu kullanımı için ayrı test ortamına ait Supabase/TMDB/admin değişkenleri yapılandırılmalıdır; bu değişiklik Production anahtarlarını Preview ortamına kopyalamaz. Bu değişiklik üzerinde TypeScript, doğrulama testleri, yerel PostgreSQL uyumlu PGlite veritabanıyla SQL kurulumu/yeniden kurulum, deduplikasyon, limitler, tıklama oranı, saklama ve erişim testleri yapılmıştır. API için Origin, veri boyutu, geçersiz veri, DNT ve bot dışlama kontrolleri; gerçek tarayıcıda arama/klavye seçimi, görünür öneri gösterimi/tıklaması, admin yetkilendirmesi ve mobil taşma kontrolleri de geçti. Üretim derlemesi yerel veritabanı fixture'ıyla doğrulandı. Üretim veritabanına SQL uygulanmamıştır.
+Production build mevcut sitemap nedeniyle geçerli Supabase ortam değişkenleri gerektirir. `SITE_ENV=preview` tanımlı derleme sitemap kataloğunu oluşturmaz ve sitemap üzerinden Supabase çağrısı yapmaz (canlı sunucuda değişken tanımsız). Deneme kopyasında gerçek katalog, arama ve admin raporu için ayrı Supabase/TMDB/admin değişkenleri kullanılmalı; canlı anahtarlar denemeye kopyalanmamalı. Bu değişiklik üzerinde TypeScript, doğrulama testleri, yerel PostgreSQL uyumlu PGlite veritabanıyla SQL kurulumu/yeniden kurulum, deduplikasyon, limitler, tıklama oranı, saklama ve erişim testleri yapılmıştır. API için Origin, veri boyutu, geçersiz veri, DNT ve bot dışlama kontrolleri; gerçek tarayıcıda arama/klavye seçimi, görünür öneri gösterimi/tıklaması, admin yetkilendirmesi ve mobil taşma kontrolleri de geçti. Üretim derlemesi yerel veritabanı fixture'ıyla doğrulandı. Üretim veritabanına SQL uygulanmamıştır.

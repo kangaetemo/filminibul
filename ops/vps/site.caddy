@@ -3,6 +3,28 @@
 # Caddy bu basliklari kendisi ekler, istemciden gelenleri dikkate almaz.
 filminibul.com {
 	encode zstd gzip
+
+	# Erisim kaydi: hangi botun hangi sayfayi ne siklikla istedigi buradan okunur (DB yuku teshisi).
+	# /var/log/caddy Caddy paketinin olusturdugu klasor; 50 MB'ta doner, 5 dosya, 14 gun.
+	log {
+		output file /var/log/caddy/filminibul.log {
+			roll_size 50MiB
+			roll_keep 5
+			roll_keep_for 336h
+		}
+	}
+
+	# Arama motoru olmayan, robots.txt'ye uymayan ya da siteye faydasi olmayan tarayicilar:
+	# her film sayfasi veritabanina gittigi icin Next.js'e hic ulasmadan 403 alirlar.
+	# Google, Bing, Yandex, DuckDuckGo, sosyal ag onizlemeleri ve yapay zeka botlari (GPTBot, ClaudeBot,
+	# PerplexityBot, CCBot, Amazonbot, meta-externalagent; kullanici karari 21 Ekim) bu listede YOK.
+	@kotu_bot header_regexp User-Agent (?i)(AhrefsBot|SemrushBot|MJ12bot|DotBot|PetalBot|Bytespider|DataForSeoBot|BLEXBot|Barkrowler|serpstatbot|SeekportBot|AwarioBot|ImagesiftBot|Timpibot|omgili|python-requests|Scrapy)
+	respond @kotu_bot 403
+
+	# Zaafiyet tarayicilari (WordPress, PHP, .env, .git): Next.js'in 404 sayfasini cizdirmeden kapat.
+	@tarama path /wp-* /wordpress* /xmlrpc.php *.php /.env* /.git* /phpmyadmin* /cgi-bin/*
+	respond @tarama 404
+
 	reverse_proxy 127.0.0.1:3000
 }
 

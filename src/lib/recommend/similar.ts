@@ -52,8 +52,15 @@ export function toFilmDTO(row: FilmRow): FilmDTO {
     };
 }
 
+/**
+ * Film sayfasının veritabanı okumaları 1 gün önbellekte kalır: katalog haftalık değişir ve her değişiklik
+ * revalidateTag(CATALOG_TAG) ile önbelleği zaten tazeler. 1 saatlik süre, 26 bin sayfayı günde bir dolaşan
+ * botların neredeyse her isteğini veritabanına düşürüyordu (PF-03).
+ */
+const FILM_PAGE_TTL = 86400;
+
 export async function getFilmRow(id: number): Promise<FilmRow | null> {
-    const rows = await supabaseSelect<FilmRow[]>(`film_embeddings_v3?select=${FILM_COLUMNS}&movie_id=eq.${id}`);
+    const rows = await supabaseSelect<FilmRow[]>(`film_embeddings_v3?select=${FILM_COLUMNS}&movie_id=eq.${id}`, FILM_PAGE_TTL);
     return rows[0] ?? null;
 }
 
@@ -104,12 +111,12 @@ export async function getFilm(id: number): Promise<FilmDTO | null> {
 export async function getCandidates(id: number): Promise<Candidate[]> {
     const args = { seed_movie_id: id, match_limit: CANDIDATE_POOL };
     try {
-        const precomputed = await supabaseRpc<Candidate[]>("similar_movies_v4", args);
+        const precomputed = await supabaseRpc<Candidate[]>("similar_movies_v4", args, FILM_PAGE_TTL);
         if (precomputed.length) return precomputed;
     } catch (err) {
         console.error("similar_movies_v4:", err);
     }
-    return supabaseRpc<Candidate[]>("similar_movies_v3", args);
+    return supabaseRpc<Candidate[]>("similar_movies_v3", args, FILM_PAGE_TTL);
 }
 
 /**

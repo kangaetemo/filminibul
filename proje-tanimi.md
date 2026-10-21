@@ -128,6 +128,8 @@ Embedding pipeline batch çalışacak şekilde tasarlanmıştır; yaklaşık 20K
 
 Ana veritabanı ve vector store olarak Supabase kullanılmaktadır.
 
+> **Şu anki uygulama (21 Ekim 2026):** Supabase 20 Ekim'den beri bulutta değil, sitenin de çalıştığı VPS'te self-host (resmî Docker kurulumu; Postgres + pgvector, PostgREST, Storage, pg_cron). Kodun kullandığı REST / RPC / Storage API'leri aynı kaldı. Ayrıntı: `ops/vps/README.md`.
+
 Upstash gibi ayrı bir servis kullanmak istemiyoruz; gerekli olmadığı sürece mimari Supabase/PostgreSQL üzerinde kalmalıdır.
 
 Kabaca:
