@@ -19,6 +19,8 @@ ayrıca kullanıcının şifre yöneticisinde tutulmalı.
 
 Next.js veri önbelleği (fetch / `unstable_cache`) sürümler arasında ortak: `/opt/filminibul/shared/fetch-cache`
 (her sürümün `.next/cache/fetch-cache` bağı oraya gider; `deploy.sh` kurar). Caddy erişim kaydı: `/var/log/caddy/filminibul.log`.
+Kayıt dosyası `caddy:caddy` sahipli olmalı: `caddy validate` root olarak çalışınca dosyayı root sahipli açar ve sonraki
+`systemctl reload caddy` başarısız olur (21 Ekim'de yaşandı) → `chown caddy:caddy /var/log/caddy/*.log`.
 
 **Uyarı:** sunucuda başka bir site daha var. `/etc/caddy/Caddyfile` asla baştan yazılmaz, yalnız satır eklenir;
 her değişiklikten sonra `caddy validate` → `systemctl reload caddy` ve iki sitenin de açıldığı kontrol edilir.

@@ -71,8 +71,8 @@ if [ ! -L "$FC" ]; then
   fi
   ln -s "$SHARED_CACHE" "$FC"; chown -h filminibul:filminibul "$FC"
 fi
-# En uzun önbellek süresi 1 gün; 7 günden eski girdiler yalnız yer kaplar (ör. her açılışta değişen mod listeleri).
-find "$SHARED_CACHE" -maxdepth 1 -type f -mtime +7 ! -name tags-manifest.json -delete
+# En uzun önbellek süresi 1 gün; 3 günden eski girdiler yalnız yer kaplar (21 Ekim: tek sürümün önbelleği 2,1 GB / 36 bin dosya).
+find "$SHARED_CACHE" -maxdepth 1 -type f -mtime +3 ! -name tags-manifest.json -delete
 
 PREV=$(readlink -f "$BASE/current" 2>/dev/null || true)
 ln -sfn "$D" "$BASE/current.new" && mv -T "$BASE/current.new" "$BASE/current"
