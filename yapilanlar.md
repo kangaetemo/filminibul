@@ -794,7 +794,9 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 
 - `.github/workflows/uptime.yml` eklendi: GitHub sunucularından 15 dk'da bir (ve elle) `https://filminibul.com/` 200, `/api/similar/603?limit=1` 200 (veritabanı yolu; TMDB'ye bağlı olmadığı için yanlış alarm vermez), `www` 308, `https://api.filminibul.com/rest/v1/` anahtarsız 401 (Caddy + Kong ayakta) bekleniyor; her adres 3 deneme / 20 sn arayla. Ayrıca `filminibul.com` ve `api.filminibul.com` sertifikalarının bitmesine 14 günden az kalmışsa hata.
 - Hata olursa "Kesinti: site dışarıdan erişilemiyor" başlıklı issue açılıyor (açıksa yorum ekleniyor), çalışma kırmızı bitiyor (GitHub e-postası); tüm kontroller yeniden geçince issue otomatik kapanıyor. Elle çalıştırmada `simulate_failure` seçeneği bildirimi denemek için kasıtlı hata üretiyor.
-- Doğrulama: betik sözdizimi ve sahte `curl` ile mantık yerelde denendi (bu ortamdan siteye erişim yok). Gerçek zamanlanmış çalışma ve deneme hatası henüz doğrulanmadı; zamanlanmış iş akışları yalnız main'den çalışır.
+- Yayın: [PR #9](https://github.com/kangaetemo/filminibul/pull/9) 09:19'da main'e birleştirildi.
+- Doğrulama: elle deneme hatası ([çalışma 39554719148](https://github.com/kangaetemo/filminibul/actions/runs/39554719148)) [issue #11](https://github.com/kangaetemo/filminibul/issues/11)'i açtı; gerçek adreslerin hepsi beklenen kodu verdi (0,6–1 sn), iki sertifika 89 gün geçerli. Ardından normal çalışma ([39554907928](https://github.com/kangaetemo/filminibul/actions/runs/39554907928)) başarılı oldu ve #11'i otomatik kapattı. İlk zamanlanmış çalışma ([39597787710](https://github.com/kangaetemo/filminibul/actions/runs/39597787710)) 15:12'de başarılı.
+- Sınırlama: GitHub zamanlaması bu depoda saatlerce gecikiyor (ilk `schedule` çalışması birleştirmeden ~6 saat sonra geldi; diğer haftalık işler de ~5 saat geç başlıyor). Bu yüzden iş akışı anlık alarm sayılmamalı; kullanıcıya ücretsiz dış izleyici (Better Stack, 3 dk) önerildi, kurulumu kullanıcıda.
 
 ## Belgelerin VPS düzenine göre güncellenmesi · 21 Ekim 2026 Türkiye saati
 
