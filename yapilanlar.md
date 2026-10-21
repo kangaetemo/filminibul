@@ -789,6 +789,13 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Geri yükleme denemesi: yedek R2'den indirildi, üç dosyanın SHA-256'sı manifest ile aynı; `restore_test` veritabanına (vector eklentisi + `pg_restore`, public şema / varsayılan yetki girdileri hariç) hatasız yüklendi. Canlıyla aynı sorgu dosyası farksız: `film_embeddings_v3` ve `film_neighbors` 26.875 satır ve tam veri md5'leri, `film_providers` 5.691, 17 fonksiyon, 18 index, `similar_movies_v4(603)` sonucu. Storage meta dökümünde iki tablo verisi, dosya arşivinde 9 dosya (manifest ile aynı). Deneme veritabanı silindi. Storage'ın kendisinin geri yüklenmesi denenmedi.
 - Sunucudaki yayın / yedek betikleri, systemd birimleri ve filminibul Caddy blokları geri yükleme talimatıyla birlikte `ops/vps/` altına kopyalandı (gizli bilgi yok).
 
+
+## ALT-05 — Dışarıdan erişilebilirlik kontrolü · 21 Ekim 2026 Türkiye saati
+
+- `.github/workflows/uptime.yml` eklendi: GitHub sunucularından 15 dk'da bir (ve elle) `https://filminibul.com/` 200, `/api/similar/603?limit=1` 200 (veritabanı yolu; TMDB'ye bağlı olmadığı için yanlış alarm vermez), `www` 308, `https://api.filminibul.com/rest/v1/` anahtarsız 401 (Caddy + Kong ayakta) bekleniyor; her adres 3 deneme / 20 sn arayla. Ayrıca `filminibul.com` ve `api.filminibul.com` sertifikalarının bitmesine 14 günden az kalmışsa hata.
+- Hata olursa "Kesinti: site dışarıdan erişilemiyor" başlıklı issue açılıyor (açıksa yorum ekleniyor), çalışma kırmızı bitiyor (GitHub e-postası); tüm kontroller yeniden geçince issue otomatik kapanıyor. Elle çalıştırmada `simulate_failure` seçeneği bildirimi denemek için kasıtlı hata üretiyor.
+- Doğrulama: betik sözdizimi ve sahte `curl` ile mantık yerelde denendi (bu ortamdan siteye erişim yok). Gerçek zamanlanmış çalışma ve deneme hatası henüz doğrulanmadı; zamanlanmış iş akışları yalnız main'den çalışır.
+
 ## ALT-03 (kod kısmı) — Koddaki Vercel izleri kaldırıldı · 21 Ekim 2026 Türkiye saati
 
 - `@vercel/analytics` bileşeni `layout.tsx`'ten, paket `package.json` / `package-lock.json`'dan kaldırıldı (ürün istatistikleri zaten kendi `analytics_*` tablolarında).
