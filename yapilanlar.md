@@ -830,3 +830,12 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Vercel'e atıf yapan yorumlar (README, `update-catalog`, `vibeCached`, `vibe`, `requestOrigin`) güncellendi. `tmdbImageLoader` yorumu geçmiş gerekçe olarak bırakıldı.
 - Kontroller: `tsc --noEmit` temiz; 138 testten 136'sı geçti, `vibe-provider.test.mjs`'teki 2 test main'de de aynı şekilde iptal oluyor (bu değişiklikle ilgisiz); `SITE_ENV=preview npm run build` başarılı; `verify_seo_pages.mjs` ve `verify_people_pages.mjs` fixture modunda geçti (noindex kontrolü dahil).
 - Vercel projesinin GitHub bağlantısı 21 Ekim'de kullanıcı tarafından kesildi (PR önizlemeleri artık derlenmiyor). Kalan: DNS'in Vercel'den taşınması ve Vercel projesinin kapatılması.
+
+
+## KT-01 — Katalog toplu dolgusu · 21 Ekim 2026 Türkiye saati
+
+- Kullanıcı onayıyla `Kataloğu güncelle` iş akışı iki kez elle çalıştırıldı (`max_add=1500`): [çalışma #7](https://github.com/kangaetemo/filminibul/actions/runs/39612117126) (16:54–17:20) ve [çalışma #8](https://github.com/kangaetemo/filminibul/actions/runs/39616759333) (17:26–17:51). İkisi de başarılı.
+- Tarama: vizyon 34, Türk filmi 1.540, TMDB popüler 10.000; eksik vizyon / Türk filmi 0, ≥ 300 oylu eksik 2.741 (≥ 500 oylu 1.574). 1. tur 1.500, 2. tur kalan 1.241 film ekledi; **kalan 0**.
+- Katalog 26.875 → 28.375 → **29.616 film**. Veritabanı 1. turdan önce 403 MB, 2. turdan önce 426 MB (1.500 film ≈ +23 MB, tahmin edilen 17 KB / filmden az); 5 GB payın ~%9'u.
+- Her turda oy / puan tazeleme, 200 komşu hesabı (29.616 film, ~18 dk, tahmini ~39 MB) ve statik dosyalar (keyword çevirisi +1.062 / +730, toplam 22.176; modlar, IDF) yeniden üretildi; iş akışı değişen dosyaları main'e commit'ledi.
+- Not: yeni film sayfaları sitemap'e otomatik girer; Search Console'daki "keşfedildi - dizine eklenmemiş" kuyruğu (~15 bin) bu yüzden bir süre büyüyebilir (Kasım başındaki karşılaştırmada dikkate alınacak).
