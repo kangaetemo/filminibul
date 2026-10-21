@@ -1,6 +1,6 @@
 # Filminibul: Proje Durumu
 
-Son güncelleme: 17 Ekim 2026 (Türkiye saati) · Canlı: [filminibul.com](https://filminibul.com) · Kod: GitHub `kangaetemo/filminibul`, `main` (Vercel otomatik deploy).
+Son güncelleme: 17 Ekim 2026 (Türkiye saati) · Canlı: [filminibul.com](https://filminibul.com) · Kod: GitHub `kangaetemo/filminibul`, `main` (VDS'te otomatik yayın: `main`'e push → en geç ~2 dk içinde sunucu derleyip yayına alır, sağlık kontrolü geçmezse geri döner; ayrıntı `ops/vps/README.md`).
 
 > Bu dosya **sitenin şu anki hâlini** özetler. Ayrıntılı iş takibi: [`yapilacaklar.md`](yapilacaklar.md) (açık / kapanan maddeler) ve [`yapilanlar.md`](yapilanlar.md) (tarihli kayıtlar, doğrulamalar). Çalışma kuralları: [`AGENTS.md`](AGENTS.md). Öneri sisteminin hedef mimarisi ve ilkeleri: [`proje-tanimi.md`](proje-tanimi.md).
 >
