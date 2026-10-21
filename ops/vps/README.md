@@ -10,11 +10,15 @@ Sunucudaki dosyaların kopyası (gizli bilgi içermez). Sunucudaki asıl yerleri
 | `filminibul-deploy.{service,timer}` | `/etc/systemd/system/` |
 | `filminibul-backup.{service,timer}` | `/etc/systemd/system/` — her gün 04:15 (Europe/Istanbul) |
 | `site.caddy`, `api.caddy` | `/etc/caddy/` — `/etc/caddy/Caddyfile` içinden `import` edilir |
+| `db-yuk-teshis.sh` | elle çalıştırılır (salt okunur) — `supabase-db` CPU teşhisi: pahalı sorgular, komşu tablosu, bot dağılımı |
 | `docker-compose.localports.yml` | `/opt/supabase/` — Supabase API ve Postgres yalnız 127.0.0.1'de |
 
 Gizli dosyalar yalnız sunucuda: `/opt/filminibul/site.env` (uygulama ortamı), `/opt/supabase/.env` (Supabase anahtarları),
 `/root/filminibul-r2.env` (R2 erişimi). Uygulama anahtarları (TMDB, OpenAI, Firebase, admin şifresi, GitHub token)
 ayrıca kullanıcının şifre yöneticisinde tutulmalı.
+
+Next.js veri önbelleği (fetch / `unstable_cache`) sürümler arasında ortak: `/opt/filminibul/shared/fetch-cache`
+(her sürümün `.next/cache/fetch-cache` bağı oraya gider; `deploy.sh` kurar). Caddy erişim kaydı: `/var/log/caddy/filminibul.log`.
 
 **Uyarı:** sunucuda başka bir site daha var. `/etc/caddy/Caddyfile` asla baştan yazılmaz, yalnız satır eklenir;
 her değişiklikten sonra `caddy validate` → `systemctl reload caddy` ve iki sitenin de açıldığı kontrol edilir.

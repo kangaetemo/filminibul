@@ -788,3 +788,12 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - İlk yedek (elle): `gunluk/2026-10-20T1419Z`, 195 MB, ~1,5 dk, R2 doğrulaması geçti.
 - Geri yükleme denemesi: yedek R2'den indirildi, üç dosyanın SHA-256'sı manifest ile aynı; `restore_test` veritabanına (vector eklentisi + `pg_restore`, public şema / varsayılan yetki girdileri hariç) hatasız yüklendi. Canlıyla aynı sorgu dosyası farksız: `film_embeddings_v3` ve `film_neighbors` 26.875 satır ve tam veri md5'leri, `film_providers` 5.691, 17 fonksiyon, 18 index, `similar_movies_v4(603)` sonucu. Storage meta dökümünde iki tablo verisi, dosya arşivinde 9 dosya (manifest ile aynı). Deneme veritabanı silindi. Storage'ın kendisinin geri yüklenmesi denenmedi.
 - Sunucudaki yayın / yedek betikleri, systemd birimleri ve filminibul Caddy blokları geri yükleme talimatıyla birlikte `ops/vps/` altına kopyalandı (gizli bilgi yok).
+
+
+## PF-03 — Bot kaynaklı veritabanı yükü: teşhis ve öneri · 21 Ekim 2026 Türkiye saati
+
+- Kod incelemesi (sunucuya erişilmeden): film sayfası `revalidate = 3600` tanımlasa da `searchParams` (`?p=`, `?lang=`) okuduğu için dinamik çiziliyor; veritabanını koruyan tek katman Next.js veri önbelleği. Self-host'ta bu önbellek `/opt/filminibul/releases/<commit>/.next/cache/fetch-cache` içinde, yani her yeni yayında boş. Vercel'de veri önbelleği yayınlar arasında kalıcıydı; taşımadan sonra her derleme soğuk başlangıç demek.
+- Caddy'de `log` yönergesi yoktu: bot dağılımı ölçülemiyordu. "Çoğu bot" bilgisi henüz kanıtlanmadı.
+- Hazırlanan değişiklik (dalda, sunucuya uygulanmadı): `ops/vps/site.caddy` erişim kaydı (`/var/log/caddy/filminibul.log`, 50 MB × 5, 14 gün), SEO / yapay zekâ tarayıcılarına 403, WordPress / PHP / `.env` taramalarına Caddy'de 404; `ops/vps/deploy.sh` veri önbelleğini `/opt/filminibul/shared/fetch-cache`'te ortak tutuyor (derleme girdileri taşınıyor, `tags-manifest.json` korunuyor, 7 günden eski girdiler siliniyor); `robots.txt` `/karistir?` kapalı; salt okunur `ops/vps/db-yuk-teshis.sh`.
+- Doğrulama: `caddy adapt` / `caddy fmt` (2.8.4) temiz; yerel denemede Googlebot ve tarayıcı 200, AhrefsBot 403, `/wp-login.php` ve `/.env` 404, erişim kaydı JSON yazıldı ve teşhis betiğinin özetleyicisi bu kaydı okudu. `bash -n` iki betikte temiz. Sunucuda ölçüm (teşhis betiği) henüz çalıştırılmadı.
+
