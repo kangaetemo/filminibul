@@ -8,8 +8,9 @@ import Footer from "@/components/Footer";
 import { GENRES, PILOT_LISTS, type GenreId } from "@/lib/catalog/pilot";
 import { PILOT_PEOPLE, personPath } from "@/lib/catalog/peopleManifest";
 import { getCatalogArtwork } from "@/lib/catalog/artwork";
+import { isPreviewSite } from "@/lib/seo";
 
-export const metadata: Metadata = { title: "Film listeleri · Yıla ve türe göre keşfet · Filminibul", description: "Bilim kurgu, aksiyon, dram, komedi ve daha fazlası: katalogumuzdaki filmleri yıl ve tür listeleriyle keşfet.", alternates: { canonical: "/listeler" }, robots: { index: process.env.VERCEL_ENV !== "preview", follow: true } };
+export const metadata: Metadata = { title: "Film listeleri · Yıla ve türe göre keşfet · Filminibul", description: "Bilim kurgu, aksiyon, dram, komedi ve daha fazlası: katalogumuzdaki filmleri yıl ve tür listeleriyle keşfet.", alternates: { canonical: "/listeler" }, robots: { index: !isPreviewSite(), follow: true } };
 export const revalidate = 86400;
 const moods: Record<GenreId, { line: string; color: string }> = {
     878: { line: "Başka dünyalara doğru", color: "from-indigo-500/20" },

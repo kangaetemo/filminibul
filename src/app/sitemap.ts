@@ -6,6 +6,7 @@ import { MOODS } from "@/lib/recommend/moods";
 import { displayTitle } from "@/lib/recommend/similar";
 import type { FilmRow } from "@/lib/recommend/types";
 import { supabaseSelect } from "@/lib/server/supabase";
+import { isPreviewSite } from "@/lib/seo";
 
 // /sitemap.xml: ana sayfa, /karistir, mod sayfaları ve katalogdaki tüm filmler (~26 bin; Google sınırı 50 bin adres).
 // Günde bir yeniden üretilir; haftalık katalog işi yeni filmleri ekler.
@@ -29,9 +30,9 @@ async function allFilms(): Promise<Row[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    // PR previews do not publish the production catalog to search engines.
+    // Preview builds (SITE_ENV=preview) do not publish the production catalog to search engines.
     // They may have no database credentials; do not query Supabase during their build.
-    if (process.env.VERCEL_ENV === "preview") return [];
+    if (isPreviewSite()) return [];
 
     const films = await allFilms();
     return [

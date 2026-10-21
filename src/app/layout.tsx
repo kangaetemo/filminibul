@@ -5,7 +5,6 @@ import PageTracker from "@/components/analytics/PageTracker";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Analytics } from "@vercel/analytics/react";
 import Script from 'next/script';
 import { OG_BASE } from "@/lib/seo";
 
@@ -40,7 +39,6 @@ export default function RootLayout({
 				/>
                 <PreferencesProvider><FilmLoginPromptProvider>{children}</FilmLoginPromptProvider></PreferencesProvider>
                 <Suspense fallback={null}><PageTracker /></Suspense>
-                <Analytics />
             </body>
         </html>
     );

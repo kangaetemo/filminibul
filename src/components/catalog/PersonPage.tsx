@@ -5,7 +5,7 @@ import { getPersonSnapshot } from "@/lib/catalog/people";
 import { getPilotPerson, personPath, type PersonRole } from "@/lib/catalog/peopleManifest";
 import { parseFilmParam } from "@/lib/filmUrl";
 import { parsePage, pagePath, PAGE_SIZE } from "@/lib/catalog/pilot";
-import { OG_BASE } from "@/lib/seo";
+import { OG_BASE, isPreviewSite } from "@/lib/seo";
 import CatalogList from "./CatalogList";
 export type PersonProps={params:{id:string};searchParams?:Record<string,string|string[]|undefined>};
 export async function personMetadata(props:PersonProps,role:PersonRole):Promise<Metadata>{
@@ -16,7 +16,7 @@ export async function personMetadata(props:PersonProps,role:PersonRole):Promise<
     const title=data.entry.name+(role==="actor"?" filmleri":" yönetmenliğini yaptığı filmler")+(page>1?" · Sayfa "+page:"")+" · Filminibul";
     const description=data.entry.name+" için katalogumuzdaki "+data.total+(role==="actor"?" oyunculuk":" yönetmenlik")+" filmi. Film ayrıntılarını ve benzer film önerilerini keşfet.";
     const path=pagePath(personPath(data.entry),page);
-    return {title,description,alternates:{canonical:path},robots:{index:process.env.VERCEL_ENV!=="preview"&&data.total>=5&&Object.keys(props.searchParams??{}).every(k=>k==="page"),follow:true},openGraph:{...OG_BASE,type:"profile",title,description,url:path,...(data.person.profile_path?{images:[{url:"https://image.tmdb.org/t/p/w500"+data.person.profile_path,alt:data.entry.name}]}:{})}};
+    return {title,description,alternates:{canonical:path},robots:{index:!isPreviewSite()&&data.total>=5&&Object.keys(props.searchParams??{}).every(k=>k==="page"),follow:true},openGraph:{...OG_BASE,type:"profile",title,description,url:path,...(data.person.profile_path?{images:[{url:"https://image.tmdb.org/t/p/w500"+data.person.profile_path,alt:data.entry.name}]}:{})}};
 }
 export default async function PersonPage({params,searchParams,role}:PersonProps&{role:PersonRole}){
     const id=parseFilmParam(params.id),page=parsePage(searchParams?.page);

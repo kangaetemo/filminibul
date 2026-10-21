@@ -65,7 +65,7 @@ Türkçe öncelikli film keşif sitesi. Sevilen bir filme benzeyenleri bulur, ta
 - **Paylaşım:** bağlantıyı doğrudan kopyalama + X / WhatsApp / Telegram / Instagram yönlendirmesi + destekleniyorsa sistem paylaşımı.
 - **SEO:** sitemap (filmler + modlar + 80 pilot liste / kişi sayfası), robots (`/admin`, `/api/` kapalı), canonical, paylaşım önizlemeleri, Movie / Person / ItemList / BreadcrumbList JSON-LD. Sonsuz kaydırmada görünen grup URL'ye `?page=N` olarak yansır, JS kapalıyken gerçek sonraki sayfa bağlantıları çalışır. Site **Google Search Console'a eklendi ve `https://filminibul.com/sitemap.xml` gönderildi** (kullanıcı bildirimi, 17 Ekim 2026).
 - **Görseller** doğrudan TMDB CDN'inden (`src/lib/tmdbImageLoader.ts`); Next görsel optimizasyonu kullanılmıyor (Vercel döneminde ücretsiz kota dolduğu için kapatılmıştı; VPS'te de bu ayar korunuyor).
-- **Ürün istatistikleri:** kendi Supabase tablolarında (`docs/analytics.md`); üyelik kimliğiyle ilişkilendirilmez, ham olaylar 30 gün / günlük özetler 365 gün. `@vercel/analytics` bileşeni kodda duruyor ama Vercel dışında veri toplamıyor; kaldırılması ve gizlilik metninin güncellenmesi ALT-03'te açık.
+- **Ürün istatistikleri:** kendi Supabase tablolarında (`docs/analytics.md`); üyelik kimliğiyle ilişkilendirilmez, ham olaylar 30 gün / günlük özetler 365 gün. `@vercel/analytics` 21 Ekim'de kaldırıldı ve gizlilik metni VPS barındırmasına göre güncellendi; ön izleme / noindex derlemeleri `SITE_ENV=preview` ile yapılır.
 
 ### Tasarım
 - Açık ve koyu tema: ilk ziyarette cihaz tercihi, elle seçim tarayıcıda hatırlanır, geçişte 220 ms renk geçişi. Açık tema krem zemin, koyu tema kömür; vurgu sıcak amber. Renkler `src/app/globals.css` içindeki CSS değişkenlerinde, Tailwind token'ları `tailwind.config.ts`'te.

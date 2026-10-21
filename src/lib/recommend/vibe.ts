@@ -234,7 +234,7 @@ export async function vibeCandidates(rawQuery: string, ip = "unknown", timing: V
     started = Date.now();
     const rows = await vibeRows(vector);
     timing.db = Date.now() - started;
-    // Sorgu metni loglanmaz; yalnız aşama süreleri (Vercel loglarında yavaş aramaları ayırmak için)
+    // Sorgu metni loglanmaz; yalnız aşama süreleri (sunucu loglarında yavaş aramaları ayırmak için)
     console.info("vibe_timing", timing);
     return { query, doc, themes: parseThemes(doc), conditions: parseConditions(query, doc), vector, rows };
 }

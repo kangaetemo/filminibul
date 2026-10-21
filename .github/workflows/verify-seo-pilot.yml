@@ -32,7 +32,7 @@ jobs:
       - run: node_modules/.bin/tsc --noEmit --pretty false
       - run: npm run build
         env:
-          VERCEL_ENV: preview
+          SITE_ENV: preview
           NEXT_TELEMETRY_DISABLED: '1'
       - name: Yerel fixture ile SSR ve hata senaryoları
         run: node scripts/catalog/verify_seo_pages.mjs
