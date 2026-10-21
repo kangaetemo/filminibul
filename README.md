@@ -17,7 +17,9 @@ Her film TMDB verisinden (tür, tema keyword'leri, yönetmen, özet) üretilen b
 
 ## Teknoloji
 
-Next.js 14 (App Router) · Tailwind CSS · Supabase (Postgres + pgvector, Storage) · Firebase Authentication · OpenAI · TMDB · Vercel · GitHub Actions
+Next.js 14 (App Router) · Tailwind CSS · self-host Supabase (Postgres + pgvector, PostgREST, Storage) · Firebase Authentication · OpenAI · TMDB · GitHub Actions
+
+Barındırma: tek VPS'te Next.js (systemd) + Caddy + Docker'da Supabase; Cloudflare R2'ye gece yedeği. Vercel ve Supabase bulutu 20 Ekim 2026'dan beri kullanılmıyor.
 
 ## Geliştirme
 
@@ -26,7 +28,11 @@ npm install
 npm run dev
 ```
 
-Gerekli değişkenler için şablon [`.env.example`](.env.example). Projenin güncel durumu: [`PROJE-DURUMU.md`](PROJE-DURUMU.md); iş takibi: [`yapilacaklar.md`](yapilacaklar.md) ve [`yapilanlar.md`](yapilanlar.md).
+Gerekli değişkenler için şablon [`.env.example`](.env.example).
+
+## Yayın
+
+`main` dalına gelen her commit sunucu tarafından 2 dakika içinde alınır, derlenir ve yayına çıkar; derleme ya da sağlık kontrolü başarısız olursa önceki sürüm yayında kalır. Yalnız belge (`*.md`, `docs/`) değişen commit'ler derlenmez. Sunucu düzeni, komutlar, yedek ve sıfırdan geri yükleme: [`ops/vps/README.md`](ops/vps/README.md). Projenin güncel durumu: [`PROJE-DURUMU.md`](PROJE-DURUMU.md); iş takibi: [`yapilacaklar.md`](yapilacaklar.md) ve [`yapilanlar.md`](yapilanlar.md).
 
 ---
 
