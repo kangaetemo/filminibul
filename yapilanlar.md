@@ -803,4 +803,4 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Gizlilik metni (TR / EN): Vercel / Vercel Analytics satırı yerine kiralık VDS'te self-host Supabase ile barındırma anlatıldı; Vercel ve Supabase gizlilik bağlantıları kaldırıldı; son güncelleme 21 Ekim 2026.
 - Vercel'e atıf yapan yorumlar (README, `update-catalog`, `vibeCached`, `vibe`, `requestOrigin`) güncellendi. `tmdbImageLoader` yorumu geçmiş gerekçe olarak bırakıldı.
 - Kontroller: `tsc --noEmit` temiz; 138 testten 136'sı geçti, `vibe-provider.test.mjs`'teki 2 test main'de de aynı şekilde iptal oluyor (bu değişiklikle ilgisiz); `SITE_ENV=preview npm run build` başarılı; `verify_seo_pages.mjs` ve `verify_people_pages.mjs` fixture modunda geçti (noindex kontrolü dahil).
-- Yapılmadı: DNS ve Vercel projesi (ALT-03'ün kalan adımları).
+- Vercel projesinin GitHub bağlantısı 21 Ekim'de kullanıcı tarafından kesildi (PR önizlemeleri artık derlenmiyor). Kalan: DNS'in Vercel'den taşınması ve Vercel projesinin kapatılması.
