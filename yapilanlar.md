@@ -788,3 +788,12 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - İlk yedek (elle): `gunluk/2026-10-20T1419Z`, 195 MB, ~1,5 dk, R2 doğrulaması geçti.
 - Geri yükleme denemesi: yedek R2'den indirildi, üç dosyanın SHA-256'sı manifest ile aynı; `restore_test` veritabanına (vector eklentisi + `pg_restore`, public şema / varsayılan yetki girdileri hariç) hatasız yüklendi. Canlıyla aynı sorgu dosyası farksız: `film_embeddings_v3` ve `film_neighbors` 26.875 satır ve tam veri md5'leri, `film_providers` 5.691, 17 fonksiyon, 18 index, `similar_movies_v4(603)` sonucu. Storage meta dökümünde iki tablo verisi, dosya arşivinde 9 dosya (manifest ile aynı). Deneme veritabanı silindi. Storage'ın kendisinin geri yüklenmesi denenmedi.
 - Sunucudaki yayın / yedek betikleri, systemd birimleri ve filminibul Caddy blokları geri yükleme talimatıyla birlikte `ops/vps/` altına kopyalandı (gizli bilgi yok).
+
+## ALT-03 (kod kısmı) — Koddaki Vercel izleri kaldırıldı · 21 Ekim 2026 Türkiye saati
+
+- `@vercel/analytics` bileşeni `layout.tsx`'ten, paket `package.json` / `package-lock.json`'dan kaldırıldı (ürün istatistikleri zaten kendi `analytics_*` tablolarında).
+- `VERCEL_ENV=preview` kontrolleri nötr `SITE_ENV=preview` ile değiştirildi (`src/lib/seo.ts` → `isPreviewSite()`; liste, kişi sayfaları ve sitemap). Canlı sunucuda tanımsız, yani davranış aynı. SEO doğrulama betikleri ve `verify-seo-pilot` iş akışı yeni adı kullanıyor.
+- Gizlilik metni (TR / EN): Vercel / Vercel Analytics satırı yerine kiralık VDS'te self-host Supabase ile barındırma anlatıldı; Vercel ve Supabase gizlilik bağlantıları kaldırıldı; son güncelleme 21 Ekim 2026.
+- Vercel'e atıf yapan yorumlar (README, `update-catalog`, `vibeCached`, `vibe`, `requestOrigin`) güncellendi. `tmdbImageLoader` yorumu geçmiş gerekçe olarak bırakıldı.
+- Kontroller: `tsc --noEmit` temiz; 138 testten 136'sı geçti, `vibe-provider.test.mjs`'teki 2 test main'de de aynı şekilde iptal oluyor (bu değişiklikle ilgisiz); `SITE_ENV=preview npm run build` başarılı; `verify_seo_pages.mjs` ve `verify_people_pages.mjs` fixture modunda geçti (noindex kontrolü dahil).
+- Yapılmadı: DNS ve Vercel projesi (ALT-03'ün kalan adımları).

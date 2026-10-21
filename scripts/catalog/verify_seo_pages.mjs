@@ -24,7 +24,7 @@ if (!live) {
 }
 const env = { ...process.env,
     ...(!live ? { SUPABASE_URL: `http://127.0.0.1:${mock.address().port}`, SUPABASE_SERVICE_ROLE_KEY: "fixture-only-not-a-secret" } : {}),
-    NEXT_TELEMETRY_DISABLED: "1", VERCEL_ENV: "preview" };
+    NEXT_TELEMETRY_DISABLED: "1", SITE_ENV: "preview" };
 const app = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "-p", String(port)], { env, stdio: ["ignore", "pipe", "pipe"] });
 app.stdout.on("data", b => { output = (output + b).slice(-12000); });
 app.stderr.on("data", b => { output = (output + b).slice(-12000); });

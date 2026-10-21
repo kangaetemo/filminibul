@@ -3,7 +3,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import CatalogList from "@/components/catalog/CatalogList";
 import { getListSnapshot } from "@/lib/catalog/lists";
 import { GENRES, getPilotList, pagePath, parsePage, PAGE_SIZE } from "@/lib/catalog/pilot";
-import { OG_BASE } from "@/lib/seo";
+import { OG_BASE, isPreviewSite } from "@/lib/seo";
 
 export const revalidate = 86400;
 type Props = { params: { slug: string }; searchParams?: Record<string, string | string[] | undefined> };
@@ -17,7 +17,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     const description = `${list.year} yılına ait ${GENRES[list.genreId].name.toLocaleLowerCase("tr")} filmlerini katalogumuzdan keşfet. ${snapshot.total} film, en çok oylananlardan başlayarak.`;
     const path = pagePath(`/listeler/${list.slug}`, page);
     return { title, description, alternates: { canonical: path },
-        robots: { index: process.env.VERCEL_ENV !== "preview" && Object.keys(searchParams ?? {}).every(k => k === "page"), follow: true },
+        robots: { index: !isPreviewSite() && Object.keys(searchParams ?? {}).every(k => k === "page"), follow: true },
         openGraph: { ...OG_BASE, type: "website", title, description, url: path } };
 }
 export default async function ListPage({ params, searchParams }: Props) {

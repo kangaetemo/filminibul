@@ -75,7 +75,7 @@ const sections = [
         "id": "providers",
         "title": "Bilgileri işleyen hizmetler",
         "paragraphs": [
-            "Google / Firebase Authentication: Google girişi, hesap kimliği ve oturumun yönetimi; Google'dan gelen temel profil bilgileri burada tutulur. Supabase: hesaba bağlı özel film listesi ve ürün kullanım istatistikleri. Vercel: uygulamanın barındırılması, sunucu isteklerinin çalıştırılması, teknik bağlantı verileri ve Vercel Analytics ile ziyaret istatistikleri. Bu hizmetler, ilgili işlevleri sağlayabilmek için kendilerine ulaşan verileri işler.",
+            "Google / Firebase Authentication: Google girişi, hesap kimliği ve oturumun yönetimi; Google'dan gelen temel profil bilgileri burada tutulur. Barındırma: site ve veritabanı, kiraladığımız bir sanal sunucuda (VDS) açık kaynak Supabase yazılımıyla kendimiz tarafından çalıştırılır; hesaba bağlı özel film listesi, tercihler ve ürün kullanım istatistikleri burada tutulur, sunucu sağlayıcısı teknik bağlantı verilerini işleyebilir. Bu hizmetler, ilgili işlevleri sağlayabilmek için kendilerine ulaşan verileri işler.",
             "OpenAI: “Tarif et” metni ve ondan türetilen arama içeriği. TMDB: film bilgileri, gerekirse film adı araması ve doğrudan yüklenen afişler. JustWatch (TMDB üzerinden): Türkiye'deki yayın platformu bilgileri. YouTube: fragman açıldığında youtube-nocookie.com üzerinden video yüklenmesi. Bu içeriklerle bağlantı kurulduğunda ilgili sağlayıcı teknik bağlantı bilgilerini işleyebilir.",
             "Google AdSense: sitede reklam kodu yüklenir; Google kendi reklam hizmeti kapsamında çerezler ve benzeri teknolojiler kullanabilir. Uygulamamız Google giriş profilini veya bulut film listeni reklam kişiselleştirmesi için AdSense'e göndermez. Ürün istatistikleri için uyguladığımız Do Not Track / Global Privacy Control tercihi, bütün üçüncü taraf hizmetlerin işlemlerini otomatik olarak durdurmaz. Bu hizmetlerin kendi gizlilik açıklamaları da geçerlidir."
         ]
@@ -108,9 +108,7 @@ const sections = [
 
 const policyLinks = [
     ["Google gizlilik politikası", "https://policies.google.com/privacy"],
-    ["Supabase gizlilik politikası", "https://supabase.com/privacy"],
     ["OpenAI gizlilik politikası", "https://openai.com/policies/privacy-policy/"],
-    ["Vercel gizlilik politikası", "https://vercel.com/legal/privacy-policy"],
 ];
 
 export default function PrivacyPolicy() {
@@ -119,7 +117,7 @@ export default function PrivacyPolicy() {
         <main className="page-width py-10 sm:py-16">
             <article className="mx-auto max-w-2xl">
                 <h1 className="font-display text-3xl text-ink sm:text-4xl"><T text="Gizlilik Politikası" /></h1>
-                <p className="mt-3 text-xs text-muted"><T text="Son güncelleme: 13 Ekim 2026" /></p>
+                <p className="mt-3 text-xs text-muted"><T text="Son güncelleme: 21 Ekim 2026" /></p>
                 <a href="mailto:admin@filminibul.com" className="mt-4 inline-flex min-h-11 items-center break-all text-sm text-accent-ink underline underline-offset-4">admin@filminibul.com</a>
                 <div className="mt-8 space-y-8">
                     {sections.map(section => <section key={section.id} id={section.id} className="scroll-mt-6" aria-labelledby={`${section.id}-heading`}>

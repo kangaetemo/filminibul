@@ -2,7 +2,7 @@
 #   1. Eksik filmleri ekle (Türkiye'de yeni vizyona girenler + TMDB'de çok oy almış ama katalogda olmayanlar; üst sınırlı)
 #   2. Yeni filmlerin oy/puan/popülerliğini tazele (eski kalırsa reranker "az oylu" diye cezalandırır)
 #   3. Her filmin en yakın 200 komşusunu yeniden hesapla (film_neighbors; film sayfası buradan okur)
-#   4. Mod listeleri, keyword çevirileri, seri adları ve IDF'i yeniden üret; değiştiyse commit'le (Vercel yeniden deploy eder)
+#   4. Mod listeleri, keyword çevirileri, seri adları ve IDF'i yeniden üret; değiştiyse commit'le (VPS'teki otomatik yayın yeniden derler)
 # Zamanlanmış: her pazartesi 02:00 UTC (05:00 Türkiye), platform yenilemesinden bir saat önce
 # (yeni eklenen filmler aynı sabah platform taramasına da girer). Elle: Actions → "Kataloğu güncelle" → Run workflow.
 # Gerekli repo secret'ları: TMDB_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, OPENAI_API_KEY
@@ -69,7 +69,7 @@ jobs:
             echo "Statik dosyalarda değişiklik yok."
             exit 0
           fi
-          # Yazar olarak repodaki son commit'in sahibini kullan: Vercel, tanımadığı yazarın commit'ini deploy etmeyebilir
+          # Yazar olarak repodaki son commit'in sahibini kullan (geçmişte yazar bilgisi tutarlı kalsın)
           git config user.name "$(git log -1 --format=%an)"
           git config user.email "$(git log -1 --format=%ae)"
           git commit -m "chore: haftalık katalog güncellemesi (modlar, keyword çevirileri, IDF)"

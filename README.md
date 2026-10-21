@@ -17,7 +17,7 @@ Her film TMDB verisinden (tür, tema keyword'leri, yönetmen, özet) üretilen b
 
 ## Teknoloji
 
-Next.js 14 (App Router) · Tailwind CSS · Supabase (Postgres + pgvector, Storage) · Firebase Authentication · OpenAI · TMDB · Vercel · GitHub Actions
+Next.js 14 (App Router) · Tailwind CSS · Supabase (Postgres + pgvector, Storage) · Firebase Authentication · OpenAI · TMDB · VDS (Node.js + Caddy, self-host Supabase) · GitHub Actions
 
 ## Geliştirme
 

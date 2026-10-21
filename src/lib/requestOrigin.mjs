@@ -1,7 +1,7 @@
 // İsteğin tarayıcının gördüğü genel adresi, ör. "https://filminibul.com".
 // Next bir proxy'nin (VPS'te Caddy) arkasında çalışırken request.url / nextUrl.origin kendi dinlediği
 // adresi (https://localhost:3000) verir; gerçek adres proxy'nin eklediği X-Forwarded-Host /
-// X-Forwarded-Proto başlıklarındadır (Vercel de aynılarını ekler). Next yalnız 127.0.0.1'i dinlediği
+// X-Forwarded-Proto başlıklarındadır. Next yalnız 127.0.0.1'i dinlediği
 // için bu başlıklar yalnız proxy'den gelebilir. Edge (middleware) ve Node'da çalışır.
 const first = (request, name) => request.headers.get(name)?.split(",")[0].trim() || "";
 

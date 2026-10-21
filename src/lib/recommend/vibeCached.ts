@@ -1,8 +1,8 @@
 // Tarif aramasının sunucular arası önbelleği.
 //
-// vibe.ts içindeki bellek önbelleği yalnız o sunucu örneğinde yaşar; Vercel yeni örnek açınca aynı tarif
-// yeniden OpenAI'ye gider (yavaş ve ücretli). Burada sonuç Next'in veri önbelleğine (Vercel Data Cache)
-// yazılır, bütün örnekler paylaşır. Hatalar önbelleğe girmez; hız sınırı ve doğrulama yalnız önbellekte
+// vibe.ts içindeki bellek önbelleği yalnız o süreçte yaşar; süreç yeniden başlayınca aynı tarif
+// yeniden OpenAI'ye gider (yavaş ve ücretli). Burada sonuç Next'in veri önbelleğine (diskte) yazılır,
+// yeniden başlatmalardan sonra da kullanılır. Hatalar önbelleğe girmez; hız sınırı ve doğrulama yalnız önbellekte
 // olmayan aramada çalışır. Katalog etiketiyle birlikte tazelenir (yeni film eklenince).
 
 import { unstable_cache } from "next/cache";

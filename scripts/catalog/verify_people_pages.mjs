@@ -26,7 +26,7 @@ if(!live){
     });
     await new Promise(resolve=>mock.listen(0,"127.0.0.1",resolve));
 }
-const env={...process.env,VERCEL_ENV:"preview",NEXT_TELEMETRY_DISABLED:"1",...(!live?{SUPABASE_URL:"http://127.0.0.1:"+mock.address().port,SUPABASE_SERVICE_ROLE_KEY:"fixture-only"}:{})};
+const env={...process.env,SITE_ENV:"preview",NEXT_TELEMETRY_DISABLED:"1",...(!live?{SUPABASE_URL:"http://127.0.0.1:"+mock.address().port,SUPABASE_SERVICE_ROLE_KEY:"fixture-only"}:{})};
 const app=spawn(process.execPath,["node_modules/next/dist/bin/next","start","-p",String(port)],{env,stdio:["ignore","pipe","pipe"]});
 app.stdout.on("data",b=>{output=(output+b).slice(-12000);});app.stderr.on("data",b=>{output=(output+b).slice(-12000);});
 async function request(path){const started=Date.now();const res=await fetch("http://127.0.0.1:"+port+path,{redirect:"manual",signal:AbortSignal.timeout(45000)});return {status:res.status,headers:res.headers,html:await res.text(),ms:Date.now()-started};}
