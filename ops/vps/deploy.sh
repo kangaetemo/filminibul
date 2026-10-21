@@ -57,6 +57,23 @@ if ! runuser -u filminibul -- npm ci --no-audit --no-fund --loglevel=error \
 fi
 fi
 
+# Next.js veri önbelleği (fetch / unstable_cache) sürümler arasında ortak: her yayında boş başlayıp
+# 26 bin film sayfasının (botlar tararken) veritabanına yeniden gitmesini önler. Derlemenin yazdığı
+# girdiler ortak klasöre taşınır (tags-manifest.json hariç: eski revalidateTag kayıtları korunur).
+SHARED_CACHE="$BASE/shared/fetch-cache"
+FC="$D/.next/cache/fetch-cache"
+mkdir -p "$SHARED_CACHE"; chown filminibul:filminibul "$BASE/shared" "$SHARED_CACHE"
+if [ ! -L "$FC" ]; then
+  mkdir -p "$D/.next/cache"
+  if [ -d "$FC" ]; then
+    find "$FC" -maxdepth 1 -type f ! -name tags-manifest.json -exec cp -a {} "$SHARED_CACHE/" \;
+    rm -rf "$FC"
+  fi
+  ln -s "$SHARED_CACHE" "$FC"; chown -h filminibul:filminibul "$FC"
+fi
+# En uzun önbellek süresi 1 gün; 3 günden eski girdiler yalnız yer kaplar (21 Ekim: tek sürümün önbelleği 2,1 GB / 36 bin dosya).
+find "$SHARED_CACHE" -maxdepth 1 -type f -mtime +3 ! -name tags-manifest.json -delete
+
 PREV=$(readlink -f "$BASE/current" 2>/dev/null || true)
 ln -sfn "$D" "$BASE/current.new" && mv -T "$BASE/current.new" "$BASE/current"
 systemctl restart filminibul

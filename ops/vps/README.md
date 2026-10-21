@@ -23,11 +23,24 @@ Bu klasör sunucudaki dosyaların kopyasıdır (gizli bilgi içermez). Sunucudak
 | `filminibul-deploy.{service,timer}` | `/etc/systemd/system/` |
 | `filminibul-backup.{service,timer}` | `/etc/systemd/system/` — her gün 04:15 (Europe/Istanbul) |
 | `site.caddy`, `api.caddy` | `/etc/caddy/` — `/etc/caddy/Caddyfile` içinden `import` edilir |
+| `db-yuk-teshis.sh` | elle çalıştırılır (salt okunur) — `supabase-db` CPU teşhisi: pahalı sorgular, komşu tablosu, bot dağılımı |
 | `docker-compose.localports.yml` | `/opt/supabase/` — Supabase API ve Postgres yalnız 127.0.0.1'de |
 
 Gizli dosyalar yalnız sunucuda: `/opt/filminibul/site.env` (uygulama ortamı), `/opt/supabase/.env` (Supabase anahtarları),
 `/root/filminibul-r2.env` (R2 erişimi). Uygulama anahtarları (TMDB, OpenAI, Firebase, admin şifresi, GitHub token)
 ayrıca kullanıcının şifre yöneticisinde tutulmalı.
+
+Next.js veri önbelleği (fetch / `unstable_cache`) sürümler arasında ortak: `/opt/filminibul/shared/fetch-cache`
+(her sürümün `.next/cache/fetch-cache` bağı oraya gider; `deploy.sh` kurar). Caddy erişim kaydı: `/var/log/caddy/filminibul.log`.
+Kayıt dosyası `caddy:caddy` sahipli olmalı: `caddy validate` root olarak çalışınca dosyayı root sahipli açar ve sonraki
+`systemctl reload caddy` başarısız olur (21 Ekim'de yaşandı) → `chown caddy:caddy /var/log/caddy/*.log`.
+
+**Envoy sağlık kontrolü (21 Ekim, PF-03):** Supabase'in `volumes/api/envoy/cds.yaml` dosyası `rest` kümesini 5 sn'de bir
+`GET /` ile kontrol ediyordu; PostgREST bu adreste her seferinde OpenAPI belgesini üretiyor (iki ağır şema sorgusu, ~1,3 sn,
+~1,3 MB). Veritabanı CPU'sunun ve `supabase-rest` üzerinden geçen ~24 GB trafiğin asıl kaynağı buydu. `rest` kümesinde
+`path: /__saglik` + `expected_statuses: 200–404` yapıldı (PostgREST bilinmeyen tabloya şema önbelleğinden, veritabanına
+gitmeden 404 döner; çökerse / şema yüklenemezse 503 → sağlıksız). Yedek `cds.yaml.bak-<zaman>`. **Supabase güncellenince
+bu dosya eski hâline dönebilir**; güncellemeden sonra `grep -n -A3 http_health_check volumes/api/envoy/cds.yaml` ile kontrol et.
 
 **Uyarı:** sunucuda başka bir site daha var. `/etc/caddy/Caddyfile` asla baştan yazılmaz, yalnız satır eklenir;
 her değişiklikten sonra `caddy validate` → `systemctl reload caddy` ve iki sitenin de açıldığı kontrol edilir.
