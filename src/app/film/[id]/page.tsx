@@ -22,6 +22,7 @@ import { buildFilmSnippet, snippetTitles } from "@/lib/filmSnippet.mjs";
 import SimilarHeading from "@/components/film/SimilarHeading";
 import { filmPath, parseFilmParam } from "@/lib/filmUrl";
 import { OG_BASE } from "@/lib/seo";
+import { ownImageAbsoluteUrl, ownImageUrl } from "@/lib/ownImage";
 import { getFilmPeople } from "@/lib/catalog/people";
 import { getPilotPerson, personPath } from "@/lib/catalog/peopleManifest";
 import FilmPeopleLinks from "@/components/catalog/FilmPeopleLinks";
@@ -71,7 +72,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             url,
             title: `${name} gibi filmler`,
             description,
-            ...(image && { images: [{ url: image, alt: film.title }] }),
+            ...(image && { images: [{ url: ownImageUrl(image), alt: film.title }] }),
         },
         twitter: { card: image === film.backdropUrl ? "summary_large_image" : "summary" },
     };
@@ -104,7 +105,7 @@ export default async function FilmPage({ params, searchParams }: Props) {
     });
     const movieStructuredData = {
         "@context": "https://schema.org", "@type": "Movie", name: film.title, url: "https://filminibul.com" + canonical,
-        ...(film.posterUrl ? { image: film.posterUrl } : {}), ...(film.overview ? { description: film.overview } : {}),
+        ...(film.posterUrl ? { image: ownImageAbsoluteUrl(film.posterUrl) } : {}), ...(film.overview ? { description: film.overview } : {}),
         genre: film.genres, ...(linkedDirectors.length ? { director: linkedDirectors } : {}),
     };
 
