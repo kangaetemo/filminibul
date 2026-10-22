@@ -3,7 +3,7 @@ import Image from "next/image";
 import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import { T } from "@/components/preferences/Preferences";
-export const metadata: Metadata = { title: "Hakkında ve veri kaynakları · Filminibul", alternates: { canonical: "/hakkinda" } };
+export const metadata: Metadata = { title: "Hakkında ve veri kaynakları · Filminibul", description: "Filminibul nedir, benzer film önerileri nasıl hazırlanır ve film bilgileri, afişler ve yayın platformu verileri hangi kaynaklardan (TMDB, JustWatch) gelir?", alternates: { canonical: "/hakkinda" } };
 export default function AboutPage() {
     return <><SiteHeader /><main className="page-width max-w-3xl py-12"><h1 className="section-heading"><T text="Hakkında ve veri kaynakları" /></h1>
         <p className="mt-6 leading-relaxed text-muted"><T text="Filminibul, sevdiğin filmlerden yola çıkarak yeni hikâyeler bulmana yardımcı olur. Benzer filmleri keşfedebilir, iki filmi karıştırabilir ve kendi film listeni oluşturabilirsin." /></p>

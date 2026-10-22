@@ -25,6 +25,20 @@ filminibul.com {
 	@tarama path /wp-* /wordpress* /xmlrpc.php *.php /.env* /.git* /phpmyadmin* /cgi-bin/*
 	respond @tarama 404
 
+	# Afiş / arka plan / oyuncu görselleri (/img/w342/abc.jpg): diskte varsa Next.js'e uğramadan buradan sunulur.
+	# Yoksa istek Next.js'e gider; o da TMDB'den alıp bu klasöre yazar (src/app/img/[size]/[file]/route.ts).
+	@img_diskte {
+		path /img/*
+		file {
+			root /var/cache/filminibul-img
+		}
+	}
+	handle @img_diskte {
+		root * /var/cache/filminibul-img
+		header Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
+
 	reverse_proxy 127.0.0.1:3000
 }
 

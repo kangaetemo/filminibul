@@ -35,6 +35,11 @@ Next.js veri önbelleği (fetch / `unstable_cache`) sürümler arasında ortak: 
 Kayıt dosyası `caddy:caddy` sahipli olmalı: `caddy validate` root olarak çalışınca dosyayı root sahipli açar ve sonraki
 `systemctl reload caddy` başarısız olur (21 Ekim'de yaşandı) → `chown caddy:caddy /var/log/caddy/*.log`.
 
+**Görsel önbelleği (22 Ekim):** afişler tarayıcıya `filminibul.com/img/<boyut>/<dosya>` adresinden gider. İlk istekte Next.js
+görseli TMDB'den alıp `/var/cache/filminibul-img/img/...` altına yazar, sonrakileri Caddy diskten sunar (`site.caddy`,
+`@img_diskte`). Klasör `filminibul` sahipli olmalı: `install -d -o filminibul -g filminibul -m 755 /var/cache/filminibul-img`.
+Yedeğe girmez (gerekirse silinir, yeniden dolar). Boyutu: `du -sh /var/cache/filminibul-img`.
+
 **Envoy sağlık kontrolü (21 Ekim, PF-03):** Supabase'in `volumes/api/envoy/cds.yaml` dosyası `rest` kümesini 5 sn'de bir
 `GET /` ile kontrol ediyordu; PostgREST bu adreste her seferinde OpenAPI belgesini üretiyor (iki ağır şema sorgusu, ~1,3 sn,
 ~1,3 MB). Veritabanı CPU'sunun ve `supabase-rest` üzerinden geçen ~24 GB trafiğin asıl kaynağı buydu. `rest` kümesinde
