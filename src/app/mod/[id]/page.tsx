@@ -18,9 +18,9 @@ type Props = { params: { id: string } };
 export function generateMetadata({ params }: Props): Metadata {
     const mood = getMood(params.id);
     if (!mood) return { title: "Filminibul" };
-    const description = `"${mood.label}" diyenler için film önerileri: her açılışta farklı filmler.`;
+    const description = `"${mood.label}" diyenler için ruh hâline uygun film önerileri. Her açılışta katalogdan farklı filmler gelir; beğendiğin filmin benzerlerini tek tıkla keşfet.`;
     return {
-        title: `${mood.label} · Filminibul`,
+        title: `${mood.label}: ruh hâline göre film önerileri · Filminibul`,
         description,
         alternates: { canonical: `/mod/${mood.id}` },
         openGraph: { ...OG_BASE, type: "website", url: `/mod/${mood.id}`, title: `${mood.emoji} ${mood.label} · Filminibul`, description },

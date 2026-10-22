@@ -15,7 +15,7 @@ import type { Platform } from "@/lib/recommend/providers";
 // Poster kartı: benzer filmler, mod ve tarif sonuçlarında ortak.
 // reasons verilirse "neden önerildi?" satırlarının ilk 2'si gösterilir, tamamı tooltip'te.
 // platforms verilirse Türkiye'de izlenebildiği platformların logoları (en fazla 3).
-export default function FilmCard({ film, reasons, reasonsEn, platforms, index = 0, context, sourceFilmId, page, creditLabel }: { film: FilmDTO; reasons?: string[]; reasonsEn?: string[]; platforms?: Platform[]; index?: number; context?: "similar" | "vibe" | "blend" | "mood" | "list" | "person"; sourceFilmId?: number; page?: number; creditLabel?: string }) {
+export default function FilmCard({ film, reasons, reasonsEn, platforms, index = 0, context, sourceFilmId, page, creditLabel, priority = false }: { film: FilmDTO; reasons?: string[]; reasonsEn?: string[]; platforms?: Platform[]; index?: number; context?: "similar" | "vibe" | "blend" | "mood" | "list" | "person"; sourceFilmId?: number; page?: number; creditLabel?: string; priority?: boolean }) {
     const { language, t } = useLanguage();
     const title = language === "en" ? film.titleEn || film.title : film.title;
     const displayedReasons = language === "en" ? reasonsEn || reasons : reasons;
@@ -49,7 +49,7 @@ export default function FilmCard({ film, reasons, reasonsEn, platforms, index = 
         <li ref={ref} className="min-w-0" data-catalog-start={page && index === 0 ? page : undefined}>
             <div className="group relative">
                 <Link href={filmPath(film.id, film.title)} onClick={onClick} className="relative block aspect-[2/3] overflow-hidden rounded-lg bg-ink/5 ring-1 ring-ink/10 transition-shadow hover:shadow-glow-card" aria-label={`${title} ${language === "en" ? "film details" : "film ayrıntıları"}`}>
-                    {film.posterUrl && !failedPoster ? <Image src={film.posterUrl} alt={`${title} ${language === "en" ? "poster" : "afişi"}`} fill sizes="(min-width: 1280px) 218px, (min-width: 1024px) 18vw, (min-width: 640px) 30vw, 45vw" className="object-cover transition-transform duration-300 group-hover:scale-[1.025]" onError={() => setFailedPoster(true)} /> : <span className="absolute inset-0 flex items-center justify-center p-5 text-center text-lg font-bold text-muted">{title}</span>}
+                    {film.posterUrl && !failedPoster ? <Image src={film.posterUrl} alt={`${title} ${language === "en" ? "poster" : "afişi"}`} fill priority={priority} sizes="(min-width: 1280px) 218px, (min-width: 1024px) 18vw, (min-width: 640px) 30vw, 45vw" className="object-cover transition-transform duration-300 group-hover:scale-[1.025]" onError={() => setFailedPoster(true)} /> : <span className="absolute inset-0 flex items-center justify-center p-5 text-center text-lg font-bold text-muted">{title}</span>}
                 </Link>
                 <SaveButton film={film} compact />
             </div>

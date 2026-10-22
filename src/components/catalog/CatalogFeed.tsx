@@ -108,7 +108,7 @@ export default function CatalogFeed({ initial, path, title, structuredData, cont
 
     return <>
         <ul ref={grid} className="movie-grid" aria-label="Filmler" aria-busy={loading}>
-            {chunks.flatMap(chunk => chunk.films.map((film, index) => <FilmCard key={film.id} film={film} index={index} page={chunk.page} context={context} creditLabel={chunk.notes?.[film.id]} />))}
+            {chunks.flatMap(chunk => chunk.films.map((film, index) => <FilmCard key={film.id} film={film} index={index} page={chunk.page} context={context} creditLabel={chunk.notes?.[film.id]} priority={chunk.page === initial.page && index < 4} />))}
         </ul>
         <div ref={sentinel} className="mt-6 flex flex-col items-center gap-3 text-center">
             <p role="status" aria-live="polite" className="text-sm text-muted">{loading ? "Sıradaki filmler yükleniyor…" : error ? "Sıradaki filmler yüklenemedi. Yeniden deneyebilirsin." : hasMore ? `${shown} film gösteriliyor · Aşağı indikçe devamı yüklenir` : `${shown} film gösteriliyor · Seçkinin sonuna geldin.`}</p>
