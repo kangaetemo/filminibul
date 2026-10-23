@@ -27,9 +27,8 @@ export const heroBackdropUrl = (frame: HeroFrame) => `https://image.tmdb.org/t/p
 export const heroFilmPath = (frame: HeroFrame) => filmPath(frame.id, frame.title);
 
 /**
- * İlk gösterilecek kare. Ana sayfa saatte bir yeniden üretildiği (ISR) için kare her saat değişir; böylece
- * ziyaretçiler farklı kareler görür, ilk görsel sunucuda seçilip öncelikli yüklenir ve sayfa açılırken
- * görsel sonradan değişmez.
+ * Yedek seçim: ilk kare normalde her istekte middleware'de rastgele seçilir (src/middleware.ts → /ana-sayfa/<n>).
+ * Bu fonksiyon yalnız "/" sayfası doğrudan üretilirse kullanılır; kare saatte bir değişir.
  */
 export function heroFrameIndex(now = Date.now()): number {
     return Math.floor(now / 3_600_000) % HERO_FRAMES.length;

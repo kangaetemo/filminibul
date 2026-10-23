@@ -839,3 +839,12 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Katalog 26.875 → 28.375 → **29.616 film**. Veritabanı 1. turdan önce 403 MB, 2. turdan önce 426 MB (1.500 film ≈ +23 MB, tahmin edilen 17 KB / filmden az); 5 GB payın ~%9'u.
 - Her turda oy / puan tazeleme, 200 komşu hesabı (29.616 film, ~18 dk, tahmini ~39 MB) ve statik dosyalar (keyword çevirisi +1.062 / +730, toplam 22.176; modlar, IDF) yeniden üretildi; iş akışı değişen dosyaları main'e commit'ledi.
 - Not: yeni film sayfaları sitemap'e otomatik girer; Search Console'daki "keşfedildi - dizine eklenmemiş" kuyruğu (~15 bin) bu yüzden bir süre büyüyebilir (Kasım başındaki karşılaştırmada dikkate alınacak).
+
+
+## GR-03 — Ana sayfa karesi her yenilemede rastgele · 23 Ekim 2026 Türkiye saati
+
+- Kullanıcı isteği: ana sayfadaki film karesi saatlik değil, her yenilemede rastgele gelsin.
+- `/` isteği middleware'de rastgele bir `/ana-sayfa/<n>` sayfasına iç yönlendirilir (adres çubuğunda `/` kalır). Her kare için ana sayfanın ayrı bir statik (ISR, saatte bir) kopyası derlemede üretilir; böylece istek başına sayfa çizimi ya da veritabanı okuması yok. İlk kare yine sunucuda seçilip öncelikli yüklenir, açılışta görsel değişmez.
+- `/ana-sayfa/*` doğrudan açılırsa 308 ile `/` adresine döner; canonical `/`. Eski `heroFrameIndex()` yalnız yedek olarak kaldı.
+- İçerik `src/app/_home/HomeView.tsx`'e taşındı; `src/app/page.tsx` ve `src/app/ana-sayfa/[kare]/page.tsx` onu kullanır.
+- Kontroller: `tsc --noEmit` temiz, `npm run build` başarılı (sahte Supabase ile), yerel sunucuda 12 istekte 6 karenin hepsi geldi, `/ana-sayfa/2` → 308 `/`, `/admin` hâlâ girişe yönlendiriyor.
