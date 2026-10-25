@@ -854,3 +854,11 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 
 - **24 Ekim düzeltme:** PR #17 canlıya çıkmadı. Sunucudaki yayın betiğinin sağlık kontrolü `/` için 308 aldı ve her 2 dakikada bir eski sürüme geri döndü. Neden: servis `next start -H 127.0.0.1` ile çalışıyor; Next 14 middleware'deki adresi "localhost" yapıyor, sunucunun kendi adresiyle (127.0.0.1) eşleşmeyince iç yönlendirmeyi dış adres sayıp isteği kendine proxy'liyor ve `/ana-sayfa/*` kuralı 308 döndürüyor. Yerelde aynı ayarla yeniden üretildi.
 - Çözüm: middleware ve `/ana-sayfa/[kare]` kaldırıldı; ana sayfa `dynamic = "force-dynamic"` ile her istekte çizilip kareyi rastgele seçiyor. Veritabanı okumaları fetch önbelleğinde (1 gün) kaldığı için istek başına DB sorgusu yok: yerelde ~26 sayfa isteğinde sahte Supabase'e yalnız 3 istek gitti. `-H 127.0.0.1` ile sağlık kontrolü 200, 19 karenin çoğu 20 istekte geldi.
+
+
+## SEO-04 — IndexNow anahtar dosyası · 25 Ekim 2026 15:45 Türkiye saati
+
+- `public/2fb6d78efcc2398e5d24d079914f08a2.txt` eklendi (içinde yalnız anahtar). IndexNow anahtarı gizli değildir; sitenin sahibi olduğunu kanıtlamak için kökte durur.
+- Gönderimi kişisel SEO aracı yapıyor (kangaetemo/sam-seo-check, `sites.toml` → `indexnow_key`): haftalık taramada yalnız yeni ve `lastmod`'u değişen sitemap URL'leri, 10.000'lik partilerle `api.indexnow.org`'a gider. Anahtar dosyası doğrulanmadan hiç gönderim yapılmaz.
+- Neden: aynı aracın Search Console örneklemesinde (25 Ekim, 60 sayfa) gösterim almayan sitemap sayfalarının 36'sı "URL Google tarafından bilinmiyor", 23'ü dizinde çıktı.
+- Kalan: canlıya çıkınca anahtar adresinin 200 döndürdüğü ve ilk gönderimin sonucu kontrol edilecek; o zamana kadar madde açık.
