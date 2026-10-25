@@ -1,8 +1,12 @@
 # Filminibul — yapılacaklar
 
-Son güncelleme: 21 Ekim 2026 (Türkiye saati).
+Son güncelleme: 25 Ekim 2026 (Türkiye saati).
 
 Bu dosya, konuşulan geliştirmeleri ve açık işleri takip eder. Öncelikler istişarede önerilen sıradır; uygulama kapsamı yeni kararlarla güncellenir. Tamamlanan maddeler burada `[x]` olarak işaretlenir, tarih ve doğrulama bilgileriyle `yapilanlar.md` dosyasına eklenir. Başlatılmış ama bitmemiş işler açık kalır.
+
+## Arama motorlarına bildirim — 25 Ekim 2026
+
+- [ ] **SEO-04 — IndexNow ile yeni/değişen sayfaları Bing ve Yandex'e bildir.** Search Console örneklemesinde gösterim almayan sitemap sayfalarının yaklaşık üçte ikisi "URL Google tarafından bilinmiyor" çıktı. Kişisel SEO aracı (kangaetemo/sam-seo-check) haftalık taramada yeni ve `lastmod`'u değişen sitemap URL'lerini IndexNow'a gönderecek; bunun için sitenin kökünde `public/2fb6d78efcc2398e5d24d079914f08a2.txt` anahtar dosyası eklendi. Google IndexNow'a katılmıyor; Google tarafı için aynı araçtaki indekslenme takibi ve iç link önerileri kullanılacak. Kapanış koşulu: canlıda `https://filminibul.com/2fb6d78efcc2398e5d24d079914f08a2.txt` anahtarı döndürmeli ve ilk IndexNow gönderimi 200/202 almalı.
 
 ## Liste dizini bölüm geçişleri — 16 Ekim 2026
 
