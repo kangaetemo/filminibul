@@ -144,7 +144,7 @@ export default async function FilmPage({ params, searchParams }: Props) {
                             {film.inCatalog && <Link href="#benzer-filmler" className="button-secondary"><T text={"Benzer filmleri gör"} /> <ArrowDown className="h-4 w-4" aria-hidden /></Link>}
                         </div>
                         <FilmFeedback film={film} />
-                        <p className="mt-2 max-w-md text-xs leading-relaxed text-muted"><T text="Kaydettiklerin ve beğendiklerin yeni önerilere yol göstersin." /></p>
+                        <p className="mt-2 max-w-md text-xs leading-relaxed text-muted"><T text="Kaydettiğin ve beğendiğin filmler sana yapılan önerileri etkiler." /></p>
                     </div>
                     <details className="group col-span-2 -mt-1 border-t border-line sm:hidden">
                         <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 py-2 text-sm font-bold [&::-webkit-details-marker]:hidden"><T text={"Nerede izlenir?"} /><ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden /></summary>
@@ -176,7 +176,7 @@ export default async function FilmPage({ params, searchParams }: Props) {
 
                 <section className="page-width mt-12 sm:mt-16" aria-labelledby="trailer-heading">
                     <div className="grid gap-6 rounded-xl border border-line bg-card p-5 sm:grid-cols-[1fr_1.15fr] sm:items-center sm:p-8">
-                        <div><p className="eyebrow mb-2 text-muted"><T text={"Karar vermeden önce"} /></p><h2 id="trailer-heading" className="section-heading"><T text={"Bir sahne yeter."} /></h2><p className="mt-3 max-w-sm text-sm leading-relaxed text-muted">{trailer ? <T text={"Hikâyenin havasına bir göz at. Fragman burada, tek dokunuş uzağında."} /> : <T text={"Bu film için şu an bir fragman bulunamadı. Yukarıdaki benzer hikâyelere göz atabilirsin."} />}</p></div>
+                        <div><p className="eyebrow mb-2 text-muted"><T text={"Karar vermeden önce"} /></p><h2 id="trailer-heading" className="section-heading"><T text={"Önce fragmana bak."} /></h2><p className="mt-3 max-w-sm text-sm leading-relaxed text-muted">{trailer ? <T text={"Filmin havasını fragmandan görebilirsin."} /> : <T text={"Bu film için şu an bir fragman bulunamadı. Yukarıdaki benzer hikâyelere göz atabilirsin."} />}</p></div>
                         {trailer ? <TrailerButton videoKey={trailer.key} filmTitle={film.title} filmId={film.id} previewUrl={film.backdropUrl ?? film.posterUrl ?? undefined} /> : <Link href="#benzer-filmler" className="button-secondary justify-self-start"><T text={"Benzer filmlere geç"} /> <ArrowRight className="h-4 w-4" aria-hidden /></Link>}
                     </div>
                 </section>

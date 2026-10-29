@@ -28,25 +28,25 @@ export default function HomePage() {
             <SiteHeader search={false} />
             <main>
                 <HeroFrames frames={HERO_FRAMES} initial={randomHeroFrameIndex()}>
-                    <p className="eyebrow mb-4 text-white/80"><T text={"Film biter. Keşif devam eder."} /></p>
+                    <p className="eyebrow mb-4 text-white/80"><T text={"Benzer film önerileri"} /></p>
                     <h1 id="home-title" className="hero-title max-w-[790px]"><T text={"Bir filmi sevdin."} /><br /><T text={"Sırada ne var?"} /></h1>
-                    <p className="mb-5 mt-4 max-w-xl text-sm leading-relaxed text-white/90 sm:mb-7 sm:mt-5 sm:text-lg"><T text={"Sevdiğin filme benzer filmler bul."} /><br className="sm:hidden" /> <T text={"Aynı his, bambaşka hikâyeler."} /></p>
+                    <p className="mb-5 mt-4 max-w-xl text-sm leading-relaxed text-white/90 sm:mb-7 sm:mt-5 sm:text-lg"><T text={"Sevdiğin filme benzer filmler bul."} /><br className="sm:hidden" /> <T text={"Nerede izleyebileceğini de gör."} /></p>
                     <DiscoverySearch />
                 </HeroFrames>
 
                 <section id="modlar" className="page-width scroll-mt-6 pt-12 sm:pt-14" aria-labelledby="mood-heading">
-                    <div className="section-top"><div><p className="eyebrow mb-2 text-muted"><T text={"Film adı aklında değilse"} /></p><h2 id="mood-heading" className="section-heading"><T text={"Bugün hangi moddasın?"} /></h2></div><p className="max-w-xs text-sm leading-relaxed text-muted"><T text={"Nasıl hissetmek istediğini seç."} /><br className="hidden sm:block" /> <T text={"O havaya birlikte girelim."} /></p></div>
+                    <div className="section-top"><div><p className="eyebrow mb-2 text-muted"><T text={"Film adı aklında değilse"} /></p><h2 id="mood-heading" className="section-heading"><T text={"Bugün hangi moddasın?"} /></h2></div><p className="max-w-xs text-sm leading-relaxed text-muted"><T text={"Nasıl hissetmek istediğini seç."} /><br className="hidden sm:block" /> <T text={"O havada filmleri getirelim."} /></p></div>
                     <MoodChips tiles />
                 </section>
 
                 <section className="page-width pt-14 sm:pt-16" aria-labelledby="personal-heading">
-                    <div className="section-top"><div><p className="eyebrow mb-2 text-muted"><T text="Listenden yola çıkarak" /></p><h2 id="personal-heading" className="section-heading"><T text="Senin için" /></h2><p className="mt-2 text-sm text-muted"><T text="Kaydettiklerinden yeni hikâyelere." /></p></div><Link href="/senin-icin" className="text-link"><T text="Tümünü gör" /><ArrowRight className="ml-2 h-4 w-4" aria-hidden /></Link></div>
+                    <div className="section-top"><div><p className="eyebrow mb-2 text-muted"><T text="Listenden yola çıkarak" /></p><h2 id="personal-heading" className="section-heading"><T text="Senin için" /></h2><p className="mt-2 text-sm text-muted"><T text="Kaydettiğin filmlere göre öneriler." /></p></div><Link href="/senin-icin" className="text-link"><T text="Tümünü gör" /><ArrowRight className="ml-2 h-4 w-4" aria-hidden /></Link></div>
                     <Suspense fallback={<HomeShelfSkeleton />}><PersonalFilms preview /></Suspense>
                 </section>
 
                 <section className="page-width pt-14 sm:pt-16" aria-labelledby="matrix-heading">
                     <div className="section-top">
-                        <div><p className="eyebrow mb-2 text-muted"><T text={"Bir filmden diğerine"} /></p><h2 id="matrix-heading" className="section-heading"><T text={"Matrix’i sevdiysen"} /></h2><p className="mt-2 text-sm text-muted sm:text-base"><T text={"Aynı sorular. Başka dünyalar."} /></p></div>
+                        <div><p className="eyebrow mb-2 text-muted"><T text={"Bir filmden diğerine"} /></p><h2 id="matrix-heading" className="section-heading"><T text={"Matrix’i sevdiysen"} /></h2><p className="mt-2 text-sm text-muted sm:text-base"><T text={"Benzer soruları başka dünyalarda soran filmler."} /></p></div>
                         <Link href="/film/603-matrix#benzer-filmler" className="text-link"><T text={"Tümünü gör"} /> <ArrowRight className="h-4 w-4" aria-hidden /></Link>
                     </div>
                     <Suspense fallback={<HomeShelfSkeleton />}><HomeShelf /></Suspense>
@@ -59,14 +59,14 @@ export default function HomePage() {
                             <Plus className="h-7 w-7 shrink-0" />
                             <Image src="https://image.tmdb.org/t/p/w342/nSxDa3M9aMvGVLoItzWTepQ5h5d.jpg" alt="" width={110} height={165} sizes="110px" className="rotate-[8deg] rounded shadow-glow-card" />
                         </div>
-                        <div><p className="eyebrow mb-2"><T text={"İki ayrı zevk, aynı kanepe."} /></p><h2 id="blend-heading" className="font-display text-3xl leading-[1.1] sm:text-4xl"><T text={"İki filmi karıştır."} /><br /><T text={"Yeni bir şey bul."} /></h2><p className="mt-3 text-sm text-ink/80"><T text={"Birinin dünyası, diğerinin hissi."} /></p></div>
+                        <div><p className="eyebrow mb-2"><T text={"İki ayrı zevk, aynı kanepe."} /></p><h2 id="blend-heading" className="font-display text-3xl leading-[1.1] sm:text-4xl"><T text={"İki filmi karıştır."} /><br /><T text={"İkisine de benzeyeni bul."} /></h2><p className="mt-3 text-sm text-ink/80"><T text={"Birinin dünyasını, öbürünün havasını taşıyan filmler."} /></p></div>
                         <Link href="/karistir" className="inline-flex min-h-12 items-center justify-center gap-3 button-primary"><Shuffle className="h-5 w-5" aria-hidden /><T text={"Karıştırmayı dene"} /><ArrowRight className="h-4 w-4" aria-hidden /></Link>
                     </div>
                 </section>
 
                 <section className="page-width mt-14 sm:mt-16" aria-label="Nasıl çalışır">
                     <div className="grid gap-6 border-t border-line pt-8 sm:grid-cols-3 sm:gap-10">
-                        {[["01", "Bir film söyle.", "Sevdiğin bir filmin adını yaz ya da aradığın hikâyeyi kendi cümlenle anlat."], ["02", "Bağlantıyı gör.", "Önerilerde ortak temaları, yönetmenleri ve hikâyeler arasındaki yakınlığı gör."], ["03", "Sıradakini seç.", "Fragmanına bak, nerede izleyebileceğini öğren. Sonraya bırakacaksan kaydet."]].map(([n, title, text]) => <div key={n}><span className="eyebrow text-muted">{n}</span><h3 className="mt-3 text-lg font-extrabold tracking-tight"><T text={title} /></h3><p className="mt-2 text-sm leading-relaxed text-muted"><T text={text} /></p></div>)}
+                        {[["01", "Bir film söyle.", "Sevdiğin bir filmin adını yaz ya da aradığın hikâyeyi kendi cümlenle anlat."], ["02", "Neden benzediğini gör.", "Önerilerde ortak temaları, yönetmenleri ve hikâyeler arasındaki yakınlığı gör."], ["03", "Sıradakini seç.", "Fragmanına bak, nerede izleyebileceğini öğren. Sonraya bırakacaksan kaydet."]].map(([n, title, text]) => <div key={n}><span className="eyebrow text-muted">{n}</span><h3 className="mt-3 text-lg font-extrabold tracking-tight"><T text={title} /></h3><p className="mt-2 text-sm leading-relaxed text-muted"><T text={text} /></p></div>)}
                     </div>
                 </section>
             </main>

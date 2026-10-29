@@ -110,7 +110,7 @@ async function Results({ q }: { q: string }) {
 function Skeleton() {
     return (
         <div aria-busy="true" aria-label="Filmler aranıyor">
-            <p className="text-sm text-muted"><T text={"Tarifin film diline çevriliyor, en yakın filmler aranıyor…"} /></p>
+            <p className="text-sm text-muted"><T text={"Tarifine uyan filmler aranıyor…"} /></p>
             <ul className="mt-6 movie-grid">
                 {Array.from({ length: 12 }, (_, i) => (
                     <li key={i} className="aspect-[2/3] animate-pulse rounded-xl bg-ink/5" />
