@@ -862,3 +862,12 @@ Koyu temadaki karıştır alanının canlı ekran görüntüsü: [koyu-tema-oniz
 - Gönderimi kişisel SEO aracı yapıyor (kangaetemo/sam-seo-check, `sites.toml` → `indexnow_key`): haftalık taramada yalnız yeni ve `lastmod`'u değişen sitemap URL'leri, 10.000'lik partilerle `api.indexnow.org`'a gider. Anahtar dosyası doğrulanmadan hiç gönderim yapılmaz.
 - Neden: aynı aracın Search Console örneklemesinde (25 Ekim, 60 sayfa) gösterim almayan sitemap sayfalarının 36'sı "URL Google tarafından bilinmiyor", 23'ü dizinde çıktı.
 - Kalan: canlıya çıkınca anahtar adresinin 200 döndürdüğü ve ilk gönderimin sonucu kontrol edilecek; o zamana kadar madde açık.
+
+
+## SEO-04 — IndexNow ilk gönderimi doğrulandı · 26 Ekim 2026 15:10 Türkiye saati
+
+- Canlı anahtar adresi `https://filminibul.com/2fb6d78efcc2398e5d24d079914f08a2.txt` yalnız anahtarı döndürüyor (25 Ekim, PR #19 yayına çıktıktan sonra kontrol edildi).
+- İlk deneme (26 Ekim haftalık tarama, sam-seo-check Actions 40289430465) `api.indexnow.org`'dan 403 "anahtar doğrulanamadı" aldı; yeni anahtarlarda ilk gönderimde görülen bir durum (yomiba'da da ilk deneme 403, ikincisi başarılı oldu). Hiçbir URL gönderilmiş sayılmadı, hepsi bekleme listesinde kaldı.
+- İkinci deneme (26 Ekim 15:04, sam-seo-check Actions 40319776645, yeni günlük "IndexNow bildirimi" iş akışı) başarılı: sitemap'teki 29.717 URL'nin tamamı 200/202 ile kabul edildi; gönderim kaydı sam-seo-check commit 750f1d7 (`reports/filminibul/indexnow_state.json.gz`).
+- Bundan sonra: her sabah 08:23'te ve haftalık taramada yalnız yeni ya da `lastmod`'u değişen URL'ler gönderilir. Google IndexNow'a katılmıyor; Google tarafı sam-seo-check raporundaki "İndekslenme" bölümünden izlenir (26 Ekim: 1.499 örneklemle tahmini %51 dizinde).
+
