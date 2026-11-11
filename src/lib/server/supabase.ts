@@ -49,6 +49,23 @@ export async function supabaseUpsert(table: string, rows: Record<string, unknown
     if (!res.ok) throw new Error(`Supabase upsert ${table} ${res.status}: ${(await res.text()).slice(0, 300)}`);
 }
 
+/**
+ * Veritabanı şu an okunabiliyor mu (önbelleksiz, kısa zaman aşımlı)? Önbelleği sıfırlamadan önce sorulur:
+ * PostgREST veritabanına ulaşamıyorken önbellek silinirse, eski ama sağlam sayfalar da 500'e döner (10 Kasım 2026).
+ */
+export async function supabaseReachable(timeoutMs = 10000): Promise<boolean> {
+    try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/film_embeddings_v3?select=movie_id&limit=1`, {
+            headers: headers(),
+            cache: "no-store",
+            signal: AbortSignal.timeout(timeoutMs),
+        });
+        return res.ok;
+    } catch {
+        return false;
+    }
+}
+
 /** RPC çağrısı (POST) */
 export async function supabaseRpc<T>(fn: string, body: Record<string, unknown>, revalidateSeconds = 3600): Promise<T> {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
