@@ -33,15 +33,17 @@ if [ -d "$IMG_DIR" ]; then
     n=$(find "$IMG_DIR" -type f -atime +"$IMG_MAX_DAYS" -print -delete | wc -l)
     log "görseller: $IMG_MAX_DAYS gündür açılmayan $n dosya silindi"
 
-    cap=$((IMG_CAP_MB * 1024 * 1024))
-    total=$(find "$IMG_DIR" -type f -printf '%s\n' | awk '{s+=$1} END {print s+0}')
+    # Boyutlar diskte kapladığı KB olarak (%k): du ve df ile aynı ölçü
+    cap=$((IMG_CAP_MB * 1024))
+    total=$(find "$IMG_DIR" -type f -printf '%k\n' | awk '{s+=$1} END {print s+0}')
     if [ "$total" -gt "$cap" ]; then
-        # En eski atime önce; toplam sınırın altına inene kadar sil
-        find "$IMG_DIR" -type f -printf '%A@ %s %p\0' | sort -zn \
+        # En eski atime önce; toplam sınırın altına inene kadar sil. awk erken çıkmaz, listenin
+        # sonuna kadar okur: yoksa sort SIGPIPE alır ve pipefail betiği hatayla bitirir.
+        find "$IMG_DIR" -type f -printf '%A@ %k %p\0' | sort -zn \
             | awk -v RS='\0' -v ORS='\0' -v over=$((total - cap)) \
-                '{ if (freed >= over) exit; freed += $2; sub(/^[^ ]+ [^ ]+ /, ""); print }' \
+                'freed < over { freed += $2; sub(/^[^ ]+ [^ ]+ /, ""); print }' \
             | xargs -0 -r rm -f --
-        log "görseller: toplam $((total / 1024 / 1024)) MB > sınır $IMG_CAP_MB MB, en uzun süredir açılmayanlar silindi"
+        log "görseller: toplam $((total / 1024)) MB > sınır $IMG_CAP_MB MB, en uzun süredir açılmayanlar silindi"
     fi
     find "$IMG_DIR" -mindepth 2 -type d -empty -delete
     log "görseller: kalan $(du -sh "$IMG_DIR" | cut -f1)"
