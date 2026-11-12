@@ -22,6 +22,8 @@ Bu klasör sunucudaki dosyaların kopyasıdır (gizli bilgi içermez). Sunucudak
 | `filminibul.service` | `/etc/systemd/system/` — Next.js (`/opt/filminibul/current`, 127.0.0.1:3000) |
 | `filminibul-deploy.{service,timer}` | `/etc/systemd/system/` |
 | `filminibul-backup.{service,timer}` | `/etc/systemd/system/` — her gün 04:15 (Europe/Istanbul) |
+| `cache-temizle.sh` | `/opt/filminibul/cache-temizle.sh` — veri önbelleği ve TMDB görsel kopyalarının temizliği |
+| `filminibul-cache-temizle.{service,timer}` | `/etc/systemd/system/` — saatte bir |
 | `site.caddy`, `api.caddy` | `/etc/caddy/` — `/etc/caddy/Caddyfile` içinden `import` edilir |
 | `db-yuk-teshis.sh` | elle çalıştırılır (salt okunur) — `supabase-db` CPU teşhisi: pahalı sorgular, komşu tablosu, bot dağılımı |
 | `docker-compose.localports.yml` | `/opt/supabase/` — Supabase API ve Postgres yalnız 127.0.0.1'de |
@@ -39,6 +41,14 @@ Kayıt dosyası `caddy:caddy` sahipli olmalı: `caddy validate` root olarak çal
 görseli TMDB'den alıp `/var/cache/filminibul-img/img/...` altına yazar, sonrakileri Caddy diskten sunar (`site.caddy`,
 `@img_diskte`). Klasör `filminibul` sahipli olmalı: `install -d -o filminibul -g filminibul -m 755 /var/cache/filminibul-img`.
 Yedeğe girmez (gerekirse silinir, yeniden dolar). Boyutu: `du -sh /var/cache/filminibul-img`.
+
+**Önbellek temizliği (10 Kasım):** iki önbellek de sınırsız büyüyordu ve 58 GB'lık disk doldu (görseller 16 GB, 13 GB'ı
+w1280 arka planlar; veri önbelleği 11 GB, 25 saatte ~5 GB yazılıyor, yalnız haftalık deploy'da temizleniyordu). `cache-temizle.sh` saatte
+bir veri önbelleğinin 25 saatten eski girdilerini (en uzun `revalidate` 1 gün) ve 30 gündür açılmayan görselleri siler;
+görseller yine 8 GB'ı aşarsa en uzun süredir açılmayanlardan başlayarak sınırın altına iner (`IMG_MAX_DAYS`, `IMG_CAP_MB`).
+Kurulum: `install -m 755 ops/vps/cache-temizle.sh /opt/filminibul/` · `cp ops/vps/filminibul-cache-temizle.{service,timer} /etc/systemd/system/`
+· `systemctl daemon-reload && systemctl enable --now filminibul-cache-temizle.timer`. Elle: `systemctl start filminibul-cache-temizle`
+· Log: `journalctl -u filminibul-cache-temizle`.
 
 **Envoy sağlık kontrolü (21 Ekim, PF-03):** Supabase'in `volumes/api/envoy/cds.yaml` dosyası `rest` kümesini 5 sn'de bir
 `GET /` ile kontrol ediyordu; PostgREST bu adreste her seferinde OpenAPI belgesini üretiyor (iki ağır şema sorgusu, ~1,3 sn,
