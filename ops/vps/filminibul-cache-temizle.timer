@@ -1,8 +1,9 @@
 [Unit]
-Description=Filminibul onbellek temizligi her gun 05:00 (Europe/Istanbul)
+Description=Filminibul onbellek temizligi her saat
 
 [Timer]
-OnCalendar=*-*-* 05:00:00 Europe/Istanbul
+OnCalendar=hourly
+RandomizedDelaySec=5min
 Persistent=true
 
 [Install]

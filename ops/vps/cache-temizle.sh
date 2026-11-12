@@ -1,10 +1,11 @@
 #!/bin/bash
-# Filminibul önbellek temizliği: her gece filminibul-cache-temizle.timer çalıştırır.
+# Filminibul önbellek temizliği: filminibul-cache-temizle.timer saatte bir çalıştırır.
 # İkisi de yalnız önbellek: silinen dosya bir sonraki istekte yeniden oluşur, veri kaybı olmaz.
 #
 # 1) Next.js veri önbelleği (/opt/filminibul/shared/fetch-cache): koddaki en uzun önbellek süresi
 #    1 gün, 25 saatten eski girdi bir daha okunmaz. 10 Kasım'da yalnız deploy'da (haftada bir)
-#    temizlendiği için 11 GB birikmişti (günde ~3-4 GB).
+#    temizlendiği için 11 GB birikmişti. 12 Kasım ölçümü: 25 saatte ~5 GB yazılıyor, bu yüzden
+#    temizlik günde bir değil saatte bir çalışır (önbellek ~5 GB'ı geçmez).
 # 2) TMDB görsel kopyaları (/var/cache/filminibul-img): hiç silinmiyordu, 10 Kasım'da 16 GB
 #    (13 GB'ı w1280 arka planlar) ve disk doldu. IMG_MAX_DAYS gündür açılmayan görseller silinir;
 #    toplam yine IMG_CAP_MB'yi aşarsa en uzun süredir açılmayanlardan başlanarak sınırın altına inilir.
