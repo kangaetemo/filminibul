@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
-import { CATALOG_TAG } from "@/lib/server/supabase";
+import { CATALOG_TAG, supabaseReachable } from "@/lib/server/supabase";
 export async function POST(request: NextRequest) {
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
     const timestamp = request.headers.get("x-catalog-time") || "";
@@ -9,6 +9,8 @@ export async function POST(request: NextRequest) {
     if (!key || !/^\d{13}$/.test(timestamp) || Math.abs(Date.now() - Number(timestamp)) > 300000 || !/^[a-f0-9]{64}$/.test(signature)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const expected = createHmac("sha256", key).update(`catalog:${timestamp}`).digest();
     if (!timingSafeEqual(expected, Buffer.from(signature, "hex"))) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Veritabanı cevap vermiyorsa önbelleği koru: site eski veriyle açık kalsın, işin kendisi hata versin.
+    if (!(await supabaseReachable())) return NextResponse.json({ error: "Veritabanına ulaşılamıyor; önbellek korundu" }, { status: 503 });
     revalidateTag(CATALOG_TAG);
     return NextResponse.json({ ok: true });
 }
